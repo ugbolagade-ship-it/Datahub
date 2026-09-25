@@ -5,14 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Sign Up — Datahub</title>
 
-<!-- Primary CDN with Fallback -->
+<!-- Supabase CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  if (!window.supabase) {
-    document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\/script>');
-  }
-</script>
-<script src="supabase-init.js"></script>
+<!-- Cache-busted init script -->
+<script src="supabase-init.js?v=2"></script>
 
 <style>
   :root{
@@ -89,9 +85,10 @@
     e.preventDefault();
     msg.className = 'msg';
 
-    if (!supabase) {
+    const db = getSupabase();
+    if (!db) {
       msg.className = 'msg error';
-      msg.textContent = 'Connection error: Unable to load authentication service. Please check your internet connection and refresh.';
+      msg.textContent = 'Connection error: Could not connect to authentication service. Please refresh and try again.';
       return;
     }
 
@@ -104,7 +101,7 @@
     const password = form.password.value;
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error } = await db.auth.signUp({
         email: email,
         password: password
       });
@@ -112,7 +109,7 @@
       if (error) throw error;
 
       if (data.user) {
-        const { error: profileError } = await supabase
+        const { error: profileError } = await db
           .from('profiles')
           .insert([
             { id: data.user.id, full_name: fullName, phone: phone, balance: 0.00 }
