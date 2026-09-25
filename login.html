@@ -2,15 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Log In — Datahub</title>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-init.js"></script>
 <style>
   :root{
     --ink:#171334; --ink-soft:#4b4768; --violet-deep:#211f3d;
-    --amber:#FFC107; --amber-deep:#e9a400; --cream:#f8f7ff; --line:#e7e5f5;
+    --amber:#FFC107; --cream:#f8f7ff; --line:#e7e5f5;
     --flame-1:#f4841f; --flame-2:#c62b2b; --brand-red:#e0432b;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
@@ -67,7 +66,6 @@
   <div class="foot">New here? <a href="signup.html">Create an account</a></div>
 </div>
 
-<script src="firebase-init.js"></script>
 <script>
   const form = document.getElementById('loginForm');
   const msg = document.getElementById('msg');
@@ -83,29 +81,23 @@
     const password = form.password.value;
 
     try {
-      await auth.signInWithEmailAndPassword(email, password);
-      await syncUser();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+
+      if (error) throw error;
 
       msg.className = 'msg ok';
       msg.textContent = 'Welcome back! Redirecting...';
       setTimeout(() => (window.location.href = 'dashboard.html'), 700);
     } catch (err) {
       msg.className = 'msg error';
-      msg.textContent = friendlyError(err);
+      msg.textContent = err.message || 'Invalid email or password.';
       btn.disabled = false;
       btn.textContent = 'Log In';
     }
   });
-
-  function friendlyError(err) {
-    const map = {
-      'auth/user-not-found': 'No account found with that email.',
-      'auth/wrong-password': 'Incorrect password.',
-      'auth/invalid-credential': 'Incorrect email or password.',
-      'auth/too-many-requests': 'Too many attempts — please wait a moment and try again.',
-    };
-    return map[err.code] || err.message || 'Something went wrong. Please try again.';
-  }
 </script>
 </body>
 </html>
