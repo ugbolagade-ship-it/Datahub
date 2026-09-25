@@ -1,6 +1,11 @@
-// Replace with your Supabase Project URL and Anon Key (from Project Settings -> API)
 const SUPABASE_URL = 'https://ykffjitfoswdgnjxlyyc.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
 
-// Initialize Supabase Client
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Safely initialize Supabase
+var supabase = null;
+
+if (window.supabase && typeof window.supabase.createClient === 'function') {
+  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} else {
+  console.error('Supabase library failed to load from CDN.');
+}
