@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Dashboard — VTU Services</title>
+  <title>Dashboard — VTU Portal</title>
 
   <!-- Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -40,7 +40,17 @@
       margin: 0 auto;
     }
 
-    /* Balance Card */
+    .hidden { display: none !important; }
+
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      box-shadow: 0 12px 30px -15px rgba(23, 19, 52, 0.08);
+      margin-bottom: 20px;
+    }
+
     .balance-card {
       background: linear-gradient(135deg, var(--violet-deep), #2a275c);
       color: #fff;
@@ -48,6 +58,7 @@
       border-radius: 18px;
       margin-bottom: 20px;
       box-shadow: 0 10px 25px rgba(23, 19, 52, 0.15);
+      position: relative;
     }
 
     .balance-card small {
@@ -67,13 +78,24 @@
     .balance-meta {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       font-size: 0.85rem;
       color: #c1bdde;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
       padding-top: 10px;
     }
 
-    /* Tab Navigation */
+    .btn-logout {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
     .vtu-tabs {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -103,27 +125,6 @@
       color: #fff;
     }
 
-    /* Service Cards */
-    .service-card {
-      background: #fff;
-      border-radius: 18px;
-      padding: 22px;
-      border: 1px solid var(--line);
-      box-shadow: 0 12px 30px -15px rgba(23, 19, 52, 0.08);
-      display: none;
-    }
-
-    .service-card.active {
-      display: block;
-    }
-
-    .service-card h3 {
-      font-size: 1.1rem;
-      color: var(--violet-deep);
-      margin-bottom: 16px;
-    }
-
-    /* Forms & Inputs */
     label {
       display: block;
       font-size: 0.8rem;
@@ -179,7 +180,6 @@
       cursor: not-allowed;
     }
 
-    /* Status Notifications */
     .status-box {
       margin-top: 15px;
       padding: 12px;
@@ -207,137 +207,168 @@
 <body>
 
 <div class="container">
-  <!-- Balance Card Header -->
-  <div class="balance-card">
-    <small>Wallet Balance</small>
-    <h2 id="userBalance">₦0.00</h2>
-    <div class="balance-meta">
-      <span id="userName">Account User</span>
-      <span id="userPhone">08000000000</span>
+
+  <!-- ================= AUTHENTICATION VIEW ================= -->
+  <div id="authView" class="card">
+    <h2 style="margin-bottom: 6px; color: var(--violet-deep);">Welcome Back</h2>
+    <p style="font-size: 0.85rem; color: var(--ink-soft); margin-bottom: 20px;">Log in to access your VTU portal</p>
+    
+    <form id="loginForm">
+      <label for="loginEmail">Email Address</label>
+      <input type="email" id="loginEmail" placeholder="yourname@gmail.com" required />
+
+      <label for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" required />
+
+      <button type="submit" class="btn-submit" id="loginBtn">Sign In</button>
+      <div class="status-box" id="authStatus"></div>
+    </form>
+  </div>
+
+  <!-- ================= DASHBOARD VIEW ================= -->
+  <div id="dashboardView" class="hidden">
+    
+    <!-- Balance Header Card -->
+    <div class="balance-card">
+      <small>Wallet Balance</small>
+      <h2 id="userBalance">₦0.00</h2>
+      <div class="balance-meta">
+        <span id="userName">User Account</span>
+        <button class="btn-logout" onclick="handleLogout()">Sign Out</button>
+      </div>
     </div>
-  </div>
 
-  <!-- Service Tabs Navigation -->
-  <div class="vtu-tabs">
-    <button class="tab-btn active" onclick="switchTab('data', event)">📶 Data</button>
-    <button class="tab-btn" onclick="switchTab('tv', event)">📺 Cable TV</button>
-    <button class="tab-btn" onclick="switchTab('power', event)">⚡ Power</button>
-    <button class="tab-btn" onclick="switchTab('exam', event)">📝 Exam</button>
-  </div>
+    <!-- Navigation Tabs -->
+    <div class="vtu-tabs">
+      <button class="tab-btn active" onclick="switchTab('data', event)">📶 Data</button>
+      <button class="tab-btn" onclick="switchTab('tv', event)">📺 Cable TV</button>
+      <button class="tab-btn" onclick="switchTab('power', event)">⚡ Power</button>
+      <button class="tab-btn" onclick="switchTab('exam', event)">📝 Exam</button>
+    </div>
 
-  <!-- 1. DATA PURCHASE FORM -->
-  <div class="service-card active" id="tab-data">
-    <h3>Purchase Data Bundle</h3>
-    <form id="dataForm">
-      <label for="dataNetwork">Select Network</label>
-      <select id="dataNetwork" required onchange="loadDataPlans()">
-        <option value="">-- Select Network --</option>
-        <option value="1">MTN</option>
-        <option value="2">GLO</option>
-        <option value="3">AIRTEL</option>
-        <option value="4">9MOBILE</option>
-      </select>
+    <!-- 1. DATA PURCHASE FORM -->
+    <div class="card service-card" id="tab-data">
+      <h3 style="margin-bottom: 16px;">Purchase Data Bundle</h3>
+      <form id="dataForm">
+        <label for="dataNetwork">Select Network</label>
+        <select id="dataNetwork" required onchange="loadDataPlans()">
+          <option value="">-- Select Network --</option>
+          <option value="1">MTN</option>
+          <option value="2">GLO</option>
+          <option value="3">AIRTEL</option>
+          <option value="4">9MOBILE</option>
+        </select>
 
-      <label for="dataPlan">Data Plan</label>
-      <select id="dataPlan" required>
-        <option value="">-- Select Network First --</option>
-      </select>
+        <label for="dataPlan">Data Plan</label>
+        <select id="dataPlan" required>
+          <option value="">-- Select Network First --</option>
+        </select>
 
-      <label for="dataPhone">Phone Number</label>
-      <input type="tel" id="dataPhone" placeholder="08012345678" maxlength="11" required />
+        <label for="dataPhone">Phone Number</label>
+        <input type="tel" id="dataPhone" placeholder="08012345678" maxlength="11" required />
 
-      <button type="submit" class="btn-submit" id="dataBtn">Buy Data</button>
-      <div class="status-box" id="dataStatus"></div>
-    </form>
-  </div>
+        <button type="submit" class="btn-submit" id="dataBtn">Buy Data</button>
+        <div class="status-box" id="dataStatus"></div>
+      </form>
+    </div>
 
-  <!-- 2. CABLE TV FORM -->
-  <div class="service-card" id="tab-tv">
-    <h3>Pay TV Subscription</h3>
-    <form id="tvForm">
-      <label for="tvCompany">Service Provider</label>
-      <select id="tvCompany" required>
-        <option value="1">DSTV</option>
-        <option value="2">GOTV</option>
-        <option value="3">STARTIMES</option>
-        <option value="4">SHOWMAX</option>
-      </select>
+    <!-- 2. CABLE TV FORM -->
+    <div class="card service-card hidden" id="tab-tv">
+      <h3 style="margin-bottom: 16px;">Pay TV Subscription</h3>
+      <form id="tvForm">
+        <label for="tvCompany">Service Provider</label>
+        <select id="tvCompany" required>
+          <option value="1">DSTV</option>
+          <option value="2">GOTV</option>
+          <option value="3">STARTIMES</option>
+          <option value="4">SHOWMAX</option>
+        </select>
 
-      <label for="tvIuc">SmartCard / IUC Number</label>
-      <input type="text" id="tvIuc" placeholder="Enter Smartcard Number" required />
-      <button type="button" class="btn-action" onclick="verifyIUC()">Verify Customer</button>
-      <div id="iucResult" style="font-size:0.8rem; margin-top:6px; color:var(--violet-deep); font-weight:700;"></div>
+        <label for="tvIuc">SmartCard / IUC Number</label>
+        <input type="text" id="tvIuc" placeholder="Enter Smartcard Number" required />
+        <button type="button" class="btn-action" onclick="verifyIUC()">Verify Customer</button>
+        <div id="iucResult" style="font-size:0.8rem; margin-top:6px; color:var(--violet-deep); font-weight:700;"></div>
 
-      <label for="tvPackage">Package ID</label>
-      <input type="number" id="tvPackage" placeholder="e.g. 90 (DSTV Padi)" required />
+        <label for="tvPackage">Package ID</label>
+        <input type="number" id="tvPackage" placeholder="e.g. 90 (DSTV Padi)" required />
 
-      <button type="submit" class="btn-submit" id="tvBtn">Pay Cable TV</button>
-      <div class="status-box" id="tvStatus"></div>
-    </form>
-  </div>
+        <button type="submit" class="btn-submit" id="tvBtn">Pay Cable TV</button>
+        <div class="status-box" id="tvStatus"></div>
+      </form>
+    </div>
 
-  <!-- 3. ELECTRICITY FORM -->
-  <div class="service-card" id="tab-power">
-    <h3>Pay Electricity Bill</h3>
-    <form id="powerForm">
-      <label for="powerCompany">Disco Provider</label>
-      <select id="powerCompany" required>
-        <option value="1">Eko Electricity (EKEDC)</option>
-        <option value="2">Ikeja Electricity (IKEDC)</option>
-        <option value="3">PortHarcourt (PHEDC)</option>
-        <option value="5">Abuja (AEDC)</option>
-        <option value="6">Ibadan (IBEDC)</option>
-      </select>
+    <!-- 3. ELECTRICITY FORM -->
+    <div class="card service-card hidden" id="tab-power">
+      <h3 style="margin-bottom: 16px;">Pay Electricity Bill</h3>
+      <form id="powerForm">
+        <label for="powerCompany">Disco Provider</label>
+        <select id="powerCompany" required>
+          <option value="1">Eko Electricity (EKEDC)</option>
+          <option value="2">Ikeja Electricity (IKEDC)</option>
+          <option value="3">PortHarcourt (PHEDC)</option>
+          <option value="5">Abuja (AEDC)</option>
+          <option value="6">Ibadan (IBEDC)</option>
+        </select>
 
-      <label for="meterType">Meter Type</label>
-      <select id="meterType" required>
-        <option value="1">PREPAID</option>
-        <option value="2">POSTPAID</option>
-      </select>
+        <label for="meterType">Meter Type</label>
+        <select id="meterType" required>
+          <option value="1">PREPAID</option>
+          <option value="2">POSTPAID</option>
+        </select>
 
-      <label for="meterNo">Meter Number</label>
-      <input type="text" id="meterNo" placeholder="Enter Meter Number" required />
+        <label for="meterNo">Meter Number</label>
+        <input type="text" id="meterNo" placeholder="Enter Meter Number" required />
 
-      <label for="powerAmount">Amount (₦)</label>
-      <input type="number" id="powerAmount" min="1000" placeholder="Minimum ₦1000" required />
+        <label for="powerAmount">Amount (₦)</label>
+        <input type="number" id="powerAmount" min="1000" placeholder="Minimum ₦1000" required />
 
-      <button type="submit" class="btn-submit" id="powerBtn">Pay Electric Bill</button>
-      <div class="status-box" id="powerStatus"></div>
-    </form>
-  </div>
+        <button type="submit" class="btn-submit" id="powerBtn">Pay Electric Bill</button>
+        <div class="status-box" id="powerStatus"></div>
+      </form>
+    </div>
 
-  <!-- 4. EXAM PINS FORM -->
-  <div class="service-card" id="tab-exam">
-    <h3>Buy Exam Scratch Pins</h3>
-    <form id="examForm">
-      <label for="examBoard">Exam Board</label>
-      <select id="examBoard" required>
-        <option value="1">WAEC</option>
-        <option value="2">NECO</option>
-        <option value="3">NABTEB</option>
-      </select>
+    <!-- 4. EXAM PINS FORM -->
+    <div class="card service-card hidden" id="tab-exam">
+      <h3 style="margin-bottom: 16px;">Buy Exam Scratch Pins</h3>
+      <form id="examForm">
+        <label for="examBoard">Exam Board</label>
+        <select id="examBoard" required>
+          <option value="1">WAEC</option>
+          <option value="2">NECO</option>
+          <option value="3">NABTEB</option>
+        </select>
 
-      <label for="pinQuantity">Quantity of Pins</label>
-      <select id="pinQuantity" required>
-        <option value="1">1 Pin</option>
-        <option value="2">2 Pins</option>
-        <option value="5">5 Pins</option>
-      </select>
+        <label for="pinQuantity">Quantity of Pins</label>
+        <select id="pinQuantity" required>
+          <option value="1">1 Pin</option>
+          <option value="2">2 Pins</option>
+          <option value="5">5 Pins</option>
+        </select>
 
-      <button type="submit" class="btn-submit" id="examBtn">Purchase Pins</button>
-      <div class="status-box" id="examStatus"></div>
-    </form>
+        <button type="submit" class="btn-submit" id="examBtn">Purchase Pins</button>
+        <div class="status-box" id="examStatus"></div>
+      </form>
+    </div>
+
   </div>
 </div>
 
 <script>
-  // Configuration
+  // 1. SUPABASE INITIALIZATION
+  // Replace SUPABASE_URL and SUPABASE_ANON_KEY with your project keys from Supabase Dashboard -> Project Settings -> API
+  const SUPABASE_URL = 'https://ykffjitfoswdgnjxlyyc.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrZmZqaXRmb3N3ZGduanhseXljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzMTIwOTIsImV4cCI6MjEwNTg4ODA5Mn0.pkfu6MEPIpE62mkHGeDAN1WgkKVxWgzRPloa4A7rlGI';
+  
+  // Instance named 'supabaseClient' to prevent overwriting CDN variable
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // 2. EASYACCESS API CONFIGURATION
   const EASYACCESS_TOKEN = '6cd5066fc00573565ac4cea6e83c0f5c344a94cfc9dca45265330a1e2b128976';
   const API_BASE = 'https://easyaccess.com.ng/api/live/v1';
 
-  // Data Plans Pre-populated Mapping
+  // Data Plans mapping
   const DATA_PLANS = {
-    '1': [ // MTN
+    '1': [
       { id: 45, name: '500MB (CG) - 7 Days' },
       { id: 46, name: '1GB (CG) - 30 Days' },
       { id: 47, name: '2GB (CG) - 30 Days' },
@@ -345,34 +376,90 @@
       { id: 50, name: '500MB (SME) - 7 Days' },
       { id: 51, name: '1GB (SME) - 7 Days' }
     ],
-    '2': [ // GLO
+    '2': [
       { id: 159, name: '500MB (CG) - 30 Days' },
       { id: 160, name: '1GB (CG) - 30 Days' },
       { id: 161, name: '2GB (CG) - 30 Days' }
     ],
-    '3': [ // AIRTEL
+    '3': [
       { id: 105, name: '500MB (CG) - 7 Days' },
       { id: 108, name: '1GB (CG) - 7 Days' },
       { id: 124, name: '2GB (CG) - 30 Days' }
     ],
-    '4': [ // 9MOBILE
+    '4': [
       { id: 168, name: '500MB (SME) - 30 Days' },
       { id: 128, name: '1GB (SME) - 30 Days' }
     ]
   };
 
-  // Switch UI Navigation Tabs
+  // 3. AUTHENTICATION LOGIC
+  window.addEventListener('DOMContentLoaded', async () => {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    updateUIState(session);
+
+    supabaseClient.auth.onAuthStateChange((_event, session) => {
+      updateUIState(session);
+    });
+  });
+
+  function updateUIState(session) {
+    const authView = document.getElementById('authView');
+    const dashboardView = document.getElementById('dashboardView');
+
+    if (session) {
+      authView.classList.add('hidden');
+      dashboardView.classList.remove('hidden');
+      document.getElementById('userName').textContent = session.user.email;
+    } else {
+      authView.classList.remove('hidden');
+      dashboardView.classList.add('hidden');
+    }
+  }
+
+  // Handle Login Form
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    const status = document.getElementById('authStatus');
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+
+    btn.disabled = true;
+    btn.textContent = 'Authenticating...';
+    status.className = 'status-box';
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
+
+    if (error) {
+      status.className = 'status-box error';
+      status.textContent = error.message;
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+    } else {
+      status.className = 'status-box success';
+      status.textContent = 'Login Successful!';
+    }
+  });
+
+  // Handle Logout
+  async function handleLogout() {
+    await supabaseClient.auth.signOut();
+  }
+
+  // 4. TAB SWITCHER & DYNAMIC UI
   function switchTab(tabName, evt) {
-    document.querySelectorAll('.service-card').forEach(card => card.classList.remove('active'));
+    document.querySelectorAll('.service-card').forEach(card => card.classList.add('hidden'));
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
 
-    document.getElementById(`tab-${tabName}`).classList.add('active');
+    document.getElementById(`tab-${tabName}`).classList.remove('hidden');
     if (evt && evt.target) {
       evt.target.classList.add('active');
     }
   }
 
-  // Populate Data Plans Dropdown
   function loadDataPlans() {
     const netId = document.getElementById('dataNetwork').value;
     const planSelect = document.getElementById('dataPlan');
@@ -388,7 +475,8 @@
     }
   }
 
-  // 1. DATA PURCHASE HANDLER
+  // 5. EASYACCESS TRANSACTION HANDLERS
+  // Data Purchase
   document.getElementById('dataForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('dataBtn');
@@ -419,27 +507,27 @@
 
       if (data.code === 200 || data.status === 'success') {
         status.className = 'status-box success';
-        status.textContent = `Success! ${data.message || 'Data purchase completed.'}`;
+        status.textContent = `Success! ${data.message || 'Data delivered.'}`;
       } else {
         throw new Error(data.message || 'Transaction failed.');
       }
     } catch (err) {
       status.className = 'status-box error';
-      status.textContent = err.message || 'Network error connecting to provider.';
+      status.textContent = err.message || 'Network error.';
     } finally {
       btn.disabled = false;
       btn.textContent = 'Buy Data';
     }
   });
 
-  // 2. VERIFY CABLE TV IUC
+  // Cable TV Verification
   async function verifyIUC() {
     const company = document.getElementById('tvCompany').value;
     const iucno = document.getElementById('tvIuc').value.trim();
     const resultDiv = document.getElementById('iucResult');
 
     if (!iucno) {
-      resultDiv.textContent = 'Please enter an IUC number first.';
+      resultDiv.textContent = 'Enter an IUC number first.';
       return;
     }
 
@@ -466,14 +554,14 @@
     }
   }
 
-  // 3. CABLE TV PURCHASE HANDLER
+  // Cable TV Payment
   document.getElementById('tvForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('tvBtn');
     const status = document.getElementById('tvStatus');
 
     btn.disabled = true;
-    btn.textContent = 'Processing Payment...';
+    btn.textContent = 'Processing...';
     status.className = 'status-box';
 
     const payload = {
@@ -496,7 +584,7 @@
 
       if (data.code === 200 || data.status === 'success') {
         status.className = 'status-box success';
-        status.textContent = 'TV Subscription Activated Successfully!';
+        status.textContent = 'TV Subscription Activated!';
       } else {
         throw new Error(data.message || 'Payment failed.');
       }
@@ -509,14 +597,14 @@
     }
   });
 
-  // 4. ELECTRICITY BILL HANDLER
+  // Electricity Bill Payment
   document.getElementById('powerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('powerBtn');
     const status = document.getElementById('powerStatus');
 
     btn.disabled = true;
-    btn.textContent = 'Processing Electricity Payment...';
+    btn.textContent = 'Processing Payment...';
     status.className = 'status-box';
 
     const payload = {
@@ -540,27 +628,27 @@
 
       if (data.code === 200 || data.status === 'success') {
         status.className = 'status-box success';
-        status.textContent = `Electricity Payment Successful! Token: ${data.token || 'Processed'}`;
+        status.textContent = `Successful! Token: ${data.token || 'Processed'}`;
       } else {
-        throw new Error(data.message || 'Payment failed');
+        throw new Error(data.message || 'Payment failed.');
       }
     } catch (err) {
       status.className = 'status-box error';
-      status.textContent = err.message || 'Error processing electricity payment';
+      status.textContent = err.message;
     } finally {
       btn.disabled = false;
       btn.textContent = 'Pay Electric Bill';
     }
   });
 
-  // 5. EXAM PIN PURCHASE HANDLER
+  // Exam Pin Purchase
   document.getElementById('examForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('examBtn');
     const status = document.getElementById('examStatus');
 
     btn.disabled = true;
-    btn.textContent = 'Purchasing Pins...';
+    btn.textContent = 'Purchasing...';
     status.className = 'status-box';
 
     const payload = {
@@ -582,13 +670,13 @@
 
       if (data.code === 200 || data.status === 'success') {
         status.className = 'status-box success';
-        status.textContent = `Pin Purchased Successfully! Pin: ${data.pin || 'Check history'}`;
+        status.textContent = `Pin Purchased! ${data.pin || 'Check history'}`;
       } else {
-        throw new Error(data.message || 'Purchase failed');
+        throw new Error(data.message || 'Purchase failed.');
       }
     } catch (err) {
       status.className = 'status-box error';
-      status.textContent = err.message || 'Error purchasing pin';
+      status.textContent = err.message;
     } finally {
       btn.disabled = false;
       btn.textContent = 'Purchase Pins';
