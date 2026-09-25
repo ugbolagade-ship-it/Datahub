@@ -2,15 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Sign Up — Datahub</title>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-init.js"></script>
 <style>
   :root{
     --ink:#171334; --ink-soft:#4b4768; --violet-deep:#211f3d;
-    --amber:#FFC107; --amber-deep:#e9a400; --cream:#f8f7ff; --line:#e7e5f5;
+    --amber:#FFC107; --cream:#f8f7ff; --line:#e7e5f5;
     --flame-1:#f4841f; --flame-2:#c62b2b; --brand-red:#e0432b;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
@@ -73,7 +72,6 @@
   <div class="foot">Already have an account? <a href="login.html">Log in</a></div>
 </div>
 
-<script src="firebase-init.js"></script>
 <script>
   const form = document.getElementById('signupForm');
   const msg = document.getElementById('msg');
@@ -91,30 +89,33 @@
     const password = form.password.value;
 
     try {
-      const credential = await auth.createUserWithEmailAndPassword(email, password);
-      await credential.user.updateProfile({ displayName: fullName });
-      await syncUser(fullName, phone);
-      await credential.user.sendEmailVerification().catch(() => {});
+      const { data, error } = await supabase.auth.signUp({
+        email: email,
+        password: password
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            { id: data.user.id, full_name: fullName, phone: phone, balance: 0.00 }
+          ]);
+
+        if (profileError) console.error("Profile sync error:", profileError);
+      }
 
       msg.className = 'msg ok';
-      msg.textContent = 'Account created! Redirecting...';
+      msg.textContent = 'Account created successfully! Redirecting...';
       setTimeout(() => (window.location.href = 'dashboard.html'), 900);
     } catch (err) {
       msg.className = 'msg error';
-      msg.textContent = friendlyError(err);
+      msg.textContent = err.message || 'Failed to create account.';
       btn.disabled = false;
       btn.textContent = 'Create Account';
     }
   });
-
-  function friendlyError(err) {
-    const map = {
-      'auth/email-already-in-use': 'That email is already registered — try logging in instead.',
-      'auth/weak-password': 'Password should be at least 6 characters.',
-      'auth/invalid-email': 'Please enter a valid email address.',
-    };
-    return map[err.code] || err.message || 'Something went wrong. Please try again.';
-  }
 </script>
 </body>
 </html>
