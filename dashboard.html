@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Dashboard — Datahub</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-init.js"></script>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<style>
+  :root {
+    --ink:#171334; --ink-soft:#4b4768; --violet-deep:#211f3d;
+    --amber:#FFC107; --cream:#f8f7ff; --line:#e7e5f5;
+    --flame-1:#f4841f; --flame-2:#c62b2b; --brand-red:#e0432b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: var(--cream); color: var(--ink); }
+  
+  header {
+    background: #fff; border-bottom: 1px solid var(--line);
+    padding: 16px 24px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--brand-red); text-decoration: none; font-size: 1.2rem; }
+  .user-meta { display: flex; align-items: center; gap: 16px; font-size: 0.9rem; }
+  .btn-logout { background: none; border: 1px solid var(--line); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+
+  .main-content { max-width: 900px; margin: 32px auto; padding: 0 24px; }
+  .wallet-card {
+    background: linear-gradient(135deg, var(--violet-deep), #3a3768);
+    color: #fff; padding: 28px; border-radius: 20px; margin-bottom: 24px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .balance-val { font-size: 2rem; font-weight: 800; color: var(--amber); margin-top: 4px; }
+  .btn-fund { background: linear-gradient(135deg, var(--flame-1), var(--flame-2)); color: #fff; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+
+  .actions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+  .action-card { background: #fff; border: 1px solid var(--line); padding: 24px; border-radius: 16px; text-decoration: none; color: var(--ink); text-align: center; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+  .action-card:hover { border-color: var(--flame-1); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="brand" href="index.html">
+    <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+      <path d="M12 8H24C33.9411 8 40 15.1634 40 24C40 32.8366 33.9411 40 24 40H12V8Z" stroke="url(#dashDGrad)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M20 18V30" stroke="url(#dashDGrad)" stroke-width="5" stroke-linecap="round"/>
+      <defs>
+        <linearGradient id="dashDGrad" x1="12" y1="8" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#f4841f"/>
+          <stop offset="1" stop-color="#c62b2b"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    Datahub
+  </a>
+  <div class="user-meta">
+    <span id="userName">Loading...</span>
+    <button class="btn-logout" id="logoutBtn">Log Out</button>
+  </div>
+</header>
+
+<main class="main-content">
+  <div class="wallet-card">
+    <div>
+      <small style="opacity: 0.8;">Wallet Balance</small>
+      <div class="balance-val" id="walletBalance">₦0.00</div>
+    </div>
+    <button class="btn-fund" onclick="fundWallet()">Fund Wallet</button>
+  </div>
+
+  <h2 style="font-size: 1.2rem; margin-bottom: 16px; color: var(--violet-deep);">Quick Actions</h2>
+  <div class="actions-grid">
+    <a href="#" class="action-card">📶 Buy Data</a>
+    <a href="#" class="action-card">📱 Buy Airtime</a>
+    <a href="#" class="action-card">📺 Cable TV</a>
+    <a href="#" class="action-card">💡 Electricity</a>
+  </div>
+</main>
+
+<script>
+  let currentUser = null;
+  let currentBalance = 0;
+
+  async function initDashboard() {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    currentUser = session.user;
+    
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', currentUser.id)
+      .single();
+
+    if (profile) {
+      document.getElementById('userName').textContent = profile.full_name || currentUser.email;
+      currentBalance = profile.balance || 0;
+      updateBalanceUI(currentBalance);
+    }
+  }
+
+  function updateBalanceUI(val) {
+    document.getElementById('walletBalance').textContent = '₦' + parseFloat(val).toLocaleString('en-NG', { minimumFractionDigits: 2 });
+  }
+
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = 'login.html';
+  });
+
+  async function fundWallet() {
+    if (!currentUser) return alert("Please log in first.");
+
+    const amountNGN = prompt("Enter amount to fund (₦):", "1000");
+    if (!amountNGN || isNaN(amountNGN) || amountNGN < 100) {
+      return alert("Please enter a valid amount (Minimum ₦100).");
+    }
+
+    const handler = PaystackPop.setup({
+      key: 'pk_test_YOUR_PAYSTACK_PUBLIC_KEY', // Replace with your Paystack Public Key
+      email: currentUser.email,
+      amount: amountNGN * 100,
+      currency: 'NGN',
+      callback: async function(response) {
+        alert('Payment successful! Ref: ' + response.reference);
+        
+        const newBalance = currentBalance + parseFloat(amountNGN);
+        const { error } = await supabase
+          .from('profiles')
+          .update({ balance: newBalance })
+          .eq('id', currentUser.id);
+
+        if (!error) {
+          currentBalance = newBalance;
+          updateBalanceUI(currentBalance);
+        }
+      },
+      onClose: function() {
+        alert('Transaction cancelled.');
+      }
+    });
+
+    handler.openIframe();
+  }
+
+  initDashboard();
+</script>
+</body>
+</html>
