@@ -4,8 +4,16 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Sign Up — Datahub</title>
+
+<!-- Primary CDN with Fallback -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  if (!window.supabase) {
+    document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\/script>');
+  }
+</script>
 <script src="supabase-init.js"></script>
+
 <style>
   :root{
     --ink:#171334; --ink-soft:#4b4768; --violet-deep:#211f3d;
@@ -80,6 +88,13 @@
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     msg.className = 'msg';
+
+    if (!supabase) {
+      msg.className = 'msg error';
+      msg.textContent = 'Connection error: Unable to load authentication service. Please check your internet connection and refresh.';
+      return;
+    }
+
     btn.disabled = true;
     btn.textContent = 'Creating account...';
 
