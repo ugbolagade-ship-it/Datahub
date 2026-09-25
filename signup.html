@@ -5,10 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Sign Up — Datahub</title>
 
-<!-- Supabase CDN -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- Cache-busted init script -->
-<script src="supabase-init.js?v=2"></script>
+<!-- Supabase CDN (UMD Standalone Bundle) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
 <style>
   :root{
@@ -77,6 +75,21 @@
 </div>
 
 <script>
+  // Direct Inline Credentials
+  const SUPABASE_URL = 'https://ykffjitfoswdgnjxlyyc.supabase.co';
+  const SUPABASE_ANON_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrZmZqaXRmb3N3ZGduanhseXljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzMTIwOTIsImV4cCI6MjEwNTg4ODA5Mn0.pkfu6MEPIpE62mkHGeDAN1WgkKVxWgzRPloa4A7rlGI';
+
+  let sbClient = null;
+
+  function getClient() {
+    if (sbClient) return sbClient;
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      return sbClient;
+    }
+    return null;
+  }
+
   const form = document.getElementById('signupForm');
   const msg = document.getElementById('msg');
   const btn = document.getElementById('submitBtn');
@@ -85,10 +98,10 @@
     e.preventDefault();
     msg.className = 'msg';
 
-    const db = getSupabase();
-    if (!db) {
+    const client = getClient();
+    if (!client) {
       msg.className = 'msg error';
-      msg.textContent = 'Connection error: Could not connect to authentication service. Please refresh and try again.';
+      msg.textContent = 'Connection error: CDN library is still loading or blocked. Check network and refresh.';
       return;
     }
 
@@ -101,7 +114,7 @@
     const password = form.password.value;
 
     try {
-      const { data, error } = await db.auth.signUp({
+      const { data, error } = await client.auth.signUp({
         email: email,
         password: password
       });
@@ -109,7 +122,7 @@
       if (error) throw error;
 
       if (data.user) {
-        const { error: profileError } = await db
+        const { error: profileError } = await client
           .from('profiles')
           .insert([
             { id: data.user.id, full_name: fullName, phone: phone, balance: 0.00 }
