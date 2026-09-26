@@ -49,7 +49,7 @@
       border: 1px solid #f0eef8;
     }
 
-    /* Exact Original Logo Styling */
+    /* Brand Header with Exact Logo SVG */
     .brand {
       display: flex;
       align-items: center;
@@ -57,25 +57,17 @@
       margin-bottom: 24px;
     }
 
-    .brand-icon {
-      width: 36px;
-      height: 36px;
-      background: linear-gradient(135deg, var(--brand-orange), var(--brand-red));
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-weight: 800;
-      font-size: 1.2rem;
-      box-shadow: 0 4px 10px rgba(244, 132, 31, 0.25);
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      display: block;
     }
 
     .brand-name {
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       font-weight: 800;
       color: var(--brand-red);
-      letter-spacing: -0.3px;
+      letter-spacing: -0.4px;
     }
 
     h2 {
@@ -120,7 +112,7 @@
       border-color: var(--brand-orange);
     }
 
-    /* Primary Button */
+    /* Gradient Button */
     .btn-submit {
       width: 100%;
       padding: 14px;
@@ -140,7 +132,7 @@
       cursor: not-allowed;
     }
 
-    /* Status Banner */
+    /* Status Alert */
     .status-alert {
       margin-top: 16px;
       padding: 14px;
@@ -181,8 +173,17 @@
 
   <div class="auth-card">
     <div class="brand">
-      <div class="brand-icon">D</div>
-      <div class="brand-name">Datahub</div>
+      <svg class="brand-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="dhLoginGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f4841f" />
+            <stop offset="100%" stop-color="#d9381e" />
+          </linearGradient>
+        </defs>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M15 10 C15 4.5 19.5 0 25 0 H50 C77.6 0 100 22.4 100 50 C100 77.6 77.6 100 50 100 H25 C19.5 100 15 95.5 15 90 V10 Z M38 22 H48 C63.5 22 76 34.5 76 50 C76 65.5 63.5 78 48 78 H38 V22 Z" fill="url(#dhLoginGrad)"/>
+        <rect x="43" y="36" width="10" height="28" rx="5" fill="url(#dhLoginGrad)"/>
+      </svg>
+      <span class="brand-name">Datahub</span>
     </div>
 
     <h2>Welcome back</h2>
