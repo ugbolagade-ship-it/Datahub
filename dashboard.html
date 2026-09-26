@@ -40,17 +40,18 @@
 
     .container {
       width: 100%;
-      max-width: 500px;
+      max-width: 480px;
     }
 
-    /* Header Nav */
+    /* Top Navigation Bar */
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
+    /* Exact Original Logo Styling */
     .brand {
       display: flex;
       align-items: center;
@@ -58,43 +59,45 @@
     }
 
     .brand-icon {
-      width: 32px;
-      height: 32px;
-      border: 2px solid var(--brand-orange);
-      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--brand-orange), var(--brand-red));
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--brand-orange);
+      color: #ffffff;
       font-weight: 800;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 10px rgba(244, 132, 31, 0.25);
     }
 
     .brand-name {
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       font-weight: 800;
       color: var(--brand-red);
+      letter-spacing: -0.3px;
     }
 
     .btn-logout {
-      background: none;
-      border: 1px solid var(--input-border);
-      padding: 8px 14px;
+      background: #ffffff;
+      border: 1.5px solid var(--input-border);
+      padding: 8px 16px;
       border-radius: 10px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--brand-red);
       cursor: pointer;
       font-size: 0.85rem;
     }
 
-    /* Wallet Banner */
+    /* Wallet Card */
     .wallet-card {
       background: linear-gradient(135deg, #1b1834, #2a264e);
       color: #ffffff;
       border-radius: 20px;
       padding: 24px;
       margin-bottom: 20px;
-      box-shadow: 0 10px 25px rgba(27, 24, 52, 0.15);
+      box-shadow: 0 10px 25px rgba(27, 24, 52, 0.12);
     }
 
     .wallet-title {
@@ -115,14 +118,13 @@
       word-break: break-all;
     }
 
-    /* Form Card */
+    /* Form Container */
     .card {
       background: var(--card-bg);
       border-radius: 20px;
       padding: 24px;
       box-shadow: 0 10px 30px rgba(27, 24, 52, 0.03);
       border: 1px solid #f0eef8;
-      margin-bottom: 20px;
     }
 
     h3 {
@@ -164,7 +166,7 @@
       padding: 14px;
       border: none;
       border-radius: 14px;
-      background: linear-gradient(90deg, #f4841f, #d9381e);
+      background: linear-gradient(90deg, var(--brand-orange), var(--brand-red));
       color: #ffffff;
       font-size: 1rem;
       font-weight: 700;
@@ -177,7 +179,6 @@
       cursor: not-allowed;
     }
 
-    /* Alerts */
     .status-alert {
       margin-top: 16px;
       padding: 14px;
@@ -203,7 +204,6 @@
 <body>
 
   <div class="container">
-    <!-- Navigation Bar -->
     <div class="header">
       <div class="brand">
         <div class="brand-icon">D</div>
@@ -212,19 +212,16 @@
       <button class="btn-logout" onclick="logout()">Log Out</button>
     </div>
 
-    <!-- Wallet Balance Banner -->
     <div class="wallet-card">
       <div class="wallet-title">Wallet Balance</div>
       <div class="wallet-amount" id="walletBalance">₦0.00</div>
       <div class="user-email" id="userEmail">Loading session...</div>
     </div>
 
-    <!-- Data Purchase Form -->
     <div class="card">
       <h3>Buy Data Bundle</h3>
 
       <form id="dataForm">
-        <!-- Network Selector -->
         <div class="form-group">
           <label for="networkSelect">Select Network</label>
           <select id="networkSelect" onchange="loadDataPlans()" required>
@@ -236,7 +233,6 @@
           </select>
         </div>
 
-        <!-- Data Plan Selector -->
         <div class="form-group">
           <label for="planSelect">Data Plan</label>
           <select id="planSelect" required disabled>
@@ -244,7 +240,6 @@
           </select>
         </div>
 
-        <!-- Recipient Phone Number -->
         <div class="form-group">
           <label for="phoneNumber">Phone Number</label>
           <input type="tel" id="phoneNumber" placeholder="08012345678" maxlength="11" required />
@@ -257,13 +252,11 @@
   </div>
 
   <script>
-    // Supabase Credentials
     const SUPABASE_URL = 'https://ykffjitfoswdgnjxlyyc.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrZmZqaXRmb3N3ZGduanhseXljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzMTIwOTIsImV4cCI6MjEwNTg4ODA5Mn0.pkfu6MEPIpE62mkHGeDAN1WgkKVxWgzRPloa4A7rlGI';
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Reliable local plan data for Easy Access API mappings
     const DATA_PLANS = {
       MTN: [
         { id: "500MB", name: "500MB (SME) - 30 Days", price: 140 },
@@ -294,11 +287,9 @@
 
     let currentUser = null;
 
-    // Check user authentication on page load
     async function initDashboard() {
       const { data: { session }, error } = await supabaseClient.auth.getSession();
 
-      // IF NOT LOGGED IN -> Redirect strictly to login.html
       if (error || !session) {
         window.location.href = 'login.html';
         return;
@@ -306,13 +297,10 @@
 
       currentUser = session.user;
       document.getElementById('userEmail').textContent = currentUser.email;
-
-      // Fetch user balance from Supabase table or default
       fetchWalletBalance();
     }
 
     async function fetchWalletBalance() {
-      // Tries fetching balance from 'profiles' or 'wallets' table in Supabase
       const { data, error } = await supabaseClient
         .from('profiles')
         .select('wallet_balance')
@@ -326,7 +314,6 @@
       }
     }
 
-    // Populate Data Plans dynamically when network changes
     function loadDataPlans() {
       const network = document.getElementById('networkSelect').value;
       const planSelect = document.getElementById('planSelect');
@@ -348,7 +335,6 @@
       planSelect.disabled = false;
     }
 
-    // Handle Order Submission
     document.getElementById('dataForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const alertBox = document.getElementById('statusAlert');
@@ -358,11 +344,6 @@
       btn.textContent = 'Processing...';
       alertBox.className = 'status-alert';
 
-      const network = document.getElementById('networkSelect').value;
-      const planId = document.getElementById('planSelect').value;
-      const phone = document.getElementById('phoneNumber').value;
-
-      // Simple response simulation / payload check
       setTimeout(() => {
         alertBox.className = 'status-alert error';
         alertBox.textContent = 'Insufficient wallet balance. Please fund your wallet to proceed.';
@@ -371,13 +352,12 @@
       }, 1000);
     });
 
-    // Explicit Logout redirecting to login.html
+    // Explicit Sign Out pointing directly to login.html
     async function logout() {
       await supabaseClient.auth.signOut();
       window.location.href = 'login.html';
     }
 
-    // Run Auth check when page loads
     window.addEventListener('DOMContentLoaded', initDashboard);
   </script>
 </body>
