@@ -5,18 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Datahub — Login</title>
 
-  <!-- Supabase v2 CDN (MUST BE IN HEAD) -->
+  <!-- Supabase v2 CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
-      --bg: #f6f5ff;
+      --bg: #f5f4fe;
       --card-bg: #ffffff;
       --text-dark: #1b1834;
       --text-muted: #5e5a7a;
       --input-border: #e6e4f2;
       --brand-orange: #f4841f;
-      --brand-red: #c62b2b;
+      --brand-red: #d9381e;
       --error-bg: #fce8e6;
       --error-text: #c5221f;
       --success-bg: #e6f4ea;
@@ -45,11 +45,11 @@
       max-width: 400px;
       border-radius: 24px;
       padding: 32px 28px;
-      box-shadow: 0 10px 30px rgba(27, 24, 52, 0.04);
-      border: 1px solid var(--input-border);
+      box-shadow: 0 10px 30px rgba(27, 24, 52, 0.03);
+      border: 1px solid #f0eef8;
     }
 
-    /* Brand Header */
+    /* Brand Header matching signup style */
     .brand {
       display: flex;
       align-items: center;
@@ -57,17 +57,17 @@
       margin-bottom: 24px;
     }
 
-    .brand-logo {
-      width: 36px;
-      height: 36px;
-      background: linear-gradient(135deg, var(--brand-orange), var(--brand-red));
-      border-radius: 10px;
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--brand-orange);
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #fff;
+      color: var(--brand-orange);
       font-weight: 800;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
     }
 
     .brand-name {
@@ -88,6 +88,7 @@
       font-size: 0.9rem;
       color: var(--text-muted);
       margin-bottom: 24px;
+      line-height: 1.4;
     }
 
     /* Form Fields */
@@ -118,13 +119,13 @@
       border-color: var(--brand-orange);
     }
 
-    /* Primary Gradient Button */
+    /* Gradient Button */
     .btn-submit {
       width: 100%;
       padding: 14px;
       border: none;
       border-radius: 14px;
-      background: linear-gradient(90deg, var(--brand-orange), var(--brand-red));
+      background: linear-gradient(90deg, #f4841f, #d9381e);
       color: #ffffff;
       font-size: 1rem;
       font-weight: 700;
@@ -161,7 +162,7 @@
       color: var(--success-text);
     }
 
-    /* Bottom Switcher Link */
+    /* Bottom Link to Separate Signup Page */
     .toggle-footer {
       margin-top: 24px;
       text-align: center;
@@ -173,97 +174,47 @@
       color: var(--brand-red);
       font-weight: 700;
       text-decoration: none;
-      cursor: pointer;
-    }
-
-    .hidden {
-      display: none !important;
     }
   </style>
 </head>
 <body>
 
   <div class="auth-card">
-    <!-- Datahub Brand Header -->
+    <!-- Datahub Brand -->
     <div class="brand">
-      <div class="brand-logo">D</div>
+      <div class="brand-icon">D</div>
       <div class="brand-name">Datahub</div>
     </div>
 
-    <!-- ================= 1. LOGIN FORM ================= -->
-    <div id="loginView">
-      <h2>Welcome back</h2>
-      <p class="subtitle">Log in to manage your wallet and orders.</p>
+    <h2>Welcome back</h2>
+    <p class="subtitle">Log in to manage your wallet and orders.</p>
 
-      <form id="loginForm">
-        <div class="form-group">
-          <label for="loginEmail">Email</label>
-          <input type="email" id="loginEmail" placeholder="yourname@gmail.com" required />
-        </div>
-
-        <div class="form-group">
-          <label for="loginPassword">Password</label>
-          <input type="password" id="loginPassword" placeholder="••••••••••••" required />
-        </div>
-
-        <button type="submit" class="btn-submit" id="loginBtn">Log In</button>
-        <div class="status-alert" id="loginStatus"></div>
-      </form>
-
-      <div class="toggle-footer">
-        New here? <a onclick="switchView('signup')">Create an account</a>
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" placeholder="yourname@gmail.com" required />
       </div>
-    </div>
 
-    <!-- ================= 2. SIGN UP FORM ================= -->
-    <div id="signupView" class="hidden">
-      <h2>Create an account</h2>
-      <p class="subtitle">Sign up to get started with Datahub.</p>
-
-      <form id="signupForm">
-        <div class="form-group">
-          <label for="signupEmail">Email</label>
-          <input type="email" id="signupEmail" placeholder="yourname@gmail.com" required />
-        </div>
-
-        <div class="form-group">
-          <label for="signupPassword">Password</label>
-          <input type="password" id="signupPassword" placeholder="••••••••••••" required minlength="6" />
-        </div>
-
-        <button type="submit" class="btn-submit" id="signupBtn">Create Account</button>
-        <div class="status-alert" id="signupStatus"></div>
-      </form>
-
-      <div class="toggle-footer">
-        Already have an account? <a onclick="switchView('login')">Log In</a>
+      <div class="form-group">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••••••" required />
       </div>
+
+      <button type="submit" class="btn-submit" id="loginBtn">Log In</button>
+      <div class="status-alert" id="loginStatus"></div>
+    </form>
+
+    <div class="toggle-footer">
+      New here? <a href="signup.html">Create an account</a>
     </div>
   </div>
 
   <script>
-    // Your Configured Supabase Credentials
     const SUPABASE_URL = 'https://ykffjitfoswdgnjxlyyc.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrZmZqaXRmb3N3ZGduanhseXljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzMTIwOTIsImV4cCI6MjEwNTg4ODA5Mn0.pkfu6MEPIpE62mkHGeDAN1WgkKVxWgzRPloa4A7rlGI';
 
-    // Initialize Client (uses 'supabaseClient' to avoid variable shadowing error)
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Toggle between Login & Signup views inside login.html
-    function switchView(view) {
-      const loginView = document.getElementById('loginView');
-      const signupView = document.getElementById('signupView');
-
-      if (view === 'signup') {
-        loginView.classList.add('hidden');
-        signupView.classList.remove('hidden');
-      } else {
-        signupView.classList.add('hidden');
-        loginView.classList.remove('hidden');
-      }
-    }
-
-    // Handle Login Submit
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('loginBtn');
@@ -291,39 +242,6 @@
         setTimeout(() => {
           window.location.href = 'dashboard.html';
         }, 1000);
-      }
-    });
-
-    // Handle Signup Submit
-    document.getElementById('signupForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('signupBtn');
-      const status = document.getElementById('signupStatus');
-      const email = document.getElementById('signupEmail').value.trim();
-      const password = document.getElementById('signupPassword').value;
-
-      btn.disabled = true;
-      btn.textContent = 'Creating Account...';
-      status.className = 'status-alert';
-
-      const { data, error } = await supabaseClient.auth.signUp({
-        email: email,
-        password: password
-      });
-
-      if (error) {
-        status.className = 'status-alert error';
-        status.textContent = error.message;
-        btn.disabled = false;
-        btn.textContent = 'Create Account';
-      } else {
-        status.className = 'status-alert success';
-        status.textContent = 'Account created successfully! You can now log in.';
-        btn.disabled = false;
-        btn.textContent = 'Create Account';
-        setTimeout(() => {
-          switchView('login');
-        }, 1500);
       }
     });
   </script>
