@@ -49,7 +49,7 @@
       border: 1px solid #f0eef8;
     }
 
-    /* Brand Header matching signup style */
+    /* Exact Original Logo Styling */
     .brand {
       display: flex;
       align-items: center;
@@ -58,16 +58,17 @@
     }
 
     .brand-icon {
-      width: 32px;
-      height: 32px;
-      border: 2px solid var(--brand-orange);
-      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--brand-orange), var(--brand-red));
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--brand-orange);
+      color: #ffffff;
       font-weight: 800;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 10px rgba(244, 132, 31, 0.25);
     }
 
     .brand-name {
@@ -119,13 +120,13 @@
       border-color: var(--brand-orange);
     }
 
-    /* Gradient Button */
+    /* Primary Button */
     .btn-submit {
       width: 100%;
       padding: 14px;
       border: none;
       border-radius: 14px;
-      background: linear-gradient(90deg, #f4841f, #d9381e);
+      background: linear-gradient(90deg, var(--brand-orange), var(--brand-red));
       color: #ffffff;
       font-size: 1rem;
       font-weight: 700;
@@ -139,7 +140,7 @@
       cursor: not-allowed;
     }
 
-    /* Alert Banner */
+    /* Status Banner */
     .status-alert {
       margin-top: 16px;
       padding: 14px;
@@ -162,7 +163,6 @@
       color: var(--success-text);
     }
 
-    /* Bottom Link to Separate Signup Page */
     .toggle-footer {
       margin-top: 24px;
       text-align: center;
@@ -180,7 +180,6 @@
 <body>
 
   <div class="auth-card">
-    <!-- Datahub Brand -->
     <div class="brand">
       <div class="brand-icon">D</div>
       <div class="brand-name">Datahub</div>
