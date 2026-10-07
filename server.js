@@ -4,25 +4,26 @@ const cors = require('cors');
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors()); // Allows frontend on GitHub Pages to call this backend
 
+// Secret Token loaded from Render Environment Variable
 const EASY_ACCESS_TOKEN = process.env.EASY_ACCESS_TOKEN;
 const BASE_URL = 'https://easyaccess.com.ng/api/live/v1';
 
-// Your profit margin percentage
-const PROFIT_MARGIN = 0.12; // 12%
+// Your profit margin percentage (12%)
+const PROFIT_MARGIN = 0.12;
 
+// Request Headers helper
 const getHeaders = () => ({
   'Authorization': `Bearer ${EASY_ACCESS_TOKEN}`,
   'Cache-Control': 'no-cache',
   'Content-Type': 'application/json'
 });
 
-// Helper function to calculate selling price
+// Helper function to calculate selling price (Base + 12%)
 function addMarkup(basePrice) {
   const original = parseFloat(basePrice);
   if (isNaN(original)) return basePrice;
-  // Adds 12% markup and rounds up to nearest whole Naira
   return Math.ceil(original * (1 + PROFIT_MARGIN));
 }
 
@@ -34,20 +35,19 @@ app.get('/api/get-plans', async (req, res) => {
       headers: getHeaders()
     });
 
-    const rawData = response.data;
+    const raw = response.data;
+    // Handles array returned directly or nested inside response objects
+    let list = Array.isArray(raw) ? raw : (raw.data || raw[Object.keys(raw)[0]] || []);
 
-    // Apply 12% markup to all plan prices in the response
-    for (let key in rawData) {
-      if (Array.isArray(rawData[key])) {
-        rawData[key] = rawData[key].map(plan => ({
-          ...plan,
-          cost_price: plan.price, // Original Easy Access cost price
-          price: addMarkup(plan.price) // Final price displayed to user (Base + 12%)
-        }));
-      }
+    if (Array.isArray(list)) {
+      list = list.map(plan => ({
+        ...plan,
+        cost_price: plan.price, // Original Easy Access cost
+        price: addMarkup(plan.price) // Final retail price (Base + 12%)
+      }));
     }
 
-    res.json(rawData);
+    res.json({ status: 'success', plans: list });
   } catch (error) {
     res.status(500).json({ status: 'failed', message: 'Error fetching plans' });
   }
@@ -68,7 +68,7 @@ app.post('/api/purchase-data', async (req, res) => {
 
     res.json(response.data);
   } catch (error) {
-    res.status(400).json({ status: 'failed', message: 'Transaction failed' });
+    res.status(400).json({ status: 'failed', message: 'Transaction error' });
   }
 });
 
@@ -103,5 +103,17 @@ app.post('/api/pay-tv', async (req, res) => {
   }
 });
 
+// 5. CHECK WALLET BALANCE
+app.get('/api/wallet-balance', async (req, res) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/wallet-balance`, {
+      headers: getHeaders()
+    });
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ status: 'failed', message: 'Error fetching balance' });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running with 12% profit markup on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running with 12% markup on port ${PORT}`));
