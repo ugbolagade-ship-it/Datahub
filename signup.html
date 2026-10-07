@@ -1,146 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Sign Up — Datahub</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Datahub — Create Account</title>
 
-<!-- Supabase CDN (UMD Standalone Bundle) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <style>
+    :root {
+      --bg: #f5f4fe;
+      --card-bg: #ffffff;
+      --text-dark: #1b1834;
+      --text-muted: #5e5a7a;
+      --input-border: #e6e4f2;
+      --brand-orange: #f4841f;
+      --brand-red: #d9381e;
+      --error-bg: #fce8e6;
+      --error-text: #c5221f;
+      --success-bg: #e6f4ea;
+      --success-text: #137333;
+    }
 
-<style>
-  :root{
-    --ink:#171334; --ink-soft:#4b4768; --violet-deep:#211f3d;
-    --amber:#FFC107; --cream:#f8f7ff; --line:#e7e5f5;
-    --flame-1:#f4841f; --flame-2:#c62b2b; --brand-red:#e0432b;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:system-ui,sans-serif;background:var(--cream);color:var(--ink);
-      min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
-  .card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:36px 30px;
-      max-width:400px;width:100%;box-shadow:0 24px 50px -30px rgba(23,19,52,.25);}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.3rem;color:var(--brand-red);margin-bottom:22px;text-decoration:none;}
-  h1{font-size:1.4rem;color:var(--violet-deep);margin-bottom:6px;}
-  p.sub{color:var(--ink-soft);font-size:.9rem;margin-bottom:24px;}
-  label{display:block;font-size:.82rem;font-weight:600;color:var(--ink-soft);margin:14px 0 6px;}
-  input{width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid var(--line);font-size:.95rem;}
-  input:focus{outline:none;border-color:var(--flame-1);}
-  button{width:100%;margin-top:22px;padding:13px;border:none;border-radius:12px;
-      background:linear-gradient(135deg,var(--flame-1),var(--flame-2));color:#fff;font-weight:700;
-      font-size:.95rem;cursor:pointer;}
-  button:disabled{opacity:.6;cursor:not-allowed;}
-  .msg{margin-top:14px;font-size:.85rem;padding:10px 12px;border-radius:8px;display:none;}
-  .msg.error{background:#fde8e6;color:#a3251d;display:block;}
-  .msg.ok{background:#e8f7ee;color:#1a7a40;display:block;}
-  .foot{text-align:center;margin-top:20px;font-size:.85rem;color:var(--ink-soft);}
-  .foot a{color:var(--flame-2);font-weight:600;text-decoration:none;}
-</style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px 16px; }
+    .auth-card { background: var(--card-bg); width: 100%; max-width: 400px; border-radius: 24px; padding: 32px 28px; box-shadow: 0 10px 30px rgba(27, 24, 52, 0.03); border: 1px solid #f0eef8; }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+    .brand-logo { width: 34px; height: 34px; display: block; }
+    .brand-name { font-size: 1.5rem; font-weight: 800; color: var(--brand-red); letter-spacing: -0.4px; }
+    h2 { font-size: 1.55rem; font-weight: 800; color: var(--text-dark); margin-bottom: 6px; }
+    .subtitle { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 24px; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
+    input { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--input-border); font-size: 0.95rem; outline: none; }
+    input:focus { border-color: var(--brand-orange); }
+    .btn-submit { width: 100%; padding: 14px; border: none; border-radius: 14px; background: linear-gradient(90deg, var(--brand-orange), var(--brand-red)); color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+    .status-alert { margin-top: 16px; padding: 14px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; display: none; }
+    .status-alert.error { display: block; background: var(--error-bg); color: var(--error-text); }
+    .status-alert.success { display: block; background: var(--success-bg); color: var(--success-text); }
+    .toggle-footer { margin-top: 24px; text-align: center; font-size: 0.9rem; color: var(--text-muted); }
+    .toggle-footer a { color: var(--brand-red); font-weight: 700; text-decoration: none; }
+  </style>
 </head>
 <body>
-<div class="card">
-  <a class="brand" href="index.html">
-    <svg width="30" height="30" viewBox="0 0 48 48" fill="none">
-      <path d="M12 8H24C33.9411 8 40 15.1634 40 24C40 32.8366 33.9411 40 24 40H12V8Z" stroke="url(#signupDGrad)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M20 18V30" stroke="url(#signupDGrad)" stroke-width="5" stroke-linecap="round"/>
-      <defs>
-        <linearGradient id="signupDGrad" x1="12" y1="8" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-          <stop stop-color="#f4841f"/>
-          <stop offset="1" stop-color="#c62b2b"/>
-        </linearGradient>
-      </defs>
-    </svg>
-    Datahub
-  </a>
-  <h1>Create your account</h1>
-  <p class="sub">Start reselling cheap, long lasting data today.</p>
 
-  <form id="signupForm">
-    <label for="fullName">Full name</label>
-    <input id="fullName" name="fullName" required />
+  <div class="auth-card">
+    <div class="brand">
+      <svg class="brand-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="dhSignupGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f4841f" />
+            <stop offset="100%" stop-color="#d9381e" />
+          </linearGradient>
+        </defs>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M15 10 C15 4.5 19.5 0 25 0 H50 C77.6 0 100 22.4 100 50 C100 77.6 77.6 100 50 100 H25 C19.5 100 15 95.5 15 90 V10 Z M38 22 H48 C63.5 22 76 34.5 76 50 C76 65.5 63.5 78 48 78 H38 V22 Z" fill="url(#dhSignupGrad)"/>
+        <rect x="43" y="36" width="10" height="28" rx="5" fill="url(#dhSignupGrad)"/>
+      </svg>
+      <span class="brand-name">Datahub</span>
+    </div>
 
-    <label for="email">Email</label>
-    <input id="email" type="email" name="email" required />
+    <h2>Create Account</h2>
+    <p class="subtitle">Sign up to buy data, airtime, and pay bills.</p>
 
-    <label for="phone">Phone number</label>
-    <input id="phone" type="tel" name="phone" placeholder="080..." required />
+    <form id="signupForm" onsubmit="signupUser(event)">
+      <div class="form-group">
+        <label for="signupEmail">Email</label>
+        <input type="email" id="signupEmail" placeholder="yourname@gmail.com" required />
+      </div>
 
-    <label for="password">Password</label>
-    <input id="password" type="password" name="password" minlength="8" required />
+      <div class="form-group">
+        <label for="signupPassword">Password</label>
+        <input type="password" id="signupPassword" placeholder="At least 6 characters" minlength="6" required />
+      </div>
 
-    <button type="submit" id="submitBtn">Create Account</button>
-    <div class="msg" id="msg"></div>
-  </form>
+      <button type="submit" class="btn-submit" id="signupBtn">Create Account</button>
+      <div class="status-alert" id="signupStatus"></div>
+    </form>
 
-  <div class="foot">Already have an account? <a href="login.html">Log in</a></div>
-</div>
+    <div class="toggle-footer">
+      Already registered? <a href="login.html">Log In</a>
+    </div>
+  </div>
 
-<script>
-  // Direct Inline Credentials
-  const SUPABASE_URL = 'https://ykffjitfoswdgnjxlyyc.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrZmZqaXRmb3N3ZGduanhseXljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzMTIwOTIsImV4cCI6MjEwNTg4ODA5Mn0.pkfu6MEPIpE62mkHGeDAN1WgkKVxWgzRPloa4A7rlGI';
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-  let sbClient = null;
+    const firebaseConfig = {
+      apiKey: "AIzaSyDgj3g2-VwCf4oWnETazpxxPvl2vpyl3Mo",
+      authDomain: "datahub-1e310.firebaseapp.com",
+      projectId: "datahub-1e310",
+      storageBucket: "datahub-1e310.firebasestorage.app",
+      messagingSenderId: "560867367131",
+      appId: "1:560867367131:web:70933fcb051cb71fe914fe",
+      measurementId: "G-08C9CELVBK"
+    };
 
-  function getClient() {
-    if (sbClient) return sbClient;
-    if (window.supabase && typeof window.supabase.createClient === 'function') {
-      sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      return sbClient;
-    }
-    return null;
-  }
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-  const form = document.getElementById('signupForm');
-  const msg = document.getElementById('msg');
-  const btn = document.getElementById('submitBtn');
+    window.signupUser = async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('signupBtn');
+      const status = document.getElementById('signupStatus');
+      const email = document.getElementById('signupEmail').value.trim();
+      const password = document.getElementById('signupPassword').value;
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    msg.className = 'msg';
+      btn.disabled = true;
+      btn.textContent = 'Creating Account...';
+      status.className = 'status-alert';
 
-    const client = getClient();
-    if (!client) {
-      msg.className = 'msg error';
-      msg.textContent = 'Connection error: CDN library is still loading or blocked. Check network and refresh.';
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = 'Creating account...';
-
-    const fullName = form.fullName.value.trim();
-    const email = form.email.value.trim();
-    const phone = form.phone.value.trim();
-    const password = form.password.value;
-
-    try {
-      const { data, error } = await client.auth.signUp({
-        email: email,
-        password: password
-      });
-
-      if (error) throw error;
-
-      if (data.user) {
-        const { error: profileError } = await client
-          .from('profiles')
-          .insert([
-            { id: data.user.id, full_name: fullName, phone: phone, balance: 0.00 }
-          ]);
-
-        if (profileError) console.error("Profile sync error:", profileError);
+      try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        status.className = 'status-alert success';
+        status.textContent = 'Account created successfully! Redirecting...';
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 800);
+      } catch (error) {
+        status.className = 'status-alert error';
+        status.textContent = error.message.replace('Firebase: ', '');
+        btn.disabled = false;
+        btn.textContent = 'Create Account';
       }
-
-      msg.className = 'msg ok';
-      msg.textContent = 'Account created successfully! Redirecting...';
-      setTimeout(() => (window.location.href = 'dashboard.html'), 900);
-    } catch (err) {
-      msg.className = 'msg error';
-      msg.textContent = err.message || 'Failed to create account.';
-      btn.disabled = false;
-      btn.textContent = 'Create Account';
-    }
-  });
-</script>
+    };
+  </script>
 </body>
 </html>
