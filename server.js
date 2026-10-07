@@ -36,20 +36,29 @@ app.get('/api/get-plans', async (req, res) => {
     });
 
     const raw = response.data;
-    // Handles array returned directly or nested inside response objects
-    let list = Array.isArray(raw) ? raw : (raw.data || raw[Object.keys(raw)[0]] || []);
+    let list = [];
 
-    if (Array.isArray(list)) {
-      list = list.map(plan => ({
-        ...plan,
-        cost_price: plan.price, // Original Easy Access cost
-        price: addMarkup(plan.price) // Final retail price (Base + 12%)
-      }));
+    // Easy Access returns arrays under dynamic key names like 'MTN', 'GLO', 'DSTV', etc.
+    if (Array.isArray(raw)) {
+      list = raw;
+    } else if (typeof raw === 'object' && raw !== null) {
+      // Find whichever key holds the array of plans
+      const arrayKey = Object.keys(raw).find(k => Array.isArray(raw[k]));
+      if (arrayKey) {
+        list = raw[arrayKey];
+      }
     }
+
+    // Apply 12% markup to every plan
+    list = list.map(plan => ({
+      ...plan,
+      cost_price: plan.price, // Original Easy Access cost
+      price: addMarkup(plan.price) // Final retail price (Base + 12%)
+    }));
 
     res.json({ status: 'success', plans: list });
   } catch (error) {
-    res.status(500).json({ status: 'failed', message: 'Error fetching plans' });
+    res.status(500).json({ status: 'failed', message: 'Error fetching plans', plans: [] });
   }
 });
 
