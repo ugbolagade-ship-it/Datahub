@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Datahub — Web App</title>
+  <title>Datahub — Modern Dashboard</title>
 
   <style>
     :root {
@@ -45,22 +45,28 @@
       margin-bottom: 24px;
     }
     .wallet-card::after { content: ''; position: absolute; right: -30px; bottom: -30px; width: 140px; height: 140px; background: rgba(244, 132, 31, 0.12); border-radius: 50%; blur: 20px; }
-    .wallet-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .wallet-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .wallet-title-group { display: flex; align-items: center; gap: 8px; }
     .wallet-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.75; font-weight: 600; }
-    .user-tag { font-size: 0.75rem; background: rgba(255,255,255,0.12); padding: 4px 10px; border-radius: 20px; word-break: break-all; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .eye-btn { background: none; border: none; cursor: pointer; color: rgba(255, 255, 255, 0.8); display: flex; align-items: center; justify-content: center; padding: 2px; }
+    .eye-btn svg { width: 18px; height: 18px; fill: currentColor; }
+    .user-tag { font-size: 0.75rem; background: rgba(255,255,255,0.12); padding: 4px 10px; border-radius: 20px; word-break: break-all; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .wallet-amount { font-size: 2.3rem; font-weight: 800; margin-bottom: 18px; letter-spacing: -0.5px; }
-    .wallet-actions { display: flex; gap: 10px; }
-    .btn-topup { background: var(--brand-orange); color: #ffffff; border: none; padding: 12px 20px; border-radius: 14px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(244, 132, 31, 0.3); }
-    .btn-resolve { background: rgba(255, 255, 255, 0.12); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); padding: 12px 16px; border-radius: 14px; font-weight: 600; font-size: 0.85rem; cursor: pointer; backdrop-filter: blur(5px); }
+    .wallet-actions { display: flex; gap: 10px; position: relative; z-index: 2; }
+    .btn-topup { background: var(--brand-orange); color: #ffffff; border: none; padding: 12px 20px; border-radius: 14px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(244, 132, 31, 0.3); }
+    .btn-topup svg { width: 16px; height: 16px; fill: currentColor; }
+    .btn-resolve { background: rgba(255, 255, 255, 0.12); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); padding: 12px 16px; border-radius: 14px; font-weight: 600; font-size: 0.85rem; cursor: pointer; backdrop-filter: blur(5px); display: flex; align-items: center; gap: 6px; }
+    .btn-resolve svg { width: 15px; height: 15px; fill: currentColor; }
 
     /* Section Headings */
     .section-head { font-size: 1.05rem; font-weight: 800; color: var(--text-dark); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
 
     /* Quick VTU Grid */
     .vtu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
-    .vtu-item { background: var(--card-bg); border-radius: 18px; padding: 16px 8px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; border: 1px solid rgba(226, 224, 238, 0.6); box-shadow: 0 4px 12px rgba(27, 24, 52, 0.02); transition: transform 0.15s; }
+    .vtu-item { background: var(--card-bg); border-radius: 18px; padding: 16px 8px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; border: 1px solid rgba(226, 224, 238, 0.6); box-shadow: 0 4px 12px rgba(27, 24, 52, 0.02); transition: transform 0.15s; }
     .vtu-item:active { transform: scale(0.95); }
-    .vtu-icon { width: 44px; height: 44px; border-radius: 14px; background: var(--brand-accent); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+    .vtu-icon { width: 44px; height: 44px; border-radius: 14px; background: var(--brand-accent); display: flex; align-items: center; justify-content: center; color: var(--brand-orange); }
+    .vtu-icon svg { width: 22px; height: 22px; fill: currentColor; }
     .vtu-label { font-size: 0.75rem; font-weight: 700; color: var(--text-dark); text-align: center; }
 
     /* Forms Screen */
@@ -82,13 +88,13 @@
     .tx-list { display: flex; flex-direction: column; gap: 10px; }
     .tx-item { background: var(--card-bg); border-radius: 16px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(226, 224, 238, 0.6); }
     .tx-left { display: flex; align-items: center; gap: 12px; }
-    .tx-icon { width: 40px; height: 40px; border-radius: 12px; background: #f4f5fa; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+    .tx-icon { width: 40px; height: 40px; border-radius: 12px; background: #f4f5fa; display: flex; align-items: center; justify-content: center; color: var(--brand-orange); }
+    .tx-icon svg { width: 20px; height: 20px; fill: currentColor; }
     .tx-title { font-weight: 700; font-size: 0.88rem; color: var(--text-dark); }
     .tx-date { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
     .tx-right { text-align: right; }
     .tx-amount { font-weight: 800; font-size: 0.9rem; }
     .tx-amount.debit { color: var(--brand-red); }
-    .tx-amount.credit { color: var(--success-text); }
     .tx-badge { display: inline-block; font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; margin-top: 2px; }
     .tx-badge.success { background: var(--success-bg); color: var(--success-text); }
     .tx-badge.failed { background: var(--error-bg); color: var(--error-text); }
@@ -115,7 +121,8 @@
     .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid var(--input-border); display: flex; justify-content: space-around; padding: 10px 0 14px 0; z-index: 900; }
     .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); font-size: 0.7rem; font-weight: 700; cursor: pointer; border: none; background: none; }
     .nav-btn.active { color: var(--brand-orange); }
-    .nav-icon { font-size: 1.25rem; }
+    .nav-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+    .nav-icon svg { width: 100%; height: 100%; fill: currentColor; }
   </style>
 </head>
 <body>
@@ -144,16 +151,27 @@
       <!-- Wallet Card -->
       <div class="wallet-card">
         <div class="wallet-top">
-          <span class="wallet-title">Available Balance</span>
+          <div class="wallet-title-group">
+            <span class="wallet-title">Available Balance</span>
+            <button class="eye-btn" onclick="toggleBalanceVisibility()" title="Toggle Balance">
+              <svg id="eyeIcon" viewBox="0 0 24 24">
+                <!-- SVG Icon toggled via JS -->
+              </svg>
+            </button>
+          </div>
           <span class="user-tag" id="userEmail">Session loading...</span>
         </div>
+
         <div class="wallet-amount" id="walletBalance">₦0.00</div>
+
         <div class="wallet-actions">
           <button class="btn-topup" onclick="openModal('modalTopup')">
-            <span>+</span> Top Up Wallet
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            Top Up Wallet
           </button>
           <button class="btn-resolve" onclick="openModal('modalSolve')">
-            🔍 Resolve Ref ID
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            Resolve Ref ID
           </button>
         </div>
       </div>
@@ -165,19 +183,30 @@
 
       <div class="vtu-grid">
         <div class="vtu-item" onclick="openService('data')">
-          <div class="vtu-icon">🌐</div>
+          <div class="vtu-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+          </div>
           <span class="vtu-label">Data</span>
         </div>
+
         <div class="vtu-item" onclick="openService('airtime')">
-          <div class="vtu-icon">📞</div>
+          <div class="vtu-icon">
+            <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+          </div>
           <span class="vtu-label">Airtime</span>
         </div>
+
         <div class="vtu-item" onclick="openService('cable')">
-          <div class="vtu-icon">📺</div>
+          <div class="vtu-icon">
+            <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
+          </div>
           <span class="vtu-label">Cable TV</span>
         </div>
+
         <div class="vtu-item" onclick="openService('electricity')">
-          <div class="vtu-icon">⚡</div>
+          <div class="vtu-icon">
+            <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+          </div>
           <span class="vtu-label">Electric</span>
         </div>
       </div>
@@ -188,9 +217,7 @@
         <a href="#" onclick="switchTab('history'); return false;" style="font-size: 0.8rem; color: var(--brand-orange); text-decoration: none; font-weight: 700;">View All</a>
       </div>
 
-      <div id="recentTxList" class="tx-list">
-        <!-- Rendered via JavaScript -->
-      </div>
+      <div id="recentTxList" class="tx-list"></div>
     </div>
 
     <!-- TRANSACTION HISTORY VIEW -->
@@ -198,9 +225,7 @@
       <div class="section-head">
         <span>Transaction History</span>
       </div>
-      <div id="fullTxList" class="tx-list">
-        <!-- Rendered via JavaScript -->
-      </div>
+      <div id="fullTxList" class="tx-list"></div>
     </div>
 
     <!-- SERVICE FORMS SCREEN -->
@@ -326,7 +351,7 @@
         <span class="modal-title">Top Up Wallet</span>
         <button class="btn-close" onclick="closeModal('modalTopup')">✕</button>
       </div>
-      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">Transfer funds to your dedicated virtual bank account below to instantly credit your wallet:</p>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">Transfer funds to your dedicated virtual account to instantly credit your wallet:</p>
 
       <div class="bank-box">
         <div class="bank-row">
@@ -353,7 +378,7 @@
         <span class="modal-title">Resolve Transaction</span>
         <button class="btn-close" onclick="closeModal('modalSolve')">✕</button>
       </div>
-      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">Enter your transaction Reference ID below to re-query its status or request automated refund if failed:</p>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">Enter your transaction Reference ID below to re-query status or resolve issue:</p>
 
       <div class="form-group">
         <label>Reference ID</label>
@@ -368,15 +393,15 @@
   <!-- Bottom Navigation Bar -->
   <div class="bottom-nav">
     <button id="navHome" class="nav-btn active" onclick="switchTab('home')">
-      <span class="nav-icon">🏠</span>
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></div>
       <span>Home</span>
     </button>
     <button id="navHistory" class="nav-btn" onclick="switchTab('history')">
-      <span class="nav-icon">📜</span>
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg></div>
       <span>History</span>
     </button>
     <button class="nav-btn" onclick="openModal('modalTopup')">
-      <span class="nav-icon">💳</span>
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div>
       <span>Top Up</span>
     </button>
   </div>
@@ -419,16 +444,43 @@
     let selectedNetwork = 'MTN';
     let selectedCableCompany = 'dstv';
     let selectedCableCompanyCode = 1;
+    let actualBalance = '0.00';
+    let isBalanceHidden = localStorage.getItem('dh_hide_balance') === 'true';
 
-    // Mock Local Transactions Engine
+    // SVG Eye Path Strings
+    const SVG_EYE_OPEN = `<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>`;
+    const SVG_EYE_CLOSED = `<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.17c0-1.66-1.34-3-3-3l-.17.02z"/>`;
+
+    // Local Storage Mock Transactions
     let transactionHistory = JSON.parse(localStorage.getItem('dh_transactions') || '[]');
+
+    // BALANCE DISPLAY TOGGLE LOGIC
+    window.updateBalanceDisplay = function() {
+      const displayElem = document.getElementById('walletBalance');
+      const eyeIconElem = document.getElementById('eyeIcon');
+
+      if (isBalanceHidden) {
+        displayElem.textContent = '••••••••';
+        eyeIconElem.innerHTML = SVG_EYE_CLOSED;
+      } else {
+        displayElem.textContent = `₦${parseFloat(actualBalance).toLocaleString('en-NG')}`;
+        eyeIconElem.innerHTML = SVG_EYE_OPEN;
+      }
+    };
+
+    window.toggleBalanceVisibility = function() {
+      isBalanceHidden = !isBalanceHidden;
+      localStorage.setItem('dh_hide_balance', isBalanceHidden);
+      window.updateBalanceDisplay();
+    };
 
     window.fetchWalletBalance = async function() {
       try {
         const res = await fetch(`${BACKEND_URL}/api/wallet-balance`);
         const data = await res.json();
         if (data.balance) {
-          document.getElementById('walletBalance').textContent = `₦${parseFloat(data.balance).toLocaleString('en-NG')}`;
+          actualBalance = data.balance;
+          window.updateBalanceDisplay();
         }
       } catch (err) {
         console.error("Balance fetch failed", err);
@@ -553,10 +605,12 @@
         return;
       }
 
+      const svgData = `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>`;
+
       const html = transactionHistory.map(tx => `
         <div class="tx-item">
           <div class="tx-left">
-            <div class="tx-icon">${tx.type === 'Data' ? '🌐' : tx.type === 'Cable' ? '📺' : '⚡'}</div>
+            <div class="tx-icon">${svgData}</div>
             <div>
               <div class="tx-title">${tx.title}</div>
               <div class="tx-date">Ref: ${tx.ref} • ${tx.date}</div>
@@ -572,7 +626,7 @@
       recentContainer.innerHTML = transactionHistory.slice(0, 3).map(tx => `
         <div class="tx-item">
           <div class="tx-left">
-            <div class="tx-icon">${tx.type === 'Data' ? '🌐' : '📱'}</div>
+            <div class="tx-icon">${svgData}</div>
             <div>
               <div class="tx-title">${tx.title}</div>
               <div class="tx-date">${tx.date}</div>
@@ -643,7 +697,6 @@
         const resData = await response.json();
         const isSuccess = resData.code === 200 || (resData.status && resData.status.toLowerCase() === 'success');
 
-        // Save transaction history locally
         transactionHistory.unshift({
           type: 'Data',
           title: `${selectedNetwork} Data — ${payload.mobileno}`,
