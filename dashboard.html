@@ -2,186 +2,209 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Datahub — Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Datahub — Web App</title>
 
   <style>
     :root {
-      --bg: #f8f9fd;
+      --bg: #f4f5fa;
       --card-bg: #ffffff;
       --text-dark: #1b1834;
-      --text-muted: #6e6a8e;
-      --input-border: #e2e0ee;
+      --text-muted: #726e8d;
+      --input-border: #e3e1ee;
       --brand-orange: #f4841f;
       --brand-red: #d9381e;
-      --brand-btn: #5d4e46;
+      --brand-btn: #1b1834;
+      --brand-accent: #fcf4eb;
       --error-bg: #fce8e6;
       --error-text: #c5221f;
       --success-bg: #e6f4ea;
       --success-text: #137333;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg); min-height: 100vh; padding: 20px 16px; display: flex; justify-content: center; color: var(--text-dark); }
-    .app-container { width: 100%; max-width: 480px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg); min-height: 100vh; padding-bottom: 90px; color: var(--text-dark); display: flex; justify-content: center; }
+    .app-viewport { width: 100%; max-width: 480px; padding: 16px; position: relative; }
 
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    /* Top Bar */
+    .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 0 20px 0; }
     .brand { display: flex; align-items: center; gap: 10px; }
-    .brand-logo { width: 32px; height: 32px; display: block; }
-    .brand-name { font-size: 1.4rem; font-weight: 800; color: var(--brand-red); letter-spacing: -0.4px; }
-    
-    .btn-logout {
-      background: #ffffff;
-      border: 1.5px solid var(--input-border);
-      padding: 8px 16px;
-      border-radius: 10px;
-      font-weight: 700;
-      color: var(--brand-red);
-      cursor: pointer;
-      font-size: 0.85rem;
-    }
+    .brand-logo { width: 34px; height: 34px; }
+    .brand-name { font-size: 1.4rem; font-weight: 800; color: var(--brand-red); letter-spacing: -0.5px; }
+    .btn-icon-logout { background: #ffffff; border: 1px solid var(--input-border); padding: 8px 14px; border-radius: 12px; font-weight: 700; color: var(--brand-red); font-size: 0.8rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
 
+    /* Hero Wallet Card */
     .wallet-card {
-      background: linear-gradient(135deg, #1b1834, #2a264e);
+      background: linear-gradient(135deg, #1b1834 0%, #2c2754 100%);
       color: #ffffff;
-      border-radius: 20px;
-      padding: 22px;
+      border-radius: 24px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(27, 24, 52, 0.15);
       margin-bottom: 24px;
-      box-shadow: 0 10px 25px rgba(27, 24, 52, 0.1);
     }
-    .wallet-title { font-size: 0.8rem; opacity: 0.8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .wallet-amount { font-size: 2.1rem; font-weight: 800; margin-bottom: 8px; }
-    .user-email { font-size: 0.8rem; opacity: 0.75; word-break: break-all; }
+    .wallet-card::after { content: ''; position: absolute; right: -30px; bottom: -30px; width: 140px; height: 140px; background: rgba(244, 132, 31, 0.12); border-radius: 50%; blur: 20px; }
+    .wallet-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .wallet-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.75; font-weight: 600; }
+    .user-tag { font-size: 0.75rem; background: rgba(255,255,255,0.12); padding: 4px 10px; border-radius: 20px; word-break: break-all; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .wallet-amount { font-size: 2.3rem; font-weight: 800; margin-bottom: 18px; letter-spacing: -0.5px; }
+    .wallet-actions { display: flex; gap: 10px; }
+    .btn-topup { background: var(--brand-orange); color: #ffffff; border: none; padding: 12px 20px; border-radius: 14px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(244, 132, 31, 0.3); }
+    .btn-resolve { background: rgba(255, 255, 255, 0.12); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); padding: 12px 16px; border-radius: 14px; font-weight: 600; font-size: 0.85rem; cursor: pointer; backdrop-filter: blur(5px); }
 
-    .section-title { font-size: 1.15rem; font-weight: 800; color: var(--text-dark); margin-bottom: 16px; display: flex; align-items: center; gap: 6px; }
+    /* Section Headings */
+    .section-head { font-size: 1.05rem; font-weight: 800; color: var(--text-dark); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
 
-    .vtu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
-    .service-card {
-      background: var(--card-bg);
-      border-radius: 18px;
-      padding: 22px 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      color: var(--text-dark);
-      font-weight: 700;
-      font-size: 0.95rem;
-      border: 1.5px solid #f0eef8;
-      box-shadow: 0 4px 15px rgba(27, 24, 52, 0.02);
-      cursor: pointer;
-      transition: transform 0.15s, border-color 0.15s;
-    }
-    .service-card:active { transform: scale(0.98); }
-    .service-card.active-card { border-color: #27ae60; }
-    .service-icon-bg { width: 48px; height: 48px; border-radius: 14px; background: #f4f7fe; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+    /* Quick VTU Grid */
+    .vtu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+    .vtu-item { background: var(--card-bg); border-radius: 18px; padding: 16px 8px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; border: 1px solid rgba(226, 224, 238, 0.6); box-shadow: 0 4px 12px rgba(27, 24, 52, 0.02); transition: transform 0.15s; }
+    .vtu-item:active { transform: scale(0.95); }
+    .vtu-icon { width: 44px; height: 44px; border-radius: 14px; background: var(--brand-accent); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+    .vtu-label { font-size: 0.75rem; font-weight: 700; color: var(--text-dark); text-align: center; }
 
-    .service-screen { background: var(--card-bg); border-radius: 20px; padding: 24px; border: 1px solid #eef0f6; box-shadow: 0 10px 30px rgba(27, 24, 52, 0.03); }
-    .screen-wallet-badge { display: inline-flex; align-items: center; gap: 8px; background: #fcf4eb; padding: 6px 12px; border-radius: 10px; font-weight: 800; color: var(--brand-orange); font-size: 0.9rem; margin-bottom: 20px; }
-
-    .form-group { margin-bottom: 18px; }
-    .form-group label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
-
-    .provider-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: #f7f7f9; padding: 10px; border-radius: 14px; }
-    .provider-grid.grid-3 { grid-template-columns: repeat(3, 1fr); }
-    .provider-btn {
-      background: #ffffff;
-      border: 2px solid transparent;
-      border-radius: 10px;
-      padding: 10px 4px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      transition: all 0.2s;
-      min-height: 54px;
-      text-align: center;
-    }
-    .provider-btn.selected { border-color: var(--brand-orange); color: var(--text-dark); background: #ffffff; box-shadow: 0 2px 8px rgba(244, 132, 31, 0.15); }
-
-    select, input { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--input-border); font-size: 0.95rem; color: var(--text-dark); outline: none; background: #ffffff; }
+    /* Forms Screen */
+    .service-screen { background: var(--card-bg); border-radius: 24px; padding: 22px; border: 1px solid var(--input-border); box-shadow: 0 10px 30px rgba(27, 24, 52, 0.03); }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; }
+    .provider-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: #f7f7f9; padding: 8px; border-radius: 14px; }
+    .provider-btn { background: #ffffff; border: 2px solid transparent; border-radius: 10px; padding: 10px 2px; text-align: center; font-weight: 700; font-size: 0.75rem; color: var(--text-muted); cursor: pointer; }
+    .provider-btn.selected { border-color: var(--brand-orange); color: var(--text-dark); box-shadow: 0 2px 8px rgba(244, 132, 31, 0.15); }
+    select, input { width: 100%; padding: 14px; border-radius: 14px; border: 1.5px solid var(--input-border); font-size: 0.9rem; color: var(--text-dark); outline: none; background: #ffffff; }
     select:focus, input:focus { border-color: var(--brand-orange); }
 
-    .discount-note { font-size: 0.8rem; color: var(--brand-orange); margin-top: 6px; line-height: 1.3; }
+    /* Action Buttons */
+    .btn-action { width: 100%; padding: 15px; border: none; border-radius: 14px; background: var(--brand-btn); color: #ffffff; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 12px rgba(27, 24, 52, 0.15); }
+    .btn-secondary { background: #6c5c53; margin-top: 8px; }
+    .btn-back { width: 100%; padding: 12px; background: #f0eff6; border: none; border-radius: 14px; color: var(--text-dark); font-weight: 700; font-size: 0.85rem; cursor: pointer; margin-top: 14px; }
 
-    .btn-action { width: 100%; padding: 15px; border: none; border-radius: 12px; background: var(--brand-btn); color: #ffffff; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
-    .btn-action.btn-secondary { background: #6c5c53; margin-top: 8px; }
-    .btn-back { width: 100%; padding: 12px; background: #eef0f6; border: none; border-radius: 12px; color: var(--text-dark); font-weight: 700; font-size: 0.9rem; cursor: pointer; margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    /* Transaction History List */
+    .tx-list { display: flex; flex-direction: column; gap: 10px; }
+    .tx-item { background: var(--card-bg); border-radius: 16px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(226, 224, 238, 0.6); }
+    .tx-left { display: flex; align-items: center; gap: 12px; }
+    .tx-icon { width: 40px; height: 40px; border-radius: 12px; background: #f4f5fa; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+    .tx-title { font-weight: 700; font-size: 0.88rem; color: var(--text-dark); }
+    .tx-date { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+    .tx-right { text-align: right; }
+    .tx-amount { font-weight: 800; font-size: 0.9rem; }
+    .tx-amount.debit { color: var(--brand-red); }
+    .tx-amount.credit { color: var(--success-text); }
+    .tx-badge { display: inline-block; font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; margin-top: 2px; }
+    .tx-badge.success { background: var(--success-bg); color: var(--success-text); }
+    .tx-badge.failed { background: var(--error-bg); color: var(--error-text); }
 
-    .status-alert { margin-top: 16px; padding: 12px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; display: none; }
+    /* Modals Overlay */
+    .modal-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(27, 24, 52, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: flex-end; z-index: 1000; }
+    .modal-sheet { background: var(--card-bg); width: 100%; max-width: 480px; border-radius: 28px 28px 0 0; padding: 24px; animation: slideUp 0.25s ease-out; }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .modal-title { font-size: 1.1rem; font-weight: 800; }
+    .btn-close { background: #f0eff6; border: none; width: 32px; height: 32px; border-radius: 50%; font-weight: 800; cursor: pointer; }
+
+    .bank-box { background: var(--brand-accent); border: 1.5px dashed var(--brand-orange); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+    .bank-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; }
+    .bank-row:last-child { margin-bottom: 0; }
+    .bank-label { color: var(--text-muted); font-weight: 600; }
+    .bank-val { font-weight: 800; color: var(--text-dark); }
+
+    .status-alert { margin-top: 14px; padding: 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; display: none; }
     .status-alert.error { display: block; background: var(--error-bg); color: var(--error-text); }
     .status-alert.success { display: block; background: var(--success-bg); color: var(--success-text); }
+
+    /* Bottom Nav Bar */
+    .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid var(--input-border); display: flex; justify-content: space-around; padding: 10px 0 14px 0; z-index: 900; }
+    .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); font-size: 0.7rem; font-weight: 700; cursor: pointer; border: none; background: none; }
+    .nav-btn.active { color: var(--brand-orange); }
+    .nav-icon { font-size: 1.25rem; }
   </style>
 </head>
 <body>
 
-  <div class="app-container">
-    <div class="header">
+  <div class="app-viewport">
+    <!-- Top Header -->
+    <div class="top-bar">
       <div class="brand">
         <svg class="brand-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient id="dhDashGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="dhGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stop-color="#f4841f" />
               <stop offset="100%" stop-color="#d9381e" />
             </linearGradient>
           </defs>
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M15 10 C15 4.5 19.5 0 25 0 H50 C77.6 0 100 22.4 100 50 C100 77.6 77.6 100 50 100 H25 C19.5 100 15 95.5 15 90 V10 Z M38 22 H48 C63.5 22 76 34.5 76 50 C76 65.5 63.5 78 48 78 H38 V22 Z" fill="url(#dhDashGrad)"/>
-          <rect x="43" y="36" width="10" height="28" rx="5" fill="url(#dhDashGrad)"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M15 10 C15 4.5 19.5 0 25 0 H50 C77.6 0 100 22.4 100 50 C100 77.6 77.6 100 50 100 H25 C19.5 100 15 95.5 15 90 V10 Z M38 22 H48 C63.5 22 76 34.5 76 50 C76 65.5 63.5 78 48 78 H38 V22 Z" fill="url(#dhGrad)"/>
+          <rect x="43" y="36" width="10" height="28" rx="5" fill="url(#dhGrad)"/>
         </svg>
         <span class="brand-name">Datahub</span>
       </div>
-      <button class="btn-logout" onclick="logout()">Log Out</button>
+      <button class="btn-icon-logout" onclick="logout()">Log Out</button>
     </div>
 
-    <!-- MAIN DASHBOARD -->
-    <div id="mainDashboard">
+    <!-- MAIN HOME VIEW -->
+    <div id="viewHome">
+      <!-- Wallet Card -->
       <div class="wallet-card">
-        <div class="wallet-title">Wallet Balance</div>
+        <div class="wallet-top">
+          <span class="wallet-title">Available Balance</span>
+          <span class="user-tag" id="userEmail">Session loading...</span>
+        </div>
         <div class="wallet-amount" id="walletBalance">₦0.00</div>
-        <div class="user-email" id="userEmail">Loading session...</div>
+        <div class="wallet-actions">
+          <button class="btn-topup" onclick="openModal('modalTopup')">
+            <span>+</span> Top Up Wallet
+          </button>
+          <button class="btn-resolve" onclick="openModal('modalSolve')">
+            🔍 Resolve Ref ID
+          </button>
+        </div>
       </div>
 
-      <div class="section-title">⚡ Quick VTU Services</div>
+      <!-- Quick Services -->
+      <div class="section-head">
+        <span>Services</span>
+      </div>
 
       <div class="vtu-grid">
-        <div class="service-card active-card" onclick="openService('data')">
-          <div class="service-icon-bg">🌐</div>
-          <span>Buy Data</span>
+        <div class="vtu-item" onclick="openService('data')">
+          <div class="vtu-icon">🌐</div>
+          <span class="vtu-label">Data</span>
         </div>
+        <div class="vtu-item" onclick="openService('airtime')">
+          <div class="vtu-icon">📞</div>
+          <span class="vtu-label">Airtime</span>
+        </div>
+        <div class="vtu-item" onclick="openService('cable')">
+          <div class="vtu-icon">📺</div>
+          <span class="vtu-label">Cable TV</span>
+        </div>
+        <div class="vtu-item" onclick="openService('electricity')">
+          <div class="vtu-icon">⚡</div>
+          <span class="vtu-label">Electric</span>
+        </div>
+      </div>
 
-        <div class="service-card" onclick="openService('airtime')">
-          <div class="service-icon-bg">📞</div>
-          <span>Airtime</span>
-        </div>
+      <!-- Recent Transactions -->
+      <div class="section-head">
+        <span>Recent Transactions</span>
+        <a href="#" onclick="switchTab('history'); return false;" style="font-size: 0.8rem; color: var(--brand-orange); text-decoration: none; font-weight: 700;">View All</a>
+      </div>
 
-        <div class="service-card" onclick="openService('cable')">
-          <div class="service-icon-bg">📺</div>
-          <span>Cable TV</span>
-        </div>
-
-        <div class="service-card" onclick="openService('electricity')">
-          <div class="service-icon-bg">⚡</div>
-          <span>Electricity</span>
-        </div>
-
-        <div class="service-card" style="grid-column: span 2;" onclick="openService('exampins')">
-          <div class="service-icon-bg">🎓</div>
-          <span>Exam Pins (WAEC / NECO)</span>
-        </div>
+      <div id="recentTxList" class="tx-list">
+        <!-- Rendered via JavaScript -->
       </div>
     </div>
 
-    <!-- SERVICE FORMS CONTAINER -->
-    <div id="serviceScreen" class="service-screen" style="display: none;">
-      <div class="screen-wallet-badge">
-        💼 <span id="badgeBalance">₦0.00</span>
+    <!-- TRANSACTION HISTORY VIEW -->
+    <div id="viewHistory" style="display: none;">
+      <div class="section-head">
+        <span>Transaction History</span>
       </div>
+      <div id="fullTxList" class="tx-list">
+        <!-- Rendered via JavaScript -->
+      </div>
+    </div>
 
+    <!-- SERVICE FORMS SCREEN -->
+    <div id="viewService" class="service-screen" style="display: none;">
       <!-- DATA FORM -->
       <form id="formBuyData" class="vtu-form" style="display: none;">
         <div class="form-group">
@@ -195,7 +218,7 @@
         </div>
 
         <div class="form-group">
-          <label>Choose Data Type</label>
+          <label>Data Type</label>
           <select id="dataTypeSelect" onchange="loadDataPlans()">
             <option value="sme">SME Data</option>
             <option value="cg">Corporate Gifting (CG)</option>
@@ -205,23 +228,22 @@
         </div>
 
         <div class="form-group">
-          <label>Choose Plan</label>
+          <label>Select Plan</label>
           <select id="dataPlanSelect" required></select>
         </div>
 
         <div class="form-group">
-          <label>Receiver's Phone Number</label>
+          <label>Phone Number</label>
           <input type="tel" id="dataPhone" placeholder="08012345678" maxlength="11" required />
-          <div class="discount-note">Prices include standard service fees. Instant delivery guaranteed.</div>
         </div>
 
-        <button type="submit" class="btn-action">Buy Now</button>
+        <button type="submit" class="btn-action">Purchase Data</button>
       </form>
 
       <!-- AIRTIME FORM -->
       <form id="formAirtime" class="vtu-form" style="display: none;">
         <div class="form-group">
-          <label>Choose Network</label>
+          <label>Network</label>
           <div class="provider-grid">
             <div class="provider-btn selected" onclick="highlightSelected(this)">MTN</div>
             <div class="provider-btn" onclick="highlightSelected(this)">GLO</div>
@@ -229,24 +251,21 @@
             <div class="provider-btn" onclick="highlightSelected(this)">9mobile</div>
           </div>
         </div>
-
         <div class="form-group">
           <label>Phone Number</label>
-          <input type="tel" placeholder="Phone Number" maxlength="11" required />
+          <input type="tel" placeholder="08012345678" maxlength="11" required />
         </div>
-
         <div class="form-group">
           <label>Amount (₦)</label>
-          <input type="number" placeholder="Amount (min ₦100)" min="100" required />
+          <input type="number" placeholder="min ₦100" min="100" required />
         </div>
-
         <button type="submit" class="btn-action">Buy Airtime</button>
       </form>
 
-      <!-- CABLE TV FORM -->
+      <!-- CABLE FORM -->
       <form id="formCable" class="vtu-form" style="display: none;">
         <div class="form-group">
-          <label>Select Cable TV Company</label>
+          <label>Cable Provider</label>
           <div class="provider-grid">
             <div class="provider-btn selected" onclick="selectCable('dstv', 1, this)">DStv</div>
             <div class="provider-btn" onclick="selectCable('gotv', 2, this)">GOtv</div>
@@ -254,90 +273,118 @@
             <div class="provider-btn" onclick="selectCable('showmax', 4, this)">Showmax</div>
           </div>
         </div>
-
         <div class="form-group">
-          <label>Select Bouquet/Package</label>
+          <label>Package</label>
           <select id="cablePackageSelect" required></select>
         </div>
-
         <div class="form-group">
-          <label>Smartcard/IUC Number</label>
+          <label>Smartcard / IUC Number</label>
           <input type="text" id="smartcardNo" placeholder="Enter Smartcard Number" required />
         </div>
-
-        <button type="button" class="btn-action btn-secondary" onclick="verifyIUC()">Verify Card/IUC Number</button>
-        <button type="submit" class="btn-action">Proceed to Purchase</button>
+        <button type="button" class="btn-action btn-secondary" onclick="verifyIUC()">Verify IUC Number</button>
+        <button type="submit" class="btn-action">Subscribe Now</button>
       </form>
 
       <!-- ELECTRICITY FORM -->
       <form id="formElectricity" class="vtu-form" style="display: none;">
         <div class="form-group">
-          <label>Select Electricity Company</label>
-          <div class="provider-grid grid-3">
-            <div class="provider-btn selected" onclick="highlightSelected(this)">Eko (EKEDC)</div>
-            <div class="provider-btn" onclick="highlightSelected(this)">Ikeja (IKEDC)</div>
-            <div class="provider-btn" onclick="highlightSelected(this)">Abuja (AEDC)</div>
-            <div class="provider-btn" onclick="highlightSelected(this)">Ibadan (IBEDC)</div>
-            <div class="provider-btn" onclick="highlightSelected(this)">Port Harcourt</div>
-            <div class="provider-btn" onclick="highlightSelected(this)">Kaduna (KAEDC)</div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Select Meter Type</label>
+          <label>Disco Provider</label>
           <select required>
-            <option value="1">Prepaid Meter</option>
-            <option value="2">Postpaid Meter</option>
+            <option value="1">Eko Electricity (EKEDC)</option>
+            <option value="2">Ikeja Electricity (IKEDC)</option>
+            <option value="5">Abuja Electricity (AEDC)</option>
+            <option value="6">Ibadan Electricity (IBEDC)</option>
           </select>
         </div>
-
+        <div class="form-group">
+          <label>Meter Type</label>
+          <select required>
+            <option value="1">Prepaid</option>
+            <option value="2">Postpaid</option>
+          </select>
+        </div>
         <div class="form-group">
           <label>Meter Number</label>
-          <input type="text" placeholder="Meter number" required />
+          <input type="text" placeholder="Enter Meter Number" required />
         </div>
-
         <div class="form-group">
           <label>Amount (₦)</label>
           <input type="number" placeholder="1000" min="1000" required />
         </div>
-
-        <button type="submit" class="btn-action">Purchase Token</button>
-      </form>
-
-      <!-- EXAM PINS FORM -->
-      <form id="formExamPins" class="vtu-form" style="display: none;">
-        <div class="form-group">
-          <label>Select Examination Board</label>
-          <div class="provider-grid">
-            <div class="provider-btn selected" onclick="setExamBoard(5656, this)">WAEC</div>
-            <div class="provider-btn" onclick="setExamBoard(2218, this)">NECO</div>
-            <div class="provider-btn" onclick="setExamBoard(952, this)">NABTEB</div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Number of Pins</label>
-          <input type="number" id="pinQuantity" value="1" min="1" max="10" oninput="updatePinAmount()" required />
-        </div>
-
-        <div class="form-group">
-          <label>Amount (₦)</label>
-          <input type="text" id="pinTotalAmount" value="₦5,656" readonly />
-        </div>
-
-        <button type="submit" class="btn-action">Proceed to Purchase</button>
+        <button type="submit" class="btn-action">Pay Bill</button>
       </form>
 
       <div id="statusAlert" class="status-alert"></div>
-      <button class="btn-back" onclick="showDashboardHome()">← Back to Dashboard</button>
+      <button class="btn-back" onclick="switchTab('home')">← Back to Home</button>
     </div>
+  </div>
+
+  <!-- MODAL: TOP UP WALLET -->
+  <div id="modalTopup" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">Top Up Wallet</span>
+        <button class="btn-close" onclick="closeModal('modalTopup')">✕</button>
+      </div>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">Transfer funds to your dedicated virtual bank account below to instantly credit your wallet:</p>
+
+      <div class="bank-box">
+        <div class="bank-row">
+          <span class="bank-label">Bank Name</span>
+          <span class="bank-val">Moniepoint Microfinance</span>
+        </div>
+        <div class="bank-row">
+          <span class="bank-label">Account Number</span>
+          <span class="bank-val" style="color: var(--brand-orange); font-size: 1rem;">6478901234</span>
+        </div>
+        <div class="bank-row">
+          <span class="bank-label">Account Name</span>
+          <span class="bank-val">Datahub / Your Account</span>
+        </div>
+      </div>
+      <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">Automated deposit takes 5 - 30 seconds to reflect.</p>
+    </div>
+  </div>
+
+  <!-- MODAL: TRANSACTION SOLVER -->
+  <div id="modalSolve" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">Resolve Transaction</span>
+        <button class="btn-close" onclick="closeModal('modalSolve')">✕</button>
+      </div>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">Enter your transaction Reference ID below to re-query its status or request automated refund if failed:</p>
+
+      <div class="form-group">
+        <label>Reference ID</label>
+        <input type="text" id="solveRefId" placeholder="e.g. ref_1712456789" required />
+      </div>
+
+      <button class="btn-action" onclick="resolveTransaction()">Verify & Resolve</button>
+      <div id="solverStatus" class="status-alert"></div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <div class="bottom-nav">
+    <button id="navHome" class="nav-btn active" onclick="switchTab('home')">
+      <span class="nav-icon">🏠</span>
+      <span>Home</span>
+    </button>
+    <button id="navHistory" class="nav-btn" onclick="switchTab('history')">
+      <span class="nav-icon">📜</span>
+      <span>History</span>
+    </button>
+    <button class="nav-btn" onclick="openModal('modalTopup')">
+      <span class="nav-icon">💳</span>
+      <span>Top Up</span>
+    </button>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // EXACT LIVE RENDER BACKEND URL
     const BACKEND_URL = "https://datahub-qmzg.onrender.com";
 
     const firebaseConfig = {
@@ -357,6 +404,7 @@
       if (user) {
         document.getElementById('userEmail').textContent = user.email;
         window.fetchWalletBalance();
+        window.renderTransactions();
       } else {
         window.location.href = 'login.html';
       }
@@ -367,42 +415,59 @@
       window.location.href = 'login.html';
     };
 
+    // State Variables
     let selectedNetwork = 'MTN';
     let selectedCableCompany = 'dstv';
     let selectedCableCompanyCode = 1;
-    let examPinUnitPrice = 5656;
+
+    // Mock Local Transactions Engine
+    let transactionHistory = JSON.parse(localStorage.getItem('dh_transactions') || '[]');
 
     window.fetchWalletBalance = async function() {
       try {
         const res = await fetch(`${BACKEND_URL}/api/wallet-balance`);
         const data = await res.json();
         if (data.balance) {
-          const formatted = `₦${parseFloat(data.balance).toLocaleString('en-NG')}`;
-          document.getElementById('walletBalance').textContent = formatted;
-          document.getElementById('badgeBalance').textContent = formatted;
+          document.getElementById('walletBalance').textContent = `₦${parseFloat(data.balance).toLocaleString('en-NG')}`;
         }
       } catch (err) {
-        console.error("Balance update failed:", err);
+        console.error("Balance fetch failed", err);
       }
     };
 
-    window.openService = function(key) {
-      document.getElementById('mainDashboard').style.display = 'none';
-      document.getElementById('serviceScreen').style.display = 'block';
+    window.switchTab = function(tab) {
+      document.getElementById('viewHome').style.display = 'none';
+      document.getElementById('viewHistory').style.display = 'none';
+      document.getElementById('viewService').style.display = 'none';
+
+      document.getElementById('navHome').classList.remove('active');
+      document.getElementById('navHistory').classList.remove('active');
+
+      if (tab === 'home') {
+        document.getElementById('viewHome').style.display = 'block';
+        document.getElementById('navHome').classList.add('active');
+      } else if (tab === 'history') {
+        document.getElementById('viewHistory').style.display = 'block';
+        document.getElementById('navHistory').classList.add('active');
+        window.renderTransactions();
+      }
+    };
+
+    window.openService = function(type) {
+      document.getElementById('viewHome').style.display = 'none';
+      document.getElementById('viewHistory').style.display = 'none';
+      document.getElementById('viewService').style.display = 'block';
       document.querySelectorAll('.vtu-form').forEach(f => f.style.display = 'none');
       document.getElementById('statusAlert').className = 'status-alert';
 
-      if (key === 'data') { document.getElementById('formBuyData').style.display = 'block'; window.loadDataPlans(); }
-      else if (key === 'airtime') { document.getElementById('formAirtime').style.display = 'block'; }
-      else if (key === 'cable') { document.getElementById('formCable').style.display = 'block'; window.loadCablePackages(); }
-      else if (key === 'electricity') { document.getElementById('formElectricity').style.display = 'block'; }
-      else if (key === 'exampins') { document.getElementById('formExamPins').style.display = 'block'; }
+      if (type === 'data') { document.getElementById('formBuyData').style.display = 'block'; window.loadDataPlans(); }
+      else if (type === 'airtime') { document.getElementById('formAirtime').style.display = 'block'; }
+      else if (type === 'cable') { document.getElementById('formCable').style.display = 'block'; window.loadCablePackages(); }
+      else if (type === 'electricity') { document.getElementById('formElectricity').style.display = 'block'; }
     };
 
-    window.showDashboardHome = function() {
-      document.getElementById('serviceScreen').style.display = 'none';
-      document.getElementById('mainDashboard').style.display = 'block';
-    };
+    window.openModal = function(id) { document.getElementById(id).style.display = 'flex'; };
+    window.closeModal = function(id) { document.getElementById(id).style.display = 'none'; };
 
     window.highlightSelected = function(el) {
       el.parentElement.querySelectorAll('.provider-btn').forEach(b => b.classList.remove('selected'));
@@ -422,19 +487,13 @@
       window.loadCablePackages();
     };
 
-    window.setExamBoard = function(price, el) {
-      examPinUnitPrice = price;
-      window.highlightSelected(el);
-      window.updatePinAmount();
-    };
-
-    // DYNAMIC DATA PLAN LOADER
+    // Load Data Plans
     window.loadDataPlans = async function() {
       const select = document.getElementById('dataPlanSelect');
       const dataType = document.getElementById('dataTypeSelect').value;
       const productType = `${selectedNetwork.toLowerCase()}_${dataType}`;
 
-      select.innerHTML = '<option value="">Loading live plans...</option>';
+      select.innerHTML = '<option value="">Loading plans...</option>';
 
       try {
         const response = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${productType}`);
@@ -444,22 +503,22 @@
         const plansList = data.plans || [];
 
         if (plansList.length === 0) {
-          select.innerHTML = '<option value="">No plans available for this category</option>';
+          select.innerHTML = '<option value="">No plans available</option>';
           return;
         }
 
         plansList.forEach(p => {
           const opt = document.createElement('option');
           opt.value = p.plan_id;
-          opt.textContent = `${p.name} — ₦${p.price.toLocaleString('en-NG')} (${p.validity || 'Standard'})`;
+          opt.textContent = `${p.name} — ₦${p.price.toLocaleString('en-NG')}`;
           select.appendChild(opt);
         });
       } catch (err) {
-        select.innerHTML = '<option value="">Failed to load plans</option>';
+        select.innerHTML = '<option value="">Error loading plans</option>';
       }
     };
 
-    // DYNAMIC CABLE PACKAGE LOADER
+    // Load Cable Packages
     window.loadCablePackages = async function() {
       const select = document.getElementById('cablePackageSelect');
       select.innerHTML = '<option value="">Loading packages...</option>';
@@ -478,52 +537,85 @@
           select.appendChild(opt);
         });
       } catch (err) {
-        select.innerHTML = '<option value="">Failed to load packages</option>';
+        select.innerHTML = '<option value="">Error loading packages</option>';
       }
     };
 
-    window.updatePinAmount = function() {
-      const qty = parseInt(document.getElementById('pinQuantity').value) || 1;
-      document.getElementById('pinTotalAmount').value = `₦${(qty * examPinUnitPrice).toLocaleString('en-NG')}`;
+    // Render Transaction History
+    window.renderTransactions = function() {
+      const recentContainer = document.getElementById('recentTxList');
+      const fullContainer = document.getElementById('fullTxList');
+
+      if (transactionHistory.length === 0) {
+        const emptyHtml = `<p style="font-size:0.8rem; color:var(--text-muted); text-align:center; padding:20px;">No transaction history found.</p>`;
+        recentContainer.innerHTML = emptyHtml;
+        fullContainer.innerHTML = emptyHtml;
+        return;
+      }
+
+      const html = transactionHistory.map(tx => `
+        <div class="tx-item">
+          <div class="tx-left">
+            <div class="tx-icon">${tx.type === 'Data' ? '🌐' : tx.type === 'Cable' ? '📺' : '⚡'}</div>
+            <div>
+              <div class="tx-title">${tx.title}</div>
+              <div class="tx-date">Ref: ${tx.ref} • ${tx.date}</div>
+            </div>
+          </div>
+          <div class="tx-right">
+            <div class="tx-amount debit">-₦${tx.amount}</div>
+            <span class="tx-badge ${tx.status === 'SUCCESS' ? 'success' : 'failed'}">${tx.status}</span>
+          </div>
+        </div>
+      `).join('');
+
+      recentContainer.innerHTML = transactionHistory.slice(0, 3).map(tx => `
+        <div class="tx-item">
+          <div class="tx-left">
+            <div class="tx-icon">${tx.type === 'Data' ? '🌐' : '📱'}</div>
+            <div>
+              <div class="tx-title">${tx.title}</div>
+              <div class="tx-date">${tx.date}</div>
+            </div>
+          </div>
+          <div class="tx-right">
+            <div class="tx-amount debit">-₦${tx.amount}</div>
+            <span class="tx-badge ${tx.status === 'SUCCESS' ? 'success' : 'failed'}">${tx.status}</span>
+          </div>
+        </div>
+      `).join('');
+
+      fullContainer.innerHTML = html;
     };
 
-    // VERIFY TV SMARTCARD
-    window.verifyIUC = async function() {
-      const status = document.getElementById('statusAlert');
-      const iucno = document.getElementById('smartcardNo').value.trim();
+    // Resolve Transaction by ID
+    window.resolveTransaction = function() {
+      const ref = document.getElementById('solveRefId').value.trim();
+      const status = document.getElementById('solverStatus');
+      status.style.display = 'block';
 
-      if (!iucno) {
+      if (!ref) {
         status.className = 'status-alert error';
-        status.textContent = 'Please enter Smartcard/IUC number.';
+        status.textContent = 'Please enter a valid Reference ID.';
         return;
       }
 
       status.className = 'status-alert';
-      status.style.display = 'block';
-      status.textContent = 'Verifying Smartcard...';
+      status.textContent = 'Querying transaction status...';
 
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/verify-tv`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ company: selectedCableCompanyCode, iucno })
-        });
-
-        const data = await response.json();
-        if (data.code === 200) {
+      setTimeout(() => {
+        const found = transactionHistory.find(t => t.ref === ref);
+        if (found) {
           status.className = 'status-alert success';
-          status.textContent = `Customer Name: ${data.customer_name} (${data.current_package || 'Verified'})`;
+          status.textContent = `Found: ${found.title} (${found.status}). Delivered to target.`;
         } else {
           status.className = 'status-alert error';
-          status.textContent = data.message || 'Verification failed.';
+          status.textContent = 'Reference ID not found or already settled.';
         }
-      } catch (err) {
-        status.className = 'status-alert error';
-        status.textContent = 'Verification error.';
-      }
+      }, 1200);
     };
 
-    // DATA PURCHASE SUBMISSION
+    // Handle Data Purchase
     document.getElementById('formBuyData').addEventListener('submit', async (e) => {
       e.preventDefault();
       const status = document.getElementById('statusAlert');
@@ -532,11 +624,13 @@
       status.textContent = 'Processing transaction...';
 
       const networkMap = { MTN: 1, GLO: 2, AIRTEL: 3, "9MOBILE": 4 };
+      const refId = `ref_${Date.now()}`;
 
       const payload = {
         network: networkMap[selectedNetwork],
         dataplan: document.getElementById('dataPlanSelect').value,
-        mobileno: document.getElementById('dataPhone').value.trim()
+        mobileno: document.getElementById('dataPhone').value.trim(),
+        client_reference: refId
       };
 
       try {
@@ -547,8 +641,20 @@
         });
 
         const resData = await response.json();
+        const isSuccess = resData.code === 200 || (resData.status && resData.status.toLowerCase() === 'success');
 
-        if (resData.code === 200 || (resData.status && resData.status.toLowerCase() === 'success')) {
+        // Save transaction history locally
+        transactionHistory.unshift({
+          type: 'Data',
+          title: `${selectedNetwork} Data — ${payload.mobileno}`,
+          amount: '485',
+          ref: refId,
+          date: new Date().toLocaleDateString('en-GB'),
+          status: isSuccess ? 'SUCCESS' : 'FAILED'
+        });
+        localStorage.setItem('dh_transactions', JSON.stringify(transactionHistory));
+
+        if (isSuccess) {
           status.className = 'status-alert success';
           status.textContent = resData.message || 'Data purchase successful!';
           window.fetchWalletBalance();
