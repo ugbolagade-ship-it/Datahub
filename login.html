@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Datahub — Login</title>
 
-  <!-- Supabase v2 CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     :root {
       --bg: #f5f4fe;
@@ -23,150 +20,25 @@
       --success-text: #137333;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    body {
-      background-color: var(--bg);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px 16px;
-    }
-
-    .auth-card {
-      background: var(--card-bg);
-      width: 100%;
-      max-width: 400px;
-      border-radius: 24px;
-      padding: 32px 28px;
-      box-shadow: 0 10px 30px rgba(27, 24, 52, 0.03);
-      border: 1px solid #f0eef8;
-    }
-
-    /* Brand Header with Exact Logo SVG */
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 24px;
-    }
-
-    .brand-logo {
-      width: 34px;
-      height: 34px;
-      display: block;
-    }
-
-    .brand-name {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: var(--brand-red);
-      letter-spacing: -0.4px;
-    }
-
-    h2 {
-      font-size: 1.55rem;
-      font-weight: 800;
-      color: var(--text-dark);
-      margin-bottom: 6px;
-    }
-
-    .subtitle {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      margin-bottom: 24px;
-      line-height: 1.4;
-    }
-
-    /* Form Fields */
-    .form-group {
-      margin-bottom: 16px;
-    }
-
-    label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--text-dark);
-      margin-bottom: 8px;
-    }
-
-    input {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1.5px solid var(--input-border);
-      font-size: 0.95rem;
-      color: var(--text-dark);
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    input:focus {
-      border-color: var(--brand-orange);
-    }
-
-    /* Gradient Button */
-    .btn-submit {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 14px;
-      background: linear-gradient(90deg, var(--brand-orange), var(--brand-red));
-      color: #ffffff;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 8px;
-      transition: opacity 0.2s;
-    }
-
-    .btn-submit:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    /* Status Alert */
-    .status-alert {
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      line-height: 1.4;
-      display: none;
-    }
-
-    .status-alert.error {
-      display: block;
-      background: var(--error-bg);
-      color: var(--error-text);
-    }
-
-    .status-alert.success {
-      display: block;
-      background: var(--success-bg);
-      color: var(--success-text);
-    }
-
-    .toggle-footer {
-      margin-top: 24px;
-      text-align: center;
-      font-size: 0.9rem;
-      color: var(--text-muted);
-    }
-
-    .toggle-footer a {
-      color: var(--brand-red);
-      font-weight: 700;
-      text-decoration: none;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px 16px; }
+    .auth-card { background: var(--card-bg); width: 100%; max-width: 400px; border-radius: 24px; padding: 32px 28px; box-shadow: 0 10px 30px rgba(27, 24, 52, 0.03); border: 1px solid #f0eef8; }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+    .brand-logo { width: 34px; height: 34px; display: block; }
+    .brand-name { font-size: 1.5rem; font-weight: 800; color: var(--brand-red); letter-spacing: -0.4px; }
+    h2 { font-size: 1.55rem; font-weight: 800; color: var(--text-dark); margin-bottom: 6px; }
+    .subtitle { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 24px; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
+    input { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--input-border); font-size: 0.95rem; outline: none; }
+    input:focus { border-color: var(--brand-orange); }
+    .btn-submit { width: 100%; padding: 14px; border: none; border-radius: 14px; background: linear-gradient(90deg, var(--brand-orange), var(--brand-red)); color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+    .status-alert { margin-top: 16px; padding: 14px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; display: none; }
+    .status-alert.error { display: block; background: var(--error-bg); color: var(--error-text); }
+    .status-alert.success { display: block; background: var(--success-bg); color: var(--success-text); }
+    .toggle-footer { margin-top: 24px; text-align: center; font-size: 0.9rem; color: var(--text-muted); }
+    .toggle-footer a { color: var(--brand-red); font-weight: 700; text-decoration: none; }
   </style>
 </head>
 <body>
@@ -189,7 +61,7 @@
     <h2>Welcome back</h2>
     <p class="subtitle">Log in to manage your wallet and orders.</p>
 
-    <form id="loginForm">
+    <form id="loginForm" onsubmit="loginUser(event)">
       <div class="form-group">
         <label for="loginEmail">Email</label>
         <input type="email" id="loginEmail" placeholder="yourname@gmail.com" required />
@@ -209,13 +81,24 @@
     </div>
   </div>
 
-  <script>
-    const SUPABASE_URL = 'https://ykffjitfoswdgnjxlyyc.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrZmZqaXRmb3N3ZGduanhseXljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzMTIwOTIsImV4cCI6MjEwNTg4ODA5Mn0.pkfu6MEPIpE62mkHGeDAN1WgkKVxWgzRPloa4A7rlGI';
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const firebaseConfig = {
+      apiKey: "AIzaSyDgj3g2-VwCf4oWnETazpxxPvl2vpyl3Mo",
+      authDomain: "datahub-1e310.firebaseapp.com",
+      projectId: "datahub-1e310",
+      storageBucket: "datahub-1e310.firebasestorage.app",
+      messagingSenderId: "560867367131",
+      appId: "1:560867367131:web:70933fcb051cb71fe914fe",
+      measurementId: "G-08C9CELVBK"
+    };
 
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    window.loginUser = async function(e) {
       e.preventDefault();
       const btn = document.getElementById('loginBtn');
       const status = document.getElementById('loginStatus');
@@ -226,24 +109,20 @@
       btn.textContent = 'Logging in...';
       status.className = 'status-alert';
 
-      const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email: email,
-        password: password
-      });
-
-      if (error) {
-        status.className = 'status-alert error';
-        status.textContent = error.message;
-        btn.disabled = false;
-        btn.textContent = 'Log In';
-      } else {
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
         status.className = 'status-alert success';
         status.textContent = 'Login successful! Redirecting...';
         setTimeout(() => {
           window.location.href = 'dashboard.html';
-        }, 1000);
+        }, 800);
+      } catch (error) {
+        status.className = 'status-alert error';
+        status.textContent = error.message.replace('Firebase: ', '');
+        btn.disabled = false;
+        btn.textContent = 'Log In';
       }
-    });
+    };
   </script>
 </body>
 </html>
