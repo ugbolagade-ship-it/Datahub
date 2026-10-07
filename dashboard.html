@@ -179,7 +179,7 @@
     <!-- SERVICE FORMS CONTAINER -->
     <div id="serviceScreen" class="service-screen" style="display: none;">
       <div class="screen-wallet-badge">
-        💼 <span id="badgeBalance">₦0</span>
+        💼 <span id="badgeBalance">₦0.00</span>
       </div>
 
       <!-- DATA FORM -->
@@ -197,9 +197,10 @@
         <div class="form-group">
           <label>Choose Data Type</label>
           <select id="dataTypeSelect" onchange="loadDataPlans()">
-            <option value="SME">SME Data</option>
-            <option value="CG">Corporate Gifting</option>
-            <option value="DIRECT">Direct Gifting</option>
+            <option value="sme">SME Data</option>
+            <option value="cg">Corporate Gifting (CG)</option>
+            <option value="awoof">Awoof Data</option>
+            <option value="gifting">Direct Gifting</option>
           </select>
         </div>
 
@@ -210,8 +211,8 @@
 
         <div class="form-group">
           <label>Receiver's Phone Number</label>
-          <input type="tel" id="dataPhone" placeholder="Receiver's Phone Number" maxlength="11" required />
-          <div class="discount-note">Regular User - 0% discount [Upgrade to enjoy discounts]. No extra charges.</div>
+          <input type="tel" id="dataPhone" placeholder="08012345678" maxlength="11" required />
+          <div class="discount-note">Prices include standard service fees. Instant delivery guaranteed.</div>
         </div>
 
         <button type="submit" class="btn-action">Buy Now</button>
@@ -230,14 +231,6 @@
         </div>
 
         <div class="form-group">
-          <label>Airtime Type</label>
-          <select>
-            <option>VTU Airtime</option>
-            <option>Share 'N' Sell</option>
-          </select>
-        </div>
-
-        <div class="form-group">
           <label>Phone Number</label>
           <input type="tel" placeholder="Phone Number" maxlength="11" required />
         </div>
@@ -245,7 +238,6 @@
         <div class="form-group">
           <label>Amount (₦)</label>
           <input type="number" placeholder="Amount (min ₦100)" min="100" required />
-          <div class="discount-note">Regular User - 0% discount. No extra charges.</div>
         </div>
 
         <button type="submit" class="btn-action">Buy Airtime</button>
@@ -256,10 +248,10 @@
         <div class="form-group">
           <label>Select Cable TV Company</label>
           <div class="provider-grid">
-            <div class="provider-btn selected" onclick="selectCable('DSTV', this)">DStv</div>
-            <div class="provider-btn" onclick="selectCable('GOTV', this)">GOtv</div>
-            <div class="provider-btn" onclick="selectCable('STARTIMES', this)">StarTimes</div>
-            <div class="provider-btn" onclick="selectCable('SHOWMAX', this)">Showmax</div>
+            <div class="provider-btn selected" onclick="selectCable('dstv', 1, this)">DStv</div>
+            <div class="provider-btn" onclick="selectCable('gotv', 2, this)">GOtv</div>
+            <div class="provider-btn" onclick="selectCable('startimes', 3, this)">StarTimes</div>
+            <div class="provider-btn" onclick="selectCable('showmax', 4, this)">Showmax</div>
           </div>
         </div>
 
@@ -269,9 +261,8 @@
         </div>
 
         <div class="form-group">
-          <label>Smartcard/IUC Number/Phone No.</label>
-          <input type="text" id="smartcardNo" placeholder="Input Number" required />
-          <div class="discount-note">Regular User - 0% discount. No extra charges.</div>
+          <label>Smartcard/IUC Number</label>
+          <input type="text" id="smartcardNo" placeholder="Enter Smartcard Number" required />
         </div>
 
         <button type="button" class="btn-action btn-secondary" onclick="verifyIUC()">Verify Card/IUC Number</button>
@@ -295,8 +286,8 @@
         <div class="form-group">
           <label>Select Meter Type</label>
           <select required>
-            <option>Prepaid Meter</option>
-            <option>Postpaid Meter</option>
+            <option value="1">Prepaid Meter</option>
+            <option value="2">Postpaid Meter</option>
           </select>
         </div>
 
@@ -307,7 +298,7 @@
 
         <div class="form-group">
           <label>Amount (₦)</label>
-          <input type="number" placeholder="1000" min="500" required />
+          <input type="number" placeholder="1000" min="1000" required />
         </div>
 
         <button type="submit" class="btn-action">Purchase Token</button>
@@ -318,10 +309,9 @@
         <div class="form-group">
           <label>Select Examination Board</label>
           <div class="provider-grid">
-            <div class="provider-btn selected" onclick="setExamBoard(3800, this)">WAEC</div>
-            <div class="provider-btn" onclick="setExamBoard(1200, this)">NECO</div>
-            <div class="provider-btn" onclick="setExamBoard(1100, this)">NABTEB</div>
-            <div class="provider-btn" onclick="setExamBoard(1000, this)">NBAIS</div>
+            <div class="provider-btn selected" onclick="setExamBoard(5656, this)">WAEC</div>
+            <div class="provider-btn" onclick="setExamBoard(2218, this)">NECO</div>
+            <div class="provider-btn" onclick="setExamBoard(952, this)">NABTEB</div>
           </div>
         </div>
 
@@ -332,7 +322,7 @@
 
         <div class="form-group">
           <label>Amount (₦)</label>
-          <input type="text" id="pinTotalAmount" value="₦3,800" readonly />
+          <input type="text" id="pinTotalAmount" value="₦5,656" readonly />
         </div>
 
         <button type="submit" class="btn-action">Proceed to Purchase</button>
@@ -347,6 +337,9 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+    // EXACT LIVE RENDER BACKEND URL
+    const BACKEND_URL = "https://datahub-qmzg.onrender.com";
+
     const firebaseConfig = {
       apiKey: "AIzaSyDgj3g2-VwCf4oWnETazpxxPvl2vpyl3Mo",
       authDomain: "datahub-1e310.firebaseapp.com",
@@ -360,10 +353,10 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Auth Guard
     onAuthStateChanged(auth, (user) => {
       if (user) {
         document.getElementById('userEmail').textContent = user.email;
+        window.fetchWalletBalance();
       } else {
         window.location.href = 'login.html';
       }
@@ -374,23 +367,23 @@
       window.location.href = 'login.html';
     };
 
-    // State
     let selectedNetwork = 'MTN';
-    let selectedCableCompany = 'DSTV';
-    let examPinUnitPrice = 3800;
+    let selectedCableCompany = 'dstv';
+    let selectedCableCompanyCode = 1;
+    let examPinUnitPrice = 5656;
 
-    const DATA_PLANS = {
-      MTN: [{ name: "MTN SME 500MB - 30 Days", price: 140 }, { name: "MTN SME 1GB - 30 Days", price: 280 }, { name: "MTN SME 2GB - 30 Days", price: 560 }],
-      AIRTEL: [{ name: "Airtel CG 500MB - 30 Days", price: 150 }, { name: "Airtel CG 1GB - 30 Days", price: 290 }],
-      GLO: [{ name: "Glo 1GB - 30 Days", price: 270 }, { name: "Glo 2GB - 30 Days", price: 540 }],
-      "9MOBILE": [{ name: "9mobile 1GB - 30 Days", price: 220 }]
-    };
-
-    const CABLE_PACKAGES = {
-      DSTV: [{ name: "DStv Padi - ₦3,600" }, { name: "DStv Yanga - ₦5,100" }],
-      GOTV: [{ name: "GOtv Smallie - ₦1,570" }, { name: "GOtv Max - ₦7,200" }],
-      STARTIMES: [{ name: "Basic - ₦3,300" }],
-      SHOWMAX: [{ name: "Showmax Mobile - ₦1,600" }]
+    window.fetchWalletBalance = async function() {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/wallet-balance`);
+        const data = await res.json();
+        if (data.balance) {
+          const formatted = `₦${parseFloat(data.balance).toLocaleString('en-NG')}`;
+          document.getElementById('walletBalance').textContent = formatted;
+          document.getElementById('badgeBalance').textContent = formatted;
+        }
+      } catch (err) {
+        console.error("Balance update failed:", err);
+      }
     };
 
     window.openService = function(key) {
@@ -422,8 +415,9 @@
       window.loadDataPlans();
     };
 
-    window.selectCable = function(company, el) {
+    window.selectCable = function(company, code, el) {
       selectedCableCompany = company;
+      selectedCableCompanyCode = code;
       window.highlightSelected(el);
       window.loadCablePackages();
     };
@@ -434,24 +428,58 @@
       window.updatePinAmount();
     };
 
-    window.loadDataPlans = function() {
+    // DYNAMIC DATA PLAN LOADER
+    window.loadDataPlans = async function() {
       const select = document.getElementById('dataPlanSelect');
-      select.innerHTML = '';
-      (DATA_PLANS[selectedNetwork] || []).forEach(p => {
-        const opt = document.createElement('option');
-        opt.textContent = `${p.name} — ₦${p.price}`;
-        select.appendChild(opt);
-      });
+      const dataType = document.getElementById('dataTypeSelect').value;
+      const productType = `${selectedNetwork.toLowerCase()}_${dataType}`;
+
+      select.innerHTML = '<option value="">Loading live plans...</option>';
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${productType}`);
+        const data = await response.json();
+
+        select.innerHTML = '<option value="">Select Plan</option>';
+        const plansList = data.plans || [];
+
+        if (plansList.length === 0) {
+          select.innerHTML = '<option value="">No plans available for this category</option>';
+          return;
+        }
+
+        plansList.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.plan_id;
+          opt.textContent = `${p.name} — ₦${p.price.toLocaleString('en-NG')} (${p.validity || 'Standard'})`;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        select.innerHTML = '<option value="">Failed to load plans</option>';
+      }
     };
 
-    window.loadCablePackages = function() {
+    // DYNAMIC CABLE PACKAGE LOADER
+    window.loadCablePackages = async function() {
       const select = document.getElementById('cablePackageSelect');
-      select.innerHTML = '';
-      (CABLE_PACKAGES[selectedCableCompany] || []).forEach(p => {
-        const opt = document.createElement('option');
-        opt.textContent = p.name;
-        select.appendChild(opt);
-      });
+      select.innerHTML = '<option value="">Loading packages...</option>';
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${selectedCableCompany}`);
+        const data = await response.json();
+
+        select.innerHTML = '<option value="">Select Package</option>';
+        const packages = data.plans || [];
+
+        packages.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.plan_id;
+          opt.textContent = `${p.name} — ₦${p.price.toLocaleString('en-NG')}`;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        select.innerHTML = '<option value="">Failed to load packages</option>';
+      }
     };
 
     window.updatePinAmount = function() {
@@ -459,25 +487,79 @@
       document.getElementById('pinTotalAmount').value = `₦${(qty * examPinUnitPrice).toLocaleString('en-NG')}`;
     };
 
-    window.verifyIUC = function() {
+    // VERIFY TV SMARTCARD
+    window.verifyIUC = async function() {
       const status = document.getElementById('statusAlert');
-      const val = document.getElementById('smartcardNo').value.trim();
-      if (!val) {
+      const iucno = document.getElementById('smartcardNo').value.trim();
+
+      if (!iucno) {
         status.className = 'status-alert error';
-        status.textContent = 'Please enter Smartcard/IUC number first.';
+        status.textContent = 'Please enter Smartcard/IUC number.';
         return;
       }
-      status.className = 'status-alert success';
-      status.textContent = 'Customer Name: JOHN DOE (Verified)';
+
+      status.className = 'status-alert';
+      status.style.display = 'block';
+      status.textContent = 'Verifying Smartcard...';
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/verify-tv`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ company: selectedCableCompanyCode, iucno })
+        });
+
+        const data = await response.json();
+        if (data.code === 200) {
+          status.className = 'status-alert success';
+          status.textContent = `Customer Name: ${data.customer_name} (${data.current_package || 'Verified'})`;
+        } else {
+          status.className = 'status-alert error';
+          status.textContent = data.message || 'Verification failed.';
+        }
+      } catch (err) {
+        status.className = 'status-alert error';
+        status.textContent = 'Verification error.';
+      }
     };
 
-    document.querySelectorAll('.vtu-form').forEach(form => {
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const status = document.getElementById('statusAlert');
+    // DATA PURCHASE SUBMISSION
+    document.getElementById('formBuyData').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = document.getElementById('statusAlert');
+      status.style.display = 'block';
+      status.className = 'status-alert';
+      status.textContent = 'Processing transaction...';
+
+      const networkMap = { MTN: 1, GLO: 2, AIRTEL: 3, "9MOBILE": 4 };
+
+      const payload = {
+        network: networkMap[selectedNetwork],
+        dataplan: document.getElementById('dataPlanSelect').value,
+        mobileno: document.getElementById('dataPhone').value.trim()
+      };
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/purchase-data`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const resData = await response.json();
+
+        if (resData.code === 200 || (resData.status && resData.status.toLowerCase() === 'success')) {
+          status.className = 'status-alert success';
+          status.textContent = resData.message || 'Data purchase successful!';
+          window.fetchWalletBalance();
+        } else {
+          status.className = 'status-alert error';
+          status.textContent = resData.message || 'Transaction failed.';
+        }
+      } catch (err) {
         status.className = 'status-alert error';
-        status.textContent = 'Insufficient wallet balance. Please fund your wallet to proceed.';
-      });
+        status.textContent = 'Network error during transaction.';
+      }
     });
   </script>
 </body>
