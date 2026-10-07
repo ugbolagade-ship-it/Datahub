@@ -5,80 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Datahub — Dashboard</title>
 
-  <!-- Supabase v2 CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     :root {
-      --bg: #f5f4fe;
+      --bg: #f8f9fd;
       --card-bg: #ffffff;
       --text-dark: #1b1834;
-      --text-muted: #5e5a7a;
-      --input-border: #e6e4f2;
+      --text-muted: #6e6a8e;
+      --input-border: #e2e0ee;
       --brand-orange: #f4841f;
       --brand-red: #d9381e;
+      --brand-btn: #5d4e46;
       --error-bg: #fce8e6;
       --error-text: #c5221f;
       --success-bg: #e6f4ea;
       --success-text: #137333;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); min-height: 100vh; padding: 20px 16px; display: flex; justify-content: center; color: var(--text-dark); }
+    .app-container { width: 100%; max-width: 480px; }
 
-    body {
-      background-color: var(--bg);
-      min-height: 100vh;
-      padding: 20px 16px;
-      display: flex;
-      justify-content: center;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 480px;
-    }
-
-    /* Top Navigation Bar */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-    }
-
-    /* Exact Original Logo Styling */
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .brand-icon {
-      width: 36px;
-      height: 36px;
-      background: linear-gradient(135deg, var(--brand-orange), var(--brand-red));
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-weight: 800;
-      font-size: 1.2rem;
-      box-shadow: 0 4px 10px rgba(244, 132, 31, 0.25);
-    }
-
-    .brand-name {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: var(--brand-red);
-      letter-spacing: -0.3px;
-    }
-
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-logo { width: 32px; height: 32px; display: block; }
+    .brand-name { font-size: 1.4rem; font-weight: 800; color: var(--brand-red); letter-spacing: -0.4px; }
+    
     .btn-logout {
       background: #ffffff;
       border: 1.5px solid var(--input-border);
@@ -90,275 +41,444 @@
       font-size: 0.85rem;
     }
 
-    /* Wallet Card */
     .wallet-card {
       background: linear-gradient(135deg, #1b1834, #2a264e);
       color: #ffffff;
       border-radius: 20px;
-      padding: 24px;
-      margin-bottom: 20px;
-      box-shadow: 0 10px 25px rgba(27, 24, 52, 0.12);
+      padding: 22px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 25px rgba(27, 24, 52, 0.1);
     }
+    .wallet-title { font-size: 0.8rem; opacity: 0.8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .wallet-amount { font-size: 2.1rem; font-weight: 800; margin-bottom: 8px; }
+    .user-email { font-size: 0.8rem; opacity: 0.75; word-break: break-all; }
 
-    .wallet-title {
-      font-size: 0.85rem;
-      opacity: 0.8;
-      margin-bottom: 6px;
-    }
+    .section-title { font-size: 1.15rem; font-weight: 800; color: var(--text-dark); margin-bottom: 16px; display: flex; align-items: center; gap: 6px; }
 
-    .wallet-amount {
-      font-size: 2rem;
-      font-weight: 800;
-      margin-bottom: 12px;
-    }
-
-    .user-email {
-      font-size: 0.8rem;
-      opacity: 0.7;
-      word-break: break-all;
-    }
-
-    /* Form Container */
-    .card {
+    .vtu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+    .service-card {
       background: var(--card-bg);
-      border-radius: 20px;
-      padding: 24px;
-      box-shadow: 0 10px 30px rgba(27, 24, 52, 0.03);
-      border: 1px solid #f0eef8;
-    }
-
-    h3 {
-      font-size: 1.2rem;
-      font-weight: 800;
+      border-radius: 18px;
+      padding: 22px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
       color: var(--text-dark);
-      margin-bottom: 16px;
-    }
-
-    .form-group {
-      margin-bottom: 16px;
-    }
-
-    label {
-      display: block;
-      font-size: 0.85rem;
       font-weight: 700;
-      color: var(--text-dark);
-      margin-bottom: 8px;
-    }
-
-    select, input {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1.5px solid var(--input-border);
       font-size: 0.95rem;
-      color: var(--text-dark);
-      outline: none;
-      background: #ffffff;
-    }
-
-    select:focus, input:focus {
-      border-color: var(--brand-orange);
-    }
-
-    .btn-submit {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 14px;
-      background: linear-gradient(90deg, var(--brand-orange), var(--brand-red));
-      color: #ffffff;
-      font-size: 1rem;
-      font-weight: 700;
+      border: 1.5px solid #f0eef8;
+      box-shadow: 0 4px 15px rgba(27, 24, 52, 0.02);
       cursor: pointer;
-      margin-top: 8px;
+      transition: transform 0.15s, border-color 0.15s;
     }
+    .service-card:active { transform: scale(0.98); }
+    .service-card.active-card { border-color: #27ae60; }
+    .service-icon-bg { width: 48px; height: 48px; border-radius: 14px; background: #f4f7fe; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
 
-    .btn-submit:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+    .service-screen { background: var(--card-bg); border-radius: 20px; padding: 24px; border: 1px solid #eef0f6; box-shadow: 0 10px 30px rgba(27, 24, 52, 0.03); }
+    .screen-wallet-badge { display: inline-flex; align-items: center; gap: 8px; background: #fcf4eb; padding: 6px 12px; border-radius: 10px; font-weight: 800; color: var(--brand-orange); font-size: 0.9rem; margin-bottom: 20px; }
 
-    .status-alert {
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      display: none;
-    }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
 
-    .status-alert.error {
-      display: block;
-      background: var(--error-bg);
-      color: var(--error-text);
+    .provider-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: #f7f7f9; padding: 10px; border-radius: 14px; }
+    .provider-grid.grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .provider-btn {
+      background: #ffffff;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      padding: 10px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      min-height: 54px;
+      text-align: center;
     }
+    .provider-btn.selected { border-color: var(--brand-orange); color: var(--text-dark); background: #ffffff; box-shadow: 0 2px 8px rgba(244, 132, 31, 0.15); }
 
-    .status-alert.success {
-      display: block;
-      background: var(--success-bg);
-      color: var(--success-text);
-    }
+    select, input { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--input-border); font-size: 0.95rem; color: var(--text-dark); outline: none; background: #ffffff; }
+    select:focus, input:focus { border-color: var(--brand-orange); }
+
+    .discount-note { font-size: 0.8rem; color: var(--brand-orange); margin-top: 6px; line-height: 1.3; }
+
+    .btn-action { width: 100%; padding: 15px; border: none; border-radius: 12px; background: var(--brand-btn); color: #ffffff; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
+    .btn-action.btn-secondary { background: #6c5c53; margin-top: 8px; }
+    .btn-back { width: 100%; padding: 12px; background: #eef0f6; border: none; border-radius: 12px; color: var(--text-dark); font-weight: 700; font-size: 0.9rem; cursor: pointer; margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+    .status-alert { margin-top: 16px; padding: 12px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; display: none; }
+    .status-alert.error { display: block; background: var(--error-bg); color: var(--error-text); }
+    .status-alert.success { display: block; background: var(--success-bg); color: var(--success-text); }
   </style>
 </head>
 <body>
 
-  <div class="container">
+  <div class="app-container">
     <div class="header">
       <div class="brand">
-        <div class="brand-icon">D</div>
-        <div class="brand-name">Datahub</div>
+        <svg class="brand-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="dhDashGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#f4841f" />
+              <stop offset="100%" stop-color="#d9381e" />
+            </linearGradient>
+          </defs>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M15 10 C15 4.5 19.5 0 25 0 H50 C77.6 0 100 22.4 100 50 C100 77.6 77.6 100 50 100 H25 C19.5 100 15 95.5 15 90 V10 Z M38 22 H48 C63.5 22 76 34.5 76 50 C76 65.5 63.5 78 48 78 H38 V22 Z" fill="url(#dhDashGrad)"/>
+          <rect x="43" y="36" width="10" height="28" rx="5" fill="url(#dhDashGrad)"/>
+        </svg>
+        <span class="brand-name">Datahub</span>
       </div>
       <button class="btn-logout" onclick="logout()">Log Out</button>
     </div>
 
-    <div class="wallet-card">
-      <div class="wallet-title">Wallet Balance</div>
-      <div class="wallet-amount" id="walletBalance">₦0.00</div>
-      <div class="user-email" id="userEmail">Loading session...</div>
+    <!-- MAIN DASHBOARD -->
+    <div id="mainDashboard">
+      <div class="wallet-card">
+        <div class="wallet-title">Wallet Balance</div>
+        <div class="wallet-amount" id="walletBalance">₦0.00</div>
+        <div class="user-email" id="userEmail">Loading session...</div>
+      </div>
+
+      <div class="section-title">⚡ Quick VTU Services</div>
+
+      <div class="vtu-grid">
+        <div class="service-card active-card" onclick="openService('data')">
+          <div class="service-icon-bg">🌐</div>
+          <span>Buy Data</span>
+        </div>
+
+        <div class="service-card" onclick="openService('airtime')">
+          <div class="service-icon-bg">📞</div>
+          <span>Airtime</span>
+        </div>
+
+        <div class="service-card" onclick="openService('cable')">
+          <div class="service-icon-bg">📺</div>
+          <span>Cable TV</span>
+        </div>
+
+        <div class="service-card" onclick="openService('electricity')">
+          <div class="service-icon-bg">⚡</div>
+          <span>Electricity</span>
+        </div>
+
+        <div class="service-card" style="grid-column: span 2;" onclick="openService('exampins')">
+          <div class="service-icon-bg">🎓</div>
+          <span>Exam Pins (WAEC / NECO)</span>
+        </div>
+      </div>
     </div>
 
-    <div class="card">
-      <h3>Buy Data Bundle</h3>
+    <!-- SERVICE FORMS CONTAINER -->
+    <div id="serviceScreen" class="service-screen" style="display: none;">
+      <div class="screen-wallet-badge">
+        💼 <span id="badgeBalance">₦0</span>
+      </div>
 
-      <form id="dataForm">
+      <!-- DATA FORM -->
+      <form id="formBuyData" class="vtu-form" style="display: none;">
         <div class="form-group">
-          <label for="networkSelect">Select Network</label>
-          <select id="networkSelect" onchange="loadDataPlans()" required>
-            <option value="">-- Choose Network --</option>
-            <option value="MTN">MTN</option>
-            <option value="AIRTEL">Airtel</option>
-            <option value="GLO">Glo</option>
-            <option value="9MOBILE">9mobile</option>
+          <label>Choose Network</label>
+          <div class="provider-grid">
+            <div class="provider-btn selected" onclick="selectNetwork('MTN', this)">MTN</div>
+            <div class="provider-btn" onclick="selectNetwork('GLO', this)">GLO</div>
+            <div class="provider-btn" onclick="selectNetwork('AIRTEL', this)">Airtel</div>
+            <div class="provider-btn" onclick="selectNetwork('9MOBILE', this)">9mobile</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Choose Data Type</label>
+          <select id="dataTypeSelect" onchange="loadDataPlans()">
+            <option value="SME">SME Data</option>
+            <option value="CG">Corporate Gifting</option>
+            <option value="DIRECT">Direct Gifting</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label for="planSelect">Data Plan</label>
-          <select id="planSelect" required disabled>
-            <option value="">-- Select Network First --</option>
-          </select>
+          <label>Choose Plan</label>
+          <select id="dataPlanSelect" required></select>
         </div>
 
         <div class="form-group">
-          <label for="phoneNumber">Phone Number</label>
-          <input type="tel" id="phoneNumber" placeholder="08012345678" maxlength="11" required />
+          <label>Receiver's Phone Number</label>
+          <input type="tel" id="dataPhone" placeholder="Receiver's Phone Number" maxlength="11" required />
+          <div class="discount-note">Regular User - 0% discount [Upgrade to enjoy discounts]. No extra charges.</div>
         </div>
 
-        <button type="submit" class="btn-submit" id="buyBtn">Purchase Data</button>
-        <div class="status-alert" id="statusAlert"></div>
+        <button type="submit" class="btn-action">Buy Now</button>
       </form>
+
+      <!-- AIRTIME FORM -->
+      <form id="formAirtime" class="vtu-form" style="display: none;">
+        <div class="form-group">
+          <label>Choose Network</label>
+          <div class="provider-grid">
+            <div class="provider-btn selected" onclick="highlightSelected(this)">MTN</div>
+            <div class="provider-btn" onclick="highlightSelected(this)">GLO</div>
+            <div class="provider-btn" onclick="highlightSelected(this)">Airtel</div>
+            <div class="provider-btn" onclick="highlightSelected(this)">9mobile</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Airtime Type</label>
+          <select>
+            <option>VTU Airtime</option>
+            <option>Share 'N' Sell</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" placeholder="Phone Number" maxlength="11" required />
+        </div>
+
+        <div class="form-group">
+          <label>Amount (₦)</label>
+          <input type="number" placeholder="Amount (min ₦100)" min="100" required />
+          <div class="discount-note">Regular User - 0% discount. No extra charges.</div>
+        </div>
+
+        <button type="submit" class="btn-action">Buy Airtime</button>
+      </form>
+
+      <!-- CABLE TV FORM -->
+      <form id="formCable" class="vtu-form" style="display: none;">
+        <div class="form-group">
+          <label>Select Cable TV Company</label>
+          <div class="provider-grid">
+            <div class="provider-btn selected" onclick="selectCable('DSTV', this)">DStv</div>
+            <div class="provider-btn" onclick="selectCable('GOTV', this)">GOtv</div>
+            <div class="provider-btn" onclick="selectCable('STARTIMES', this)">StarTimes</div>
+            <div class="provider-btn" onclick="selectCable('SHOWMAX', this)">Showmax</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Select Bouquet/Package</label>
+          <select id="cablePackageSelect" required></select>
+        </div>
+
+        <div class="form-group">
+          <label>Smartcard/IUC Number/Phone No.</label>
+          <input type="text" id="smartcardNo" placeholder="Input Number" required />
+          <div class="discount-note">Regular User - 0% discount. No extra charges.</div>
+        </div>
+
+        <button type="button" class="btn-action btn-secondary" onclick="verifyIUC()">Verify Card/IUC Number</button>
+        <button type="submit" class="btn-action">Proceed to Purchase</button>
+      </form>
+
+      <!-- ELECTRICITY FORM -->
+      <form id="formElectricity" class="vtu-form" style="display: none;">
+        <div class="form-group">
+          <label>Select Electricity Company</label>
+          <div class="provider-grid grid-3">
+            <div class="provider-btn selected" onclick="highlightSelected(this)">Eko (EKEDC)</div>
+            <div class="provider-btn" onclick="highlightSelected(this)">Ikeja (IKEDC)</div>
+            <div class="provider-btn" onclick="highlightSelected(this)">Abuja (AEDC)</div>
+            <div class="provider-btn" onclick="highlightSelected(this)">Ibadan (IBEDC)</div>
+            <div class="provider-btn" onclick="highlightSelected(this)">Port Harcourt</div>
+            <div class="provider-btn" onclick="highlightSelected(this)">Kaduna (KAEDC)</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Select Meter Type</label>
+          <select required>
+            <option>Prepaid Meter</option>
+            <option>Postpaid Meter</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Meter Number</label>
+          <input type="text" placeholder="Meter number" required />
+        </div>
+
+        <div class="form-group">
+          <label>Amount (₦)</label>
+          <input type="number" placeholder="1000" min="500" required />
+        </div>
+
+        <button type="submit" class="btn-action">Purchase Token</button>
+      </form>
+
+      <!-- EXAM PINS FORM -->
+      <form id="formExamPins" class="vtu-form" style="display: none;">
+        <div class="form-group">
+          <label>Select Examination Board</label>
+          <div class="provider-grid">
+            <div class="provider-btn selected" onclick="setExamBoard(3800, this)">WAEC</div>
+            <div class="provider-btn" onclick="setExamBoard(1200, this)">NECO</div>
+            <div class="provider-btn" onclick="setExamBoard(1100, this)">NABTEB</div>
+            <div class="provider-btn" onclick="setExamBoard(1000, this)">NBAIS</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Number of Pins</label>
+          <input type="number" id="pinQuantity" value="1" min="1" max="10" oninput="updatePinAmount()" required />
+        </div>
+
+        <div class="form-group">
+          <label>Amount (₦)</label>
+          <input type="text" id="pinTotalAmount" value="₦3,800" readonly />
+        </div>
+
+        <button type="submit" class="btn-action">Proceed to Purchase</button>
+      </form>
+
+      <div id="statusAlert" class="status-alert"></div>
+      <button class="btn-back" onclick="showDashboardHome()">← Back to Dashboard</button>
     </div>
   </div>
 
-  <script>
-    const SUPABASE_URL = 'https://ykffjitfoswdgnjxlyyc.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrZmZqaXRmb3N3ZGduanhseXljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzMTIwOTIsImV4cCI6MjEwNTg4ODA5Mn0.pkfu6MEPIpE62mkHGeDAN1WgkKVxWgzRPloa4A7rlGI';
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const DATA_PLANS = {
-      MTN: [
-        { id: "500MB", name: "500MB (SME) - 30 Days", price: 140 },
-        { id: "1GB", name: "1GB (SME) - 30 Days", price: 280 },
-        { id: "2GB", name: "2GB (SME) - 30 Days", price: 560 },
-        { id: "3GB", name: "3GB (SME) - 30 Days", price: 840 },
-        { id: "5GB", name: "5GB (SME) - 30 Days", price: 1400 },
-        { id: "10GB", name: "10GB (SME) - 30 Days", price: 2800 }
-      ],
-      AIRTEL: [
-        { id: "500MB", name: "500MB (CG) - 30 Days", price: 150 },
-        { id: "1GB", name: "1GB (CG) - 30 Days", price: 290 },
-        { id: "2GB", name: "2GB (CG) - 30 Days", price: 580 },
-        { id: "5GB", name: "5GB (CG) - 30 Days", price: 1450 }
-      ],
-      GLO: [
-        { id: "1GB", name: "1GB - 30 Days", price: 270 },
-        { id: "2GB", name: "2GB - 30 Days", price: 540 },
-        { id: "3GB", name: "3GB - 30 Days", price: 810 },
-        { id: "5GB", name: "5GB - 30 Days", price: 1350 }
-      ],
-      "9MOBILE": [
-        { id: "1GB", name: "1GB - 30 Days", price: 220 },
-        { id: "2GB", name: "2GB - 30 Days", price: 440 },
-        { id: "5GB", name: "5GB - 30 Days", price: 1100 }
-      ]
+    const firebaseConfig = {
+      apiKey: "AIzaSyDgj3g2-VwCf4oWnETazpxxPvl2vpyl3Mo",
+      authDomain: "datahub-1e310.firebaseapp.com",
+      projectId: "datahub-1e310",
+      storageBucket: "datahub-1e310.firebasestorage.app",
+      messagingSenderId: "560867367131",
+      appId: "1:560867367131:web:70933fcb051cb71fe914fe",
+      measurementId: "G-08C9CELVBK"
     };
 
-    let currentUser = null;
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-    async function initDashboard() {
-      const { data: { session }, error } = await supabaseClient.auth.getSession();
-
-      if (error || !session) {
-        window.location.href = 'login.html';
-        return;
-      }
-
-      currentUser = session.user;
-      document.getElementById('userEmail').textContent = currentUser.email;
-      fetchWalletBalance();
-    }
-
-    async function fetchWalletBalance() {
-      const { data, error } = await supabaseClient
-        .from('profiles')
-        .select('wallet_balance')
-        .eq('id', currentUser.id)
-        .single();
-
-      if (data && data.wallet_balance !== undefined) {
-        document.getElementById('walletBalance').textContent = `₦${data.wallet_balance.toLocaleString('en-NG', { minimumFractionDigits: 2 })}`;
+    // Auth Guard
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById('userEmail').textContent = user.email;
       } else {
-        document.getElementById('walletBalance').textContent = '₦0.00';
+        window.location.href = 'login.html';
       }
-    }
-
-    function loadDataPlans() {
-      const network = document.getElementById('networkSelect').value;
-      const planSelect = document.getElementById('planSelect');
-
-      planSelect.innerHTML = '<option value="">-- Select Data Plan --</option>';
-
-      if (!network || !DATA_PLANS[network]) {
-        planSelect.disabled = true;
-        return;
-      }
-
-      DATA_PLANS[network].forEach(plan => {
-        const option = document.createElement('option');
-        option.value = plan.id;
-        option.textContent = `${plan.name} — ₦${plan.price}`;
-        planSelect.appendChild(option);
-      });
-
-      planSelect.disabled = false;
-    }
-
-    document.getElementById('dataForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const alertBox = document.getElementById('statusAlert');
-      const btn = document.getElementById('buyBtn');
-
-      btn.disabled = true;
-      btn.textContent = 'Processing...';
-      alertBox.className = 'status-alert';
-
-      setTimeout(() => {
-        alertBox.className = 'status-alert error';
-        alertBox.textContent = 'Insufficient wallet balance. Please fund your wallet to proceed.';
-        btn.disabled = false;
-        btn.textContent = 'Purchase Data';
-      }, 1000);
     });
 
-    // Explicit Sign Out pointing directly to login.html
-    async function logout() {
-      await supabaseClient.auth.signOut();
+    window.logout = async function() {
+      await signOut(auth);
       window.location.href = 'login.html';
-    }
+    };
 
-    window.addEventListener('DOMContentLoaded', initDashboard);
+    // State
+    let selectedNetwork = 'MTN';
+    let selectedCableCompany = 'DSTV';
+    let examPinUnitPrice = 3800;
+
+    const DATA_PLANS = {
+      MTN: [{ name: "MTN SME 500MB - 30 Days", price: 140 }, { name: "MTN SME 1GB - 30 Days", price: 280 }, { name: "MTN SME 2GB - 30 Days", price: 560 }],
+      AIRTEL: [{ name: "Airtel CG 500MB - 30 Days", price: 150 }, { name: "Airtel CG 1GB - 30 Days", price: 290 }],
+      GLO: [{ name: "Glo 1GB - 30 Days", price: 270 }, { name: "Glo 2GB - 30 Days", price: 540 }],
+      "9MOBILE": [{ name: "9mobile 1GB - 30 Days", price: 220 }]
+    };
+
+    const CABLE_PACKAGES = {
+      DSTV: [{ name: "DStv Padi - ₦3,600" }, { name: "DStv Yanga - ₦5,100" }],
+      GOTV: [{ name: "GOtv Smallie - ₦1,570" }, { name: "GOtv Max - ₦7,200" }],
+      STARTIMES: [{ name: "Basic - ₦3,300" }],
+      SHOWMAX: [{ name: "Showmax Mobile - ₦1,600" }]
+    };
+
+    window.openService = function(key) {
+      document.getElementById('mainDashboard').style.display = 'none';
+      document.getElementById('serviceScreen').style.display = 'block';
+      document.querySelectorAll('.vtu-form').forEach(f => f.style.display = 'none');
+      document.getElementById('statusAlert').className = 'status-alert';
+
+      if (key === 'data') { document.getElementById('formBuyData').style.display = 'block'; window.loadDataPlans(); }
+      else if (key === 'airtime') { document.getElementById('formAirtime').style.display = 'block'; }
+      else if (key === 'cable') { document.getElementById('formCable').style.display = 'block'; window.loadCablePackages(); }
+      else if (key === 'electricity') { document.getElementById('formElectricity').style.display = 'block'; }
+      else if (key === 'exampins') { document.getElementById('formExamPins').style.display = 'block'; }
+    };
+
+    window.showDashboardHome = function() {
+      document.getElementById('serviceScreen').style.display = 'none';
+      document.getElementById('mainDashboard').style.display = 'block';
+    };
+
+    window.highlightSelected = function(el) {
+      el.parentElement.querySelectorAll('.provider-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+    };
+
+    window.selectNetwork = function(net, el) {
+      selectedNetwork = net;
+      window.highlightSelected(el);
+      window.loadDataPlans();
+    };
+
+    window.selectCable = function(company, el) {
+      selectedCableCompany = company;
+      window.highlightSelected(el);
+      window.loadCablePackages();
+    };
+
+    window.setExamBoard = function(price, el) {
+      examPinUnitPrice = price;
+      window.highlightSelected(el);
+      window.updatePinAmount();
+    };
+
+    window.loadDataPlans = function() {
+      const select = document.getElementById('dataPlanSelect');
+      select.innerHTML = '';
+      (DATA_PLANS[selectedNetwork] || []).forEach(p => {
+        const opt = document.createElement('option');
+        opt.textContent = `${p.name} — ₦${p.price}`;
+        select.appendChild(opt);
+      });
+    };
+
+    window.loadCablePackages = function() {
+      const select = document.getElementById('cablePackageSelect');
+      select.innerHTML = '';
+      (CABLE_PACKAGES[selectedCableCompany] || []).forEach(p => {
+        const opt = document.createElement('option');
+        opt.textContent = p.name;
+        select.appendChild(opt);
+      });
+    };
+
+    window.updatePinAmount = function() {
+      const qty = parseInt(document.getElementById('pinQuantity').value) || 1;
+      document.getElementById('pinTotalAmount').value = `₦${(qty * examPinUnitPrice).toLocaleString('en-NG')}`;
+    };
+
+    window.verifyIUC = function() {
+      const status = document.getElementById('statusAlert');
+      const val = document.getElementById('smartcardNo').value.trim();
+      if (!val) {
+        status.className = 'status-alert error';
+        status.textContent = 'Please enter Smartcard/IUC number first.';
+        return;
+      }
+      status.className = 'status-alert success';
+      status.textContent = 'Customer Name: JOHN DOE (Verified)';
+    };
+
+    document.querySelectorAll('.vtu-form').forEach(form => {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const status = document.getElementById('statusAlert');
+        status.className = 'status-alert error';
+        status.textContent = 'Insufficient wallet balance. Please fund your wallet to proceed.';
+      });
+    });
   </script>
 </body>
 </html>
