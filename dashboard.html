@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Datahub — Modern Dashboard</title>
+  <title>Datahub — Dashboard</title>
 
   <style>
     :root {
@@ -154,9 +154,7 @@
           <div class="wallet-title-group">
             <span class="wallet-title">Available Balance</span>
             <button class="eye-btn" onclick="toggleBalanceVisibility()" title="Toggle Balance">
-              <svg id="eyeIcon" viewBox="0 0 24 24">
-                <!-- SVG Icon toggled via JS -->
-              </svg>
+              <svg id="eyeIcon" viewBox="0 0 24 24"></svg>
             </button>
           </div>
           <span class="user-tag" id="userEmail">Session loading...</span>
@@ -539,7 +537,7 @@
       window.loadCablePackages();
     };
 
-    // Load Data Plans
+    // DYNAMIC DATA PLAN LOADER WITH VALIDITY FORMATTING (Buycard.ng style)
     window.loadDataPlans = async function() {
       const select = document.getElementById('dataPlanSelect');
       const dataType = document.getElementById('dataTypeSelect').value;
@@ -562,7 +560,16 @@
         plansList.forEach(p => {
           const opt = document.createElement('option');
           opt.value = p.plan_id;
-          opt.textContent = `${p.name} — ₦${p.price.toLocaleString('en-NG')}`;
+
+          // Extract validity string dynamically from API response keys
+          const rawValidity = p.validity || p.plan_validity || p.day || '';
+          const validityText = rawValidity ? ` (${rawValidity})` : '';
+
+          // Cleans plan name if it already contains extra network/type tags
+          const cleanName = p.name.replace(/\(SME\)|\(CG\)|\(GIFTING\)/gi, '').trim();
+
+          // Formats as: 1GB (1 Month) => ₦873
+          opt.textContent = `${cleanName}${validityText} => ₦${p.price.toLocaleString('en-NG')}`;
           select.appendChild(opt);
         });
       } catch (err) {
@@ -570,7 +577,7 @@
       }
     };
 
-    // Load Cable Packages
+    // DYNAMIC CABLE PACKAGE LOADER
     window.loadCablePackages = async function() {
       const select = document.getElementById('cablePackageSelect');
       select.innerHTML = '<option value="">Loading packages...</option>';
@@ -585,7 +592,10 @@
         packages.forEach(p => {
           const opt = document.createElement('option');
           opt.value = p.plan_id;
-          opt.textContent = `${p.name} — ₦${p.price.toLocaleString('en-NG')}`;
+          const rawValidity = p.validity || p.plan_validity || '';
+          const validityText = rawValidity ? ` (${rawValidity})` : '';
+
+          opt.textContent = `${p.name}${validityText} => ₦${p.price.toLocaleString('en-NG')}`;
           select.appendChild(opt);
         });
       } catch (err) {
