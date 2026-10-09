@@ -1,22 +1,45 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
+const crypto = require('crypto');
+const path = require('path');
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-// EASY ACCESS API CREDENTIALS & BASE URL
+// Serve static frontend assets (index.html, quickbuy.html, dashboard.html)
+app.use(express.static(path.join(__dirname, '/')));
+
+// -------------------------------------------------------------
+// CONFIGURATION & CREDENTIALS
+// -------------------------------------------------------------
+
+// Easy Access API Config
 const EASY_ACCESS_TOKEN = process.env.EASY_ACCESS_TOKEN;
 const EASY_ACCESS_BASE = 'https://easyaccess.com.ng/api/live/v1';
 
-// ADMIN SECRET KEY FOR CONTROL PANEL OVERRIDES
+// Korapay Live Credentials
+const KORAPAY_SECRET_KEY = process.env.KORAPAY_SECRET_KEY || 'sk_live_GBnW4AxFZVP1FpBhiwG8UNLHZwcpQkAVyuiPKReH';
+const KORAPAY_PUBLIC_KEY = process.env.KORAPAY_PUBLIC_KEY || 'pk_live_qMvFy8kc7XSFtzWAsSYrSGgCwSgPcchuttv2zNAL';
+const KORAPAY_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
+
+// Admin Secret Key
 const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY || 'DatahubMasterAdmin2026';
 
-// 9% Standard Profit Margin
-const PROFIT_MARGIN = 0.09;
+// Profit Margin for Data & Airtime
+const PROFIT_MARGIN = 0.09; // 9%
 
-// Headers Helper for Easy Access
+// In-Memory Transaction & User Database
+const db = {
+  users: {
+    "user@oyodata.com": { email: "user@oyodata.com", balance: 5000, isReseller: false, phone: "08012345678" }
+  },
+  quickTransactions: {}
+};
+
+// Easy Access Headers Helper
 const getEasyAccessHeaders = () => ({
   'Authorization': `Bearer ${EASY_ACCESS_TOKEN}`,
   'AuthorizationToken': EASY_ACCESS_TOKEN,
@@ -36,31 +59,160 @@ const verifyAdmin = (req, res, next) => {
 
 /**
  * PRICING CALCULATOR
- * Standard Data/Airtime: Base Price + 9% Markup
- * Resellers: 5% Discount off standard price
- * Cable TV: Rounded UP to the nearest clean ₦100 (e.g. 4378 -> 4400, 11343 -> 11400)
+ * Standard Data/Airtime: Base Price + 9% Markup (5% discount off standard price for resellers)
+ * Cable TV: No 9% markup, No 5% reseller discount. Base cost rounded UP to the nearest clean ₦100.
  */
 function calculateSellingPrice(basePrice, isReseller = false, isCable = false) {
   const original = parseFloat(basePrice);
   if (isNaN(original)) return basePrice;
 
-  const resellerDiscount = isReseller ? 5 : 0;
-
-  // Cable TV special rounding rule: Rounds UP to nearest ₦100
+  // Cable TV Pricing Rule: Direct base price rounded UP to nearest ₦100 (No 9% markup & No reseller discount)
   if (isCable) {
-    const markupPrice = original * (1 + PROFIT_MARGIN);
-    const finalPrice = markupPrice * (1 - (resellerDiscount / 100));
-    return Math.ceil(finalPrice / 100) * 100;
+    return Math.ceil(original / 100) * 100;
   }
 
-  // Standard 9% Markup for Data & Airtime
+  // Standard 9% Markup for Data & Airtime with 5% Reseller Discount
+  const resellerDiscount = isReseller ? 5 : 0;
   const markupPrice = original * (1 + PROFIT_MARGIN);
   const finalPrice = markupPrice * (1 - (resellerDiscount / 100));
   return Math.ceil(finalPrice);
 }
 
 // -------------------------------------------------------------
-// USER ENDPOINTS
+// KORAPAY PAYMENT ENDPOINTS
+// -------------------------------------------------------------
+
+// 1. INITIALIZE KORAPAY PAYMENT
+app.post('/api/pay/initialize', async (req, res) => {
+  try {
+    const { amount, email, phone, purpose, redirect_url } = req.body;
+
+    if (!amount || Number(amount) <= 0) {
+      return res.status(400).json({ status: false, message: 'Please provide a valid amount.' });
+    }
+
+    const txRef = `oyo_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+    const userEmail = email || 'customer@oyodata.com';
+
+    const payload = {
+      amount: Number(amount),
+      currency: "NGN",
+      reference: txRef,
+      narration: purpose || "OyoData Services Purchase",
+      notification_url: `${req.protocol}://${req.get('host')}/api/korapay-webhook`,
+      redirect_url: redirect_url || `${req.protocol}://${req.get('host')}/quickbuy.html?ref=${txRef}`,
+      customer: {
+        email: userEmail,
+        name: phone || "OyoData Customer"
+      },
+      metadata: {
+        phone: phone || "",
+        purpose: purpose || "wallet_funding"
+      }
+    };
+
+    const korapayRes = await axios.post(
+      `${KORAPAY_BASE_URL}/charges/initialize`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${KORAPAY_SECRET_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    if (korapayRes.data && korapayRes.data.status) {
+      db.quickTransactions[txRef] = {
+        reference: txRef,
+        amount: Number(amount),
+        email: userEmail,
+        phone: phone || "N/A",
+        status: "PENDING",
+        date: new Date().toLocaleString('en-GB')
+      };
+
+      return res.json({
+        status: true,
+        message: "Payment initialized successfully",
+        checkout_url: korapayRes.data.data.checkout_url,
+        reference: txRef
+      });
+    } else {
+      return res.status(400).json({ status: false, message: korapayRes.data?.message || "Failed to initialize payment." });
+    }
+
+  } catch (error) {
+    console.error("Korapay Charge Init Error:", error.response?.data || error.message);
+    return res.status(500).json({ status: false, message: "Server error initializing Korapay transaction." });
+  }
+});
+
+// 2. KORAPAY SIGNED WEBHOOK HANDLER
+app.post('/api/korapay-webhook', (req, res) => {
+  try {
+    const signature = req.headers['x-korapay-signature'];
+    
+    if (!signature) {
+      return res.status(401).send("Missing signature header");
+    }
+
+    const calculatedHash = crypto
+      .createHmac('sha256', KORAPAY_SECRET_KEY)
+      .update(JSON.stringify(req.body))
+      .digest('hex');
+
+    if (calculatedHash !== signature) {
+      console.warn("Invalid Korapay Webhook Signature!");
+      return res.status(400).send("Signature verification failed");
+    }
+
+    const { event, data } = req.body;
+
+    if (event === 'charge.success' && data?.status === 'success') {
+      const { reference, amount, customer, metadata } = data;
+      console.log(`[KORAPAY SUCCESS] Ref: ${reference} | Amount: ₦${amount} | Email: ${customer?.email}`);
+
+      if (db.quickTransactions[reference]) {
+        db.quickTransactions[reference].status = "SUCCESS";
+      } else {
+        db.quickTransactions[reference] = {
+          reference,
+          amount,
+          email: customer?.email,
+          phone: metadata?.phone || "N/A",
+          status: "SUCCESS",
+          date: new Date().toLocaleString('en-GB')
+        };
+      }
+
+      if (customer?.email && db.users[customer.email]) {
+        db.users[customer.email].balance += Number(amount);
+      }
+    }
+
+    return res.status(200).json({ status: true, message: "Webhook processed successfully" });
+
+  } catch (err) {
+    console.error("Webhook Handling Error:", err);
+    return res.status(500).send("Server Error");
+  }
+});
+
+// 3. FETCH TRANSACTION RECEIPT BY PHONE NUMBER
+app.get('/api/receipt/:phone', (req, res) => {
+  const phone = req.params.phone;
+  const matches = Object.values(db.quickTransactions).filter(tx => tx.phone === phone);
+
+  if (matches.length > 0) {
+    return res.json({ status: true, transaction: matches[matches.length - 1] });
+  } else {
+    return res.status(404).json({ status: false, message: "No transaction receipt found for this number." });
+  }
+});
+
+// -------------------------------------------------------------
+// EASY ACCESS VTU ENDPOINTS
 // -------------------------------------------------------------
 
 // 1. DYNAMIC DATA & CABLE PLAN FETCHING
@@ -90,7 +242,6 @@ app.get('/api/get-plans', async (req, res) => {
       }
     }
 
-    // Apply 9% / 5% / Cable Rounding logic
     const markedUpList = list.map(plan => ({
       plan_id: plan.plan_id || plan.id,
       name: plan.name || plan.plan_name,
@@ -188,7 +339,7 @@ app.post('/api/subscribe-tv', async (req, res) => {
   }
 });
 
-// 6. CHECK WALLET BALANCE
+// 6. CHECK PROVIDER WALLET BALANCE
 app.get('/api/wallet-balance', async (req, res) => {
   try {
     const response = await axios.get(`${EASY_ACCESS_BASE}/wallet-balance`, {
@@ -205,7 +356,6 @@ app.get('/api/wallet-balance', async (req, res) => {
 // ADMIN CONTROL PANEL ENDPOINTS
 // -------------------------------------------------------------
 
-// 1. FETCH SYSTEM STATS & METRICS
 app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
   try {
     res.json({
@@ -215,9 +365,7 @@ app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
         resellers_count: 38,
         total_transactions: 1250,
         total_revenue: 845000,
-        provider_balances: {
-          easyaccess: "Connected"
-        }
+        provider_balances: { easyaccess: "Connected" }
       }
     });
   } catch (error) {
@@ -225,14 +373,11 @@ app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
   }
 });
 
-// 2. FUND / DEBIT USER WALLET MANUALLY
 app.post('/api/admin/fund-wallet', verifyAdmin, async (req, res) => {
   const { user_email, amount, action_type } = req.body;
   if (!user_email || !amount) {
     return res.status(400).json({ status: 'failed', message: 'Email and amount required' });
   }
-
-  console.log(`[ADMIN ACTION] ${action_type.toUpperCase()} ₦${amount} for ${user_email}`);
 
   res.json({ 
     status: 'success', 
@@ -240,17 +385,18 @@ app.post('/api/admin/fund-wallet', verifyAdmin, async (req, res) => {
   });
 });
 
-// 3. TOGGLE RESELLER STATUS MANUALLY
 app.post('/api/admin/toggle-reseller', verifyAdmin, async (req, res) => {
   const { user_email, is_reseller } = req.body;
-
-  console.log(`[ADMIN ACTION] Reseller status = ${is_reseller} for ${user_email}`);
-
   res.json({ 
     status: 'success', 
     message: `Updated reseller status to ${is_reseller ? 'Reseller (5% Off)' : 'Standard User'} for ${user_email}` 
   });
 });
 
+// Default Fallback Page Routes
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/quickbuy.html', (req, res) => res.sendFile(path.join(__dirname, 'quickbuy.html')));
+app.get('/dashboard.html', (req, res) => res.sendFile(path.join(__dirname, 'dashboard.html')));
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Datahub backend running on port ${PORT} (9% Margin + Cable Rounding)`));
+app.listen(PORT, () => console.log(`OyoData Unified Server running on port ${PORT}`));
