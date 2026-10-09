@@ -132,6 +132,11 @@
     .modal-title { font-size: 1.1rem; font-weight: 800; }
     .btn-close { background: #f0eff6; border: none; width: 32px; height: 32px; border-radius: 50%; font-weight: 800; cursor: pointer; }
 
+    .bank-box { background: var(--brand-accent); border: 1.5px dashed var(--brand-orange); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+    .bank-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; }
+    .bank-label { color: var(--text-muted); font-weight: 600; }
+    .bank-val { font-weight: 800; color: var(--text-dark); }
+
     .status-alert { margin-top: 14px; padding: 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; display: none; }
     .status-alert.error { display: block; background: var(--error-bg); color: var(--error-text); }
     .status-alert.success { display: block; background: var(--success-bg); color: var(--success-text); }
@@ -511,22 +516,30 @@
     </div>
   </div>
 
-  <!-- MODAL: TOP UP WALLET (KORAPAY INTEGRATED) -->
+  <!-- MODAL: DEDICATED VIRTUAL ACCOUNT TOP UP -->
   <div id="modalTopup" class="modal-overlay">
     <div class="modal-sheet">
       <div class="modal-header">
-        <span class="modal-title">Instant Wallet Top Up</span>
+        <span class="modal-title">Your Dedicated Bank Account</span>
         <button class="btn-close" onclick="closeModal('modalTopup')">✕</button>
       </div>
-      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">Fund your account instantly via Card, Bank Transfer, or USSD with Korapay:</p>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">Transfer funds from any bank app to your dedicated account number below for automated, instant wallet funding:</p>
 
-      <div class="form-group">
-        <label>Amount to Top Up (₦)</label>
-        <input type="number" id="topupAmountInput" placeholder="e.g. 2000" min="100" required />
+      <div class="bank-box">
+        <div class="bank-row">
+          <span class="bank-label">Bank Name</span>
+          <span class="bank-val" id="userBankName">Loading...</span>
+        </div>
+        <div class="bank-row">
+          <span class="bank-label">Account Number</span>
+          <span class="bank-val" id="userAccountNo" style="color: var(--brand-orange); font-size: 1.1rem; font-weight: 800;">Loading...</span>
+        </div>
+        <div class="bank-row">
+          <span class="bank-label">Account Name</span>
+          <span class="bank-val" id="userAccountName">Loading...</span>
+        </div>
       </div>
-
-      <button class="btn-action" style="background: linear-gradient(135deg, var(--brand-orange), var(--brand-red));" onclick="payWithKorapayInline()">Pay via Korapay</button>
-      <div id="topupAlert" class="status-alert"></div>
+      <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">Automated bank deposit. Takes 5 to 30 seconds to reflect.</p>
     </div>
   </div>
 
@@ -573,9 +586,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // EXPLICIT BACKEND URL TO PREVENT GITHUB PAGES 404 NOT FOUND
+    // LIVE RENDER BACKEND URL
     const BACKEND_URL = "https://datahub-qmzg.onrender.com";
-    const KORAPAY_PUBLIC_KEY = "pk_live_qMvFy8kc7XSFtzWAsSYrSGgCwSgPcchuttv2zNAL";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDgj3g2-VwCf4oWnETazpxxPvl2vpyl3Mo",
@@ -597,9 +609,10 @@
         userEmailAddress = user.email;
         document.getElementById('userEmail').textContent = user.email;
         document.getElementById('refLinkInput').value = `https://ugbolagade-ship-it.github.io/OyoData/signup.html?ref=${user.uid.slice(0, 6)}`;
+        
+        window.fetchDedicatedAccount(user.email);
         window.fetchWalletBalance();
         window.renderTransactions();
-        window.renderReferredUsers();
         window.checkResellerStatus();
       } else {
         window.location.href = 'login.html';
@@ -615,7 +628,6 @@
     let selectedCableCompany = 'dstv';
     let selectedCableCompanyCode = 1;
     
-    // PERSIST USER WALLET BALANCE LOCALLY
     let actualBalance = parseFloat(localStorage.getItem('dh_wallet_balance') || '0');
     let refBalance = parseFloat(localStorage.getItem('dh_ref_balance') || '0');
     let isReseller = localStorage.getItem('dh_is_reseller') === 'true';
@@ -658,52 +670,23 @@
       }
     };
 
-    window.payWithKorapayInline = function() {
-      const amount = Number(document.getElementById('topupAmountInput').value);
-      const alertBox = document.getElementById('topupAlert');
-
-      if (!amount || amount < 100) {
-        alertBox.className = "status-alert error";
-        alertBox.textContent = "Please enter a valid amount (Minimum ₦100).";
-        return;
-      }
-
-      alertBox.className = "status-alert";
-      const txRef = `oyo_fund_${Date.now()}`;
-
-      window.Korapay.initialize({
-        key: KORAPAY_PUBLIC_KEY,
-        reference: txRef,
-        amount: amount,
-        currency: "NGN",
-        customer: {
-          name: "OyoData User",
-          email: userEmailAddress
-        },
-        narration: "OyoData Wallet Top Up",
-        onSuccess: function (data) {
-          actualBalance += amount;
-          localStorage.setItem('dh_wallet_balance', actualBalance.toString());
-
-          transactionHistory.unshift({
-            type: 'Transfer',
-            title: 'Korapay Wallet Funding',
-            amount: amount.toString(),
-            ref: txRef,
-            date: new Date().toLocaleDateString('en-GB'),
-            status: 'SUCCESS'
-          });
-          localStorage.setItem('dh_transactions', JSON.stringify(transactionHistory));
-
-          window.closeModal('modalTopup');
-          window.updateBalanceDisplay();
-          window.renderTransactions();
-          alert(`Success! ₦${amount.toLocaleString('en-NG')} added to your wallet balance.`);
-        },
-        onClose: function () {
-          console.log("Korapay modal closed");
+    // FETCH DEDICATED VIRTUAL ACCOUNT
+    window.fetchDedicatedAccount = async function(email) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/get-virtual-account`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, name: email.split('@')[0] })
+        });
+        const data = await res.json();
+        if (data.status && data.account) {
+          document.getElementById('userBankName').textContent = data.account.bank_name;
+          document.getElementById('userAccountNo').textContent = data.account.account_number;
+          document.getElementById('userAccountName').textContent = data.account.account_name;
         }
-      });
+      } catch (err) {
+        console.error("Dedicated account error:", err);
+      }
     };
 
     window.copyReferralLink = function() {
@@ -782,15 +765,6 @@
       alert("Withdrawal request submitted! Funds will arrive in 5 - 15 minutes.");
     };
 
-    window.renderReferredUsers = function() {
-      const container = document.getElementById('referredUsersList');
-      if (!container) return;
-
-      if (transactionHistory.filter(t => t.type === 'Transfer' && t.title.includes('Referral')).length === 0) {
-        container.innerHTML = `<p style="font-size:0.8rem; color:var(--text-muted); text-align:center; padding:15px;">No active referral bonuses claimed yet.</p>`;
-      }
-    };
-
     window.fetchWalletBalance = function() {
       window.updateBalanceDisplay();
     };
@@ -857,16 +831,20 @@
       window.loadCablePackages();
     };
 
-    // LOAD DATA PLANS DIRECTLY FROM LIVE RENDER BACKEND
+    // DATA PLANS FETCHING FUNCTION
     window.loadDataPlans = async function() {
       const select = document.getElementById('dataPlanSelect');
       const dataType = document.getElementById('dataTypeSelect').value;
-      const productType = `${selectedNetwork.toLowerCase()}_${dataType}`;
+      
+      let formattedProductType = `${selectedNetwork.toLowerCase()}_${dataType}`;
+      if (selectedNetwork === 'AIRTEL') formattedProductType = 'airtel_cg';
+      if (selectedNetwork === 'GLO') formattedProductType = 'glo_cg';
+      if (selectedNetwork === '9MOBILE') formattedProductType = '9mobile_sme';
 
       select.innerHTML = '<option value="">Loading plans...</option>';
 
       try {
-        const response = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${productType}&is_reseller=${isReseller}`);
+        const response = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${formattedProductType}&is_reseller=${isReseller}`);
         const data = await response.json();
 
         select.innerHTML = '<option value="">Select Plan</option>';
@@ -874,7 +852,7 @@
         let plansList = [];
         if (Array.isArray(data)) {
           plansList = data;
-        } else if (Array.isArray(data.plans)) {
+        } else if (data && Array.isArray(data.plans)) {
           plansList = data.plans;
         }
 
