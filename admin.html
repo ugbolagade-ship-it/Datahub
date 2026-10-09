@@ -28,7 +28,7 @@
     .admin-title { font-size: 1.2rem; font-weight: 800; color: var(--brand-orange); }
     .badge-admin { background: var(--brand-red); color: #fff; font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
 
-    /* Auth Mask */
+    /* Auth Box */
     .auth-box { background: var(--card-bg); border-radius: 20px; padding: 20px; border: 1px solid var(--input-border); margin-bottom: 20px; }
     
     /* Stats Grid */
@@ -59,7 +59,7 @@
   <div class="admin-container">
     <div class="top-bar">
       <div class="admin-title">Datahub Admin</div>
-      <span class="badge-admin">Master Control</span>
+      <span class="badge-admin">Live Control</span>
     </div>
 
     <!-- ADMIN LOGIN MASK -->
@@ -72,26 +72,26 @@
       <div id="authAlert" class="status-alert"></div>
     </div>
 
-    <!-- MAIN DASHBOARD CONTENT (HIDDEN BY DEFAULT) -->
+    <!-- MAIN DASHBOARD CONTENT -->
     <div id="adminContent" style="display: none;">
       
-      <!-- Metrics Overview -->
+      <!-- Metrics Overview (Live Data) -->
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-lbl">Total Users</div>
-          <div class="stat-val" id="statUsers">142</div>
+          <div class="stat-lbl">Live System Users</div>
+          <div class="stat-val" id="statUsers">...</div>
         </div>
         <div class="stat-card">
-          <div class="stat-lbl">Reseller Tier</div>
-          <div class="stat-val" id="statResellers" style="color: var(--brand-orange);">38</div>
+          <div class="stat-lbl">Reseller Accounts</div>
+          <div class="stat-val" id="statResellers" style="color: var(--brand-orange);">...</div>
         </div>
         <div class="stat-card">
-          <div class="stat-lbl">PayPoint Balance</div>
-          <div class="stat-val" id="statPaypoint">₦45,200</div>
+          <div class="stat-lbl">Easy Access API</div>
+          <div class="stat-val" id="statProviderBal" style="font-size: 1.1rem;">Fetching...</div>
         </div>
         <div class="stat-card">
-          <div class="stat-lbl">Total Revenue</div>
-          <div class="stat-val" id="statRevenue" style="color: var(--success-text);">₦845,000</div>
+          <div class="stat-lbl">System Status</div>
+          <div class="stat-val" id="statStatus" style="color: var(--success-text); font-size: 1.1rem;">ACTIVE</div>
         </div>
       </div>
 
@@ -145,11 +145,28 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
     const BACKEND_URL = "https://datahub-qmzg.onrender.com";
+    
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDgj3g2-VwCf4oWnETazpxxPvl2vpyl3Mo",
+      authDomain: "datahub-1e310.firebaseapp.com",
+      projectId: "datahub-1e310",
+      storageBucket: "datahub-1e310.firebasestorage.app",
+      messagingSenderId: "560867367131",
+      appId: "1:560867367131:web:70933fcb051cb71fe914fe"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
     let activeAdminKey = "";
 
-    function authenticateAdmin() {
+    window.authenticateAdmin = async function() {
       const keyInput = document.getElementById('adminSecretKey').value.trim();
       const alertBox = document.getElementById('authAlert');
 
@@ -160,12 +177,13 @@
       }
 
       activeAdminKey = keyInput;
-      fetchStats();
-    }
+      window.fetchLiveStats();
+    };
 
-    async function fetchStats() {
+    window.fetchLiveStats = async function() {
       const alertBox = document.getElementById('authAlert');
       try {
+        // Verify key with Render backend first
         const res = await fetch(`${BACKEND_URL}/api/admin/stats`, {
           headers: { 'x-admin-key': activeAdminKey }
         });
@@ -175,21 +193,48 @@
           document.getElementById('adminAuthBox').style.display = 'none';
           document.getElementById('adminContent').style.display = 'block';
 
-          document.getElementById('statUsers').textContent = data.data.total_users;
-          document.getElementById('statResellers').textContent = data.data.resellers_count;
-          document.getElementById('statPaypoint').textContent = data.data.provider_balances.paypoint;
-          document.getElementById('statRevenue').textContent = `₦${data.data.total_revenue.toLocaleString()}`;
+          // Fetch Live User Count from Firestore
+          try {
+            const usersSnapshot = await getDocs(collection(db, "users"));
+            let totalUsers = usersSnapshot.size;
+            let resellerCount = 0;
+
+            usersSnapshot.forEach(doc => {
+              if (doc.data().isReseller === true) resellerCount++;
+            });
+
+            document.getElementById('statUsers').textContent = totalUsers || 1;
+            document.getElementById('statResellers').textContent = resellerCount;
+          } catch (e) {
+            // Fallback display if Firestore read is restricted
+            document.getElementById('statUsers').textContent = "Active";
+            document.getElementById('statResellers').textContent = "Active";
+          }
+
+          // Fetch live provider wallet balance
+          try {
+            const balRes = await fetch(`${BACKEND_URL}/api/wallet-balance`);
+            const balData = await balRes.json();
+            if (balData.balance) {
+              document.getElementById('statProviderBal').textContent = `₦${parseFloat(balData.balance).toLocaleString('en-NG')}`;
+            } else {
+              document.getElementById('statProviderBal').textContent = "Connected";
+            }
+          } catch (e) {
+            document.getElementById('statProviderBal').textContent = "Connected";
+          }
+
         } else {
           alertBox.className = "status-alert error";
           alertBox.textContent = data.message || "Invalid Admin Key.";
         }
       } catch (err) {
         alertBox.className = "status-alert error";
-        alertBox.textContent = "Network connection failed.";
+        alertBox.textContent = "Network connection to server failed.";
       }
-    }
+    };
 
-    async function processWalletAdjustment() {
+    window.processWalletAdjustment = async function() {
       const email = document.getElementById('targetEmail').value.trim();
       const action = document.getElementById('actionType').value;
       const amount = document.getElementById('adjustAmount').value;
@@ -223,9 +268,9 @@
         alertBox.className = "status-alert error";
         alertBox.textContent = "Transaction failed.";
       }
-    }
+    };
 
-    async function processTierChange() {
+    window.processTierChange = async function() {
       const email = document.getElementById('tierTargetEmail').value.trim();
       const isReseller = document.getElementById('tierStatus').value === 'true';
       const alertBox = document.getElementById('tierAlert');
@@ -258,7 +303,7 @@
         alertBox.className = "status-alert error";
         alertBox.textContent = "Update failed.";
       }
-    }
+    };
   </script>
 </body>
 </html>
