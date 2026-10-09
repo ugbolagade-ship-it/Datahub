@@ -132,17 +132,40 @@
     .modal-title { font-size: 1.1rem; font-weight: 800; }
     .btn-close { background: #f0eff6; border: none; width: 32px; height: 32px; border-radius: 50%; font-weight: 800; cursor: pointer; }
 
-    .bank-box { background: var(--brand-accent); border: 1.5px dashed var(--brand-orange); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
-    .bank-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; }
-    .bank-label { color: var(--text-muted); font-weight: 600; }
-    .bank-val { font-weight: 800; color: var(--text-dark); }
-
     .status-alert { margin-top: 14px; padding: 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; display: none; }
     .status-alert.error { display: block; background: var(--error-bg); color: var(--error-text); }
     .status-alert.success { display: block; background: var(--success-bg); color: var(--success-text); }
 
-    .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid var(--input-border); display: flex; justify-style: space-around; padding: 10px 0 14px 0; z-index: 900; }
-    .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); font-size: 0.7rem; font-weight: 700; cursor: pointer; border: none; background: none; }
+    /* FIXED BOTTOM NAVIGATION BAR LAYOUT */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      border-top: 1px solid var(--input-border);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 8px 0 12px 0;
+      z-index: 900;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+    }
+    .nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+    }
     .nav-btn.active { color: var(--brand-orange); }
     .nav-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
     .nav-icon svg { width: 100%; height: 100%; fill: currentColor; }
@@ -189,7 +212,7 @@
               <span id="eyeText">Hide</span>
             </button>
           </div>
-          <span class="user-tag" id="userEmail">Session loading...</span>
+          <span class="user-tag" id="userEmail">Loading user...</span>
         </div>
 
         <div class="wallet-amount" id="walletBalance">₦0.00</div>
@@ -590,7 +613,7 @@
     let selectedCableCompany = 'dstv';
     let selectedCableCompanyCode = 1;
     let actualBalance = 0;
-    let refBalance = parseFloat(localStorage.getItem('dh_ref_balance') || '1000');
+    let refBalance = parseFloat(localStorage.getItem('dh_ref_balance') || '0');
     let isReseller = localStorage.getItem('dh_is_reseller') === 'true';
     let isBalanceHidden = localStorage.getItem('dh_hide_balance') === 'true';
 
@@ -605,14 +628,14 @@
       const eyeIconElem = document.getElementById('eyeIcon');
       const eyeTextElem = document.getElementById('eyeText');
 
-      if (refElem) refElem.textContent = `₦${refBalance.toLocaleString('en-NG')}`;
+      if (refElem) refElem.textContent = `₦${refBalance.toLocaleString('en-NG', {minimumFractionDigits: 2})}`;
 
       if (isBalanceHidden) {
         displayElem.textContent = '••••••••';
         eyeIconElem.innerHTML = SVG_EYE_CLOSED;
         if (eyeTextElem) eyeTextElem.textContent = 'Show';
       } else {
-        displayElem.textContent = `₦${parseFloat(actualBalance).toLocaleString('en-NG')}`;
+        displayElem.textContent = `₦${parseFloat(actualBalance).toLocaleString('en-NG', {minimumFractionDigits: 2})}`;
         eyeIconElem.innerHTML = SVG_EYE_OPEN;
         if (eyeTextElem) eyeTextElem.textContent = 'Hide';
       }
@@ -631,7 +654,7 @@
       }
     };
 
-    // KORAPAY INLINE WALLET TOP UP
+    // FIXED KORAPAY FUNDING: Credited via webhook ONLY (removes duplicate manual credit)
     window.payWithKorapayInline = function() {
       const amount = Number(document.getElementById('topupAmountInput').value);
       const alertBox = document.getElementById('topupAlert');
@@ -656,9 +679,7 @@
         },
         narration: "OyoData Wallet Top Up",
         onSuccess: function (data) {
-          actualBalance += amount;
-          window.updateBalanceDisplay();
-
+          // Webhook handles the actual balance update to prevent double crediting
           transactionHistory.unshift({
             type: 'Transfer',
             title: 'Korapay Wallet Funding',
@@ -670,8 +691,9 @@
           localStorage.setItem('dh_transactions', JSON.stringify(transactionHistory));
 
           window.closeModal('modalTopup');
+          window.fetchWalletBalance();
           window.renderTransactions();
-          alert(`Success! ₦${amount.toLocaleString('en-NG')} credited to your wallet.`);
+          alert(`Payment initialized successfully! Your wallet will reflect ₦${amount.toLocaleString('en-NG')} automatically upon webhook confirmation.`);
         },
         onClose: function () {
           console.log("Korapay modal closed");
@@ -757,37 +779,21 @@
       const container = document.getElementById('referredUsersList');
       if (!container) return;
 
-      const mockUsers = [
-        { email: "john***@gmail.com", date: "08/10/2026", status: "Reseller (Earned ₦1,000)" },
-        { email: "mary***@yahoo.com", date: "07/10/2026", status: "Standard User" }
-      ];
-
-      container.innerHTML = mockUsers.map(u => `
-        <div class="tx-item">
-          <div class="tx-left">
-            <div class="tx-icon">👤</div>
-            <div>
-              <div class="tx-title">${u.email}</div>
-              <div class="tx-date">Joined: ${u.date}</div>
-            </div>
-          </div>
-          <div class="tx-right">
-            <span class="tx-badge ${u.status.includes('Earned') ? 'success' : 'failed'}">${u.status}</span>
-          </div>
-        </div>
-      `).join('');
+      if (transactionHistory.filter(t => t.type === 'Transfer' && t.title.includes('Referral')).length === 0) {
+        container.innerHTML = `<p style="font-size:0.8rem; color:var(--text-muted); text-align:center; padding:15px;">No active referral bonuses claimed yet.</p>`;
+      }
     };
 
     window.fetchWalletBalance = async function() {
       try {
         const res = await fetch(`${BACKEND_URL}/api/wallet-balance`);
         const data = await res.json();
-        if (data.balance) {
+        if (data.balance !== undefined) {
           actualBalance = parseFloat(data.balance);
           window.updateBalanceDisplay();
         }
       } catch (err) {
-        console.error("Balance fetch failed", err);
+        console.error("Balance fetch error:", err);
       }
     };
 
@@ -853,6 +859,7 @@
       window.loadCablePackages();
     };
 
+    // FIXED DATA PLANS PARSER: Supports direct arrays and object responses
     window.loadDataPlans = async function() {
       const select = document.getElementById('dataPlanSelect');
       const dataType = document.getElementById('dataTypeSelect').value;
@@ -865,7 +872,13 @@
         const data = await response.json();
 
         select.innerHTML = '<option value="">Select Plan</option>';
-        const plansList = data.plans || [];
+        
+        let plansList = [];
+        if (Array.isArray(data)) {
+          plansList = data;
+        } else if (Array.isArray(data.plans)) {
+          plansList = data.plans;
+        }
 
         if (plansList.length === 0) {
           select.innerHTML = '<option value="">No plans available</option>';
@@ -874,10 +887,10 @@
 
         plansList.forEach(p => {
           const opt = document.createElement('option');
-          opt.value = p.plan_id;
+          opt.value = p.plan_id || p.id;
           const rawValidity = p.validity || p.plan_validity || p.day || '';
           const validityText = rawValidity ? ` (${rawValidity})` : '';
-          const cleanName = p.name.replace(/\(SME\)|\(CG\)|\(GIFTING\)/gi, '').trim();
+          const cleanName = (p.name || p.plan_name || '').replace(/\(SME\)|\(CG\)|\(GIFTING\)/gi, '').trim();
 
           opt.textContent = `${cleanName}${validityText} => ₦${p.price.toLocaleString('en-NG')}`;
           select.appendChild(opt);
@@ -896,15 +909,15 @@
         const data = await response.json();
 
         select.innerHTML = '<option value="">Select Package</option>';
-        const packages = data.plans || [];
+        let packages = Array.isArray(data) ? data : (data.plans || []);
 
         packages.forEach(p => {
           const opt = document.createElement('option');
-          opt.value = p.plan_id;
+          opt.value = p.plan_id || p.id;
           const rawValidity = p.validity || p.plan_validity || '';
           const validityText = rawValidity ? ` (${rawValidity})` : '';
 
-          opt.textContent = `${p.name}${validityText} => ₦${p.price.toLocaleString('en-NG')}`;
+          opt.textContent = `${p.name || p.plan_name}${validityText} => ₦${p.price.toLocaleString('en-NG')}`;
           select.appendChild(opt);
         });
       } catch (err) {
