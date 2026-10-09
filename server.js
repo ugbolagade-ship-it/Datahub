@@ -9,34 +9,37 @@ app.use(cors());
 const EASY_ACCESS_TOKEN = process.env.EASY_ACCESS_TOKEN;
 const BASE_URL = 'https://easyaccess.com.ng/api/live/v1';
 
-const PROFIT_MARGIN = 0.12; // 12% Markup
+// Profit Margin Set to 9%
+const PROFIT_MARGIN = 0.09;
 
 const getHeaders = () => ({
   'Authorization': `Bearer ${EASY_ACCESS_TOKEN}`,
+  'AuthorizationToken': EASY_ACCESS_TOKEN,
   'Cache-Control': 'no-cache',
   'Content-Type': 'application/json'
 });
 
-function addMarkup(basePrice) {
+// Helper function to calculate selling price (Base + 9%)
+function addMarkup(basePrice, discountPercent = 0) {
   const original = parseFloat(basePrice);
   if (isNaN(original)) return basePrice;
-  return Math.ceil(original * (1 + PROFIT_MARGIN));
+  const markupPrice = original * (1 + PROFIT_MARGIN);
+  // Apply reseller discount if applicable (e.g., 5% off)
+  const finalPrice = markupPrice * (1 - (discountPercent / 100));
+  return Math.ceil(finalPrice);
 }
 
-// 1. GET DATA & CABLE TV PLANS WITH 12% MARKUP
+// 1. GET DATA & CABLE TV PLANS WITH 9% MARKUP
 app.get('/api/get-plans', async (req, res) => {
-  const { product_type } = req.query;
+  const { product_type, is_reseller } = req.query;
   const targetType = product_type || 'mtn_sme';
-
-  console.log(`[API CALL] Fetching plans for product_type: ${targetType}`);
+  const discount = is_reseller === 'true' ? 5 : 0; // 5% discount for Reseller tier
 
   try {
     const response = await axios.get(`${BASE_URL}/get-plans?product_type=${targetType}`, {
       headers: getHeaders(),
-      validateStatus: () => true // Prevent axios from throwing on non-200 status codes
+      validateStatus: () => true
     });
-
-    console.log(`[EASY ACCESS RESPONSE]`, JSON.stringify(response.data));
 
     const raw = response.data;
     let list = [];
@@ -44,7 +47,6 @@ app.get('/api/get-plans', async (req, res) => {
     if (Array.isArray(raw)) {
       list = raw;
     } else if (typeof raw === 'object' && raw !== null) {
-      // Look for any property in the JSON object that contains an array
       for (const key in raw) {
         if (Array.isArray(raw[key])) {
           list = raw[key];
@@ -53,16 +55,14 @@ app.get('/api/get-plans', async (req, res) => {
       }
     }
 
-    // Add 12% markup
     const markedUpList = list.map(plan => ({
       ...plan,
       cost_price: plan.price,
-      price: addMarkup(plan.price)
+      price: addMarkup(plan.price, discount)
     }));
 
-    res.json({ status: 'success', plans: markedUpList, rawResponse: raw });
+    res.json({ status: 'success', plans: markedUpList });
   } catch (error) {
-    console.error(`[ERROR fetching plans]`, error.message);
     res.status(500).json({ status: 'failed', message: error.message, plans: [] });
   }
 });
@@ -119,4 +119,4 @@ app.get('/api/wallet-balance', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running with 9% markup on port ${PORT}`));
