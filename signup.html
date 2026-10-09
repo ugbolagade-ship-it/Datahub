@@ -26,7 +26,7 @@
     
     /* Clickable Brand Link to index.html */
     .brand-link { text-decoration: none; display: inline-flex; align-items: center; gap: 10px; margin-bottom: 24px; cursor: pointer; }
-    .brand-logo { width: 36px; height: 36px; display: block; }
+    .brand-logo { width: 52px; height: auto; display: block; }
     .brand-name { font-size: 1.5rem; font-weight: 800; color: var(--brand-red); letter-spacing: -0.4px; }
     
     h2 { font-size: 1.55rem; font-weight: 800; color: var(--text-dark); margin-bottom: 6px; }
@@ -52,17 +52,26 @@
 <body>
 
   <div class="auth-card">
-    <!-- Clickable Header Navigating to index.html -->
     <a href="index.html" class="brand-link" title="Go to Home Page">
-      <svg class="brand-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 500 280" fill="none" xmlns="http://www.w3.org/2000/svg" class="brand-logo">
         <defs>
-          <linearGradient id="oyoSignupGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#f4841f" />
-            <stop offset="100%" stop-color="#d9381e" />
+          <linearGradient id="oyoGradSignup" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#FFB000"/>
+            <stop offset="50%" stop-color="#FF5500"/>
+            <stop offset="100%" stop-color="#E03000"/>
           </linearGradient>
         </defs>
-        <circle cx="50" cy="50" r="40" stroke="url(#oyoSignupGrad)" stroke-width="16" />
-        <circle cx="50" cy="50" r="18" fill="url(#oyoSignupGrad)" />
+        <rect x="70" y="85" width="70" height="16" rx="8" fill="url(#oyoGradSignup)"/>
+        <rect x="40" y="115" width="80" height="16" rx="8" fill="url(#oyoGradSignup)"/>
+        <rect x="58" y="145" width="70" height="16" rx="8" fill="url(#oyoGradSignup)"/>
+        <path d="M 230 40 L 320 40 C 390 40 440 85 440 155 C 440 225 390 270 320 270 L 230 270 Z" fill="#0A1922"/>
+        <path d="M 285 95 L 315 95 C 355 95 380 120 380 155 C 380 190 355 215 315 215 L 285 215 Z" fill="#FFFFFF"/>
+        <circle cx="210" cy="155" r="115" fill="url(#oyoGradSignup)"/>
+        <circle cx="210" cy="155" r="70" fill="#FFFFFF"/>
+        <rect x="180" y="105" width="60" height="100" rx="12" fill="url(#oyoGradSignup)"/>
+        <rect x="186" y="113" width="48" height="74" rx="4" fill="#FFFFFF"/>
+        <circle cx="210" cy="196" r="4" fill="#FFFFFF"/>
+        <path d="M 214 122 L 200 150 H 211 L 206 178 L 220 150 H 209 Z" fill="url(#oyoGradSignup)"/>
       </svg>
       <span class="brand-name">OyoData</span>
     </a>
@@ -126,7 +135,6 @@
 
       status.className = 'status-alert';
 
-      // Validate matching passwords before contacting Firebase
       if (password !== confirmPassword) {
         status.className = 'status-alert error';
         status.textContent = 'Passwords do not match. Please check and try again.';
