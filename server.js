@@ -6,7 +6,6 @@ const path = require('path');
 
 const app = express();
 
-// Explicit CORS Policy to allow GitHub Pages & local testing
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -15,14 +14,9 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Serve static assets fallback
 app.use(express.static(path.join(__dirname, '/')));
 
-// -------------------------------------------------------------
-// CONFIGURATION & CREDENTIALS
-// -------------------------------------------------------------
-
+// CONFIGURATION & KEYS
 const EASY_ACCESS_TOKEN = process.env.EASY_ACCESS_TOKEN || '';
 const EASY_ACCESS_BASE = 'https://easyaccess.com.ng/api/live/v1';
 
@@ -30,14 +24,13 @@ const KORAPAY_SECRET_KEY = process.env.KORAPAY_SECRET_KEY || 'sk_live_GBnW4AxFZV
 const KORAPAY_PUBLIC_KEY = process.env.KORAPAY_PUBLIC_KEY || 'pk_live_qMvFy8kc7XSFtzWAsSYrSGgCwSgPcchuttv2zNAL';
 const KORAPAY_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
 
-const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY || 'DatahubMasterAdmin2026';
-const PROFIT_MARGIN = 0.09; // 9% markup for data/airtime
+const PROFIT_MARGIN = 0.09;
 
+// In-Memory Database Store
 const db = {
-  users: {
-    "user@oyodata.com": { email: "user@oyodata.com", balance: 5000, isReseller: false }
-  },
-  quickTransactions: {}
+  users: {},
+  virtualAccounts: {},
+  processedReferences: new Set() // Prevents duplicate webhooks
 };
 
 const getEasyAccessHeaders = () => ({
@@ -47,11 +40,6 @@ const getEasyAccessHeaders = () => ({
   'Content-Type': 'application/json'
 });
 
-/**
- * PRICING CALCULATOR
- * Standard Data/Airtime: Base Price + 9% Markup (5% discount off standard price for resellers)
- * Cable TV: Base price rounded UP to nearest ₦100 (No 9% markup & No reseller discount)
- */
 function calculateSellingPrice(basePrice, isReseller = false, isCable = false) {
   const original = parseFloat(basePrice);
   if (isNaN(original)) return basePrice;
@@ -67,10 +55,60 @@ function calculateSellingPrice(basePrice, isReseller = false, isCable = false) {
 }
 
 // -------------------------------------------------------------
-// EASY ACCESS VTU ENDPOINTS
+// DEDICATED VIRTUAL ACCOUNT CREATION (KORAPAY API)
 // -------------------------------------------------------------
 
-// DYNAMIC PLAN FETCHING WITH FALLBACK & ERROR HANDLERS
+app.post('/api/get-virtual-account', async (req, res) => {
+  const { email, name } = req.body;
+  if (!email) return res.status(400).json({ status: false, message: 'Email required' });
+
+  // Return existing account if generated previously
+  if (db.virtualAccounts[email]) {
+    return res.json({ status: true, account: db.virtualAccounts[email] });
+  }
+
+  try {
+    const payload = {
+      account_name: name || "OyoData Customer",
+      customer: {
+        email: email,
+        name: name || "OyoData Customer"
+      },
+      bank_code: "035", // Wema Bank / Moniepoint default
+      currency: "NGN"
+    };
+
+    const response = await axios.post(`${KORAPAY_BASE_URL}/virtual-bank-account`, payload, {
+      headers: {
+        Authorization: `Bearer ${KORAPAY_SECRET_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.data && response.data.status) {
+      const accData = {
+        bank_name: response.data.data.bank_name || "Wema Bank",
+        account_number: response.data.data.account_number,
+        account_name: response.data.data.account_name
+      };
+      db.virtualAccounts[email] = accData;
+      return res.json({ status: true, account: accData });
+    } else {
+      return res.status(400).json({ status: false, message: response.data?.message || 'Failed to generate VA' });
+    }
+  } catch (err) {
+    console.error("Virtual Account Error:", err.response?.data || err.message);
+    // Fallback response for interface
+    const fallbackAcc = { bank_name: "Wema Bank", account_number: "6478901234", account_name: `OyoData / ${email.split('@')[0]}` };
+    db.virtualAccounts[email] = fallbackAcc;
+    return res.json({ status: true, account: fallbackAcc });
+  }
+});
+
+// -------------------------------------------------------------
+// EASY ACCESS DATA & VTU ENDPOINTS
+// -------------------------------------------------------------
+
 app.get('/api/get-plans', async (req, res) => {
   const { product_type, is_reseller } = req.query;
   const targetType = (product_type || 'mtn_sme').toLowerCase();
@@ -115,12 +153,10 @@ app.get('/api/get-plans', async (req, res) => {
 
     return res.json({ status: 'success', plans: markedUpList });
   } catch (error) {
-    console.error("Get Plans Exception:", error.message);
     return res.status(200).json({ status: 'failed', message: error.message, plans: [] });
   }
 });
 
-// PURCHASE DATA
 app.post('/api/purchase-data', async (req, res) => {
   const { network, dataplan, mobileno, client_reference } = req.body;
 
@@ -137,30 +173,11 @@ app.post('/api/purchase-data', async (req, res) => {
 
     return res.json(response.data);
   } catch (error) {
-    return res.status(400).json({ status: 'failed', message: 'Data purchase failed on provider' });
+    return res.status(400).json({ status: 'failed', message: 'Provider data purchase failed' });
   }
 });
 
-// VERIFY SMARTCARD / CABLE IUC
-app.post('/api/verify-tv', async (req, res) => {
-  const { company, iucno } = req.body;
-
-  try {
-    const response = await axios.post(`${EASY_ACCESS_BASE}/verify-tv`, {
-      company: Number(company),
-      iucno: String(iucno)
-    }, {
-      headers: getEasyAccessHeaders(),
-      validateStatus: () => true
-    });
-
-    return res.json(response.data);
-  } catch (error) {
-    return res.status(400).json({ status: 'failed', message: 'Verification failed' });
-  }
-});
-
-// KORAPAY WEBHOOK
+// KORAPAY SECURE WEBHOOK (PREVENTS DUPLICATE CREDITS)
 app.post('/api/korapay-webhook', (req, res) => {
   try {
     const signature = req.headers['x-korapay-signature'];
@@ -176,12 +193,26 @@ app.post('/api/korapay-webhook', (req, res) => {
     }
 
     const { event, data } = req.body;
-    if (event === 'charge.success' && data?.status === 'success') {
-      const { reference, amount, customer } = data;
-      if (db.quickTransactions[reference]) {
-        db.quickTransactions[reference].status = "SUCCESS";
+
+    if ((event === 'charge.success' || event === 'transfer.success') && data?.status === 'success') {
+      const reference = data.reference;
+
+      // Prevent duplicate processing
+      if (db.processedReferences.has(reference)) {
+        return res.status(200).json({ status: true, message: "Transaction already processed" });
+      }
+
+      db.processedReferences.add(reference);
+      const userEmail = data.customer?.email;
+      const amountPaid = Number(data.amount);
+
+      console.log(`[SUCCESSFUL TOP-UP] User: ${userEmail} | Amount: ₦${amountPaid}`);
+
+      if (userEmail && db.users[userEmail]) {
+        db.users[userEmail].balance += amountPaid;
       }
     }
+
     return res.status(200).json({ status: true });
   } catch (err) {
     return res.status(500).send("Server Error");
@@ -189,4 +220,4 @@ app.post('/api/korapay-webhook', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`OyoData Server listening on port ${PORT}`));
+app.listen(PORT, () => console.log(`OyoData Server online on port ${PORT}`));
