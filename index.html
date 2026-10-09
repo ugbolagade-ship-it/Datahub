@@ -27,10 +27,13 @@
     body { background-color: var(--bg); color: var(--text-dark); overflow-x: hidden; min-height: 100vh; }
     a { text-decoration: none; color: inherit; }
 
-    /* Top Navigation */
+    /* SVG Icon Helpers */
+    .icon { width: 22px; height: 22px; fill: currentColor; display: inline-block; vertical-align: middle; }
+
+    /* Top Navigation Header */
     nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(255, 255, 255, 0.92);
+      background: rgba(255, 255, 255, 0.94);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--input-border);
     }
@@ -42,26 +45,17 @@
     .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.4rem; color: var(--brand-red); letter-spacing: -0.5px; }
     .brand-logo { width: 48px; height: auto; display: block; }
 
-    .nav-menu { display: flex; align-items: center; gap: 28px; list-style: none; }
-    .nav-menu a { font-size: 0.9rem; font-weight: 700; color: var(--text-muted); transition: color 0.2s; }
-    .nav-menu a:hover { color: var(--brand-orange); }
-
-    .nav-actions { display: flex; align-items: center; gap: 10px; }
-    .btn {
-      padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 0.88rem;
-      display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; cursor: pointer; border: none;
+    /* Navigation Tabs */
+    .nav-tabs { display: flex; align-items: center; gap: 6px; background: #f0eff6; padding: 4px; border-radius: 14px; list-style: none; }
+    .nav-tabs a {
+      padding: 8px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);
+      transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px;
     }
-    .btn-ghost { background: #ffffff; border: 1px solid var(--input-border); color: var(--brand-btn); }
-    .btn-ghost:hover { border-color: var(--brand-orange); color: var(--brand-orange); }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--brand-orange), var(--brand-red));
-      color: #ffffff; box-shadow: 0 4px 14px rgba(244, 132, 31, 0.3);
-    }
-    .btn-primary:hover { opacity: 0.92; transform: translateY(-1px); }
+    .nav-tabs a:hover, .nav-tabs a.active { background: #ffffff; color: var(--text-dark); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
 
     /* Hero Section */
     .hero {
-      padding: 80px 20px 60px; text-align: center; position: relative;
+      padding: 70px 20px 50px; text-align: center; position: relative;
       background: radial-gradient(120% 100% at 50% 0%, #ffffff 0%, var(--bg) 100%);
     }
     .hero-badge {
@@ -78,18 +72,35 @@
     .hero p {
       font-size: 1.05rem; color: var(--text-muted); max-width: 600px; margin: 0 auto 32px; line-height: 1.6;
     }
-    .hero-cta { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-bottom: 40px; }
+
+    /* Hero Actions */
+    .hero-cta { display: flex; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 30px; }
+    .btn {
+      padding: 13px 26px; border-radius: 14px; font-weight: 700; font-size: 0.92rem;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; cursor: pointer; border: none;
+    }
+    .btn-login {
+      background: var(--brand-btn); color: #ffffff;
+      box-shadow: 0 4px 14px rgba(27, 24, 52, 0.2);
+    }
+    .btn-login:hover { background: #2c2754; transform: translateY(-1px); }
+    
+    .btn-quick {
+      background: linear-gradient(135deg, var(--brand-orange), var(--brand-red));
+      color: #ffffff; box-shadow: 0 4px 14px rgba(244, 132, 31, 0.3);
+    }
+    .btn-quick:hover { opacity: 0.94; transform: translateY(-1px); }
 
     /* Trust Chips */
     .trust-strip {
-      display: flex; justify-content: center; gap: 18px; flex-wrap: wrap;
+      display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;
       padding: 16px 20px; background: #ffffff; border-top: 1px solid var(--input-border); border-bottom: 1px solid var(--input-border);
     }
     .trust-item { font-size: 0.82rem; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 6px; }
-    .trust-item span { color: var(--brand-orange); }
+    .trust-item .icon { color: var(--brand-orange); width: 18px; height: 18px; }
 
     /* Main Container */
-    .container { max-width: 1100px; margin: 0 auto; padding: 70px 20px; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 60px 20px; }
 
     /* Hero Stats Card */
     .stats-card {
@@ -97,7 +108,7 @@
       color: #ffffff; border-radius: 24px; padding: 32px 24px;
       box-shadow: 0 12px 30px rgba(27, 24, 52, 0.12);
       display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; text-align: center;
-      margin-bottom: 80px;
+      margin-bottom: 70px;
     }
     .stat-num { font-size: 2rem; font-weight: 800; color: var(--brand-orange); margin-bottom: 2px; }
     .stat-lbl { font-size: 0.78rem; text-transform: uppercase; opacity: 0.85; font-weight: 700; letter-spacing: 0.5px; }
@@ -111,50 +122,34 @@
     /* Services Grid */
     .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
     .serv-card {
-      background: var(--card-bg); border-radius: 20px; padding: 24px;
+      background: var(--card-bg); border-radius: 20px; padding: 26px;
       border: 1px solid rgba(226, 224, 238, 0.8);
       box-shadow: 0 6px 18px rgba(27, 24, 52, 0.03); transition: all 0.25s ease;
     }
     .serv-card:hover { transform: translateY(-4px); border-color: var(--brand-orange); box-shadow: 0 10px 24px rgba(244, 132, 31, 0.12); }
-    .serv-icon {
+    .serv-icon-box {
       width: 48px; height: 48px; border-radius: 14px; background: var(--brand-accent);
       color: var(--brand-orange); display: flex; align-items: center; justify-content: center;
-      font-size: 1.3rem; margin-bottom: 16px;
+      margin-bottom: 16px;
     }
     .serv-card h3 { font-size: 1.05rem; font-weight: 800; color: var(--text-dark); margin-bottom: 6px; }
-    .serv-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+    .serv-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.55; }
 
-    /* Pricing Plans Showcase Box */
-    .pricing-box {
-      background: var(--card-bg); border-radius: 24px; padding: 32px;
-      border: 1px solid var(--input-border); box-shadow: 0 10px 30px rgba(27, 24, 52, 0.03);
-    }
-    .net-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 28px; flex-wrap: wrap; }
-    .tab-btn {
-      padding: 10px 22px; border-radius: 12px; background: var(--bg);
-      border: 1.5px solid var(--input-border); color: var(--text-muted); font-weight: 700;
-      font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
-    }
-    .tab-btn.active { background: var(--brand-btn); color: #ffffff; border-color: var(--brand-btn); }
-
-    .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
-    .plan-card {
-      background: #f7f7f9; border: 1.5px solid var(--input-border);
-      border-radius: 16px; padding: 18px; text-align: center;
-    }
-    .plan-size { font-size: 1.3rem; font-weight: 800; color: var(--text-dark); margin-bottom: 2px; }
-    .plan-validity { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px; font-weight: 600; }
-    .plan-price { font-size: 1.2rem; font-weight: 800; color: var(--brand-red); margin-bottom: 12px; }
-
-    /* Upgrade / Reseller CTA Banner */
+    /* Professional Reseller CTA Banner */
     .reseller-cta {
-      background: linear-gradient(135deg, #f4841f 0%, #d9381e 100%);
-      color: #ffffff; border-radius: 24px; padding: 48px 24px; text-align: center;
-      box-shadow: 0 12px 30px rgba(217, 56, 30, 0.25);
+      background: linear-gradient(135deg, #1b1834 0%, #2c2754 100%);
+      color: #ffffff; border-radius: 24px; padding: 48px 28px; text-align: center;
+      box-shadow: 0 12px 30px rgba(27, 24, 52, 0.15); border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative; overflow: hidden;
     }
-    .reseller-cta h2 { font-size: 2rem; font-weight: 800; margin-bottom: 10px; }
-    .reseller-cta p { font-size: 0.95rem; opacity: 0.92; max-width: 520px; margin: 0 auto 24px; }
-    .btn-white { background: #ffffff; color: var(--brand-red); font-weight: 800; padding: 14px 32px; border-radius: 14px; font-size: 0.95rem; border: none; cursor: pointer; }
+    .reseller-cta h2 { font-size: 2rem; font-weight: 800; margin-bottom: 10px; letter-spacing: -0.5px; }
+    .reseller-cta p { font-size: 0.98rem; opacity: 0.88; max-width: 580px; margin: 0 auto 28px; line-height: 1.6; }
+    .btn-cta-main {
+      background: linear-gradient(135deg, var(--brand-orange), var(--brand-red));
+      color: #ffffff; font-weight: 800; padding: 15px 36px; border-radius: 14px; font-size: 0.95rem; border: none; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 18px rgba(244, 132, 31, 0.35);
+    }
+    .btn-cta-main:hover { opacity: 0.94; transform: translateY(-2px); }
 
     /* Footer */
     footer { background: #ffffff; border-top: 1px solid var(--input-border); padding: 50px 20px 24px; font-size: 0.85rem; color: var(--text-muted); }
@@ -166,72 +161,93 @@
     .foot-bottom { max-width: 1100px; margin: 0 auto; padding-top: 20px; border-top: 1px solid var(--input-border); text-align: center; font-size: 0.78rem; font-weight: 600; }
 
     @media(max-width: 768px) {
-      .nav-menu { display: none; }
+      .nav-tabs { display: none; }
       .foot-wrap { grid-template-columns: 1fr 1fr; }
       .hero h1 { font-size: 1.9rem; }
+      .hero-cta { flex-direction: column; width: 100%; max-width: 340px; margin-left: auto; margin-right: auto; }
+      .btn { width: 100%; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Header Navigation -->
+  <!-- Top Navigation Header -->
   <nav>
     <div class="nav-wrap">
       <a href="#top" class="brand">
         <svg viewBox="0 0 500 280" fill="none" xmlns="http://www.w3.org/2000/svg" class="brand-logo">
           <defs>
-            <linearGradient id="oyoGradUI" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="oyoGradIndex" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stop-color="#FFB000"/>
               <stop offset="50%" stop-color="#FF5500"/>
               <stop offset="100%" stop-color="#E03000"/>
             </linearGradient>
           </defs>
-          <rect x="70" y="85" width="70" height="16" rx="8" fill="url(#oyoGradUI)"/>
-          <rect x="40" y="115" width="80" height="16" rx="8" fill="url(#oyoGradUI)"/>
-          <rect x="58" y="145" width="70" height="16" rx="8" fill="url(#oyoGradUI)"/>
+          <rect x="70" y="85" width="70" height="16" rx="8" fill="url(#oyoGradIndex)"/>
+          <rect x="40" y="115" width="80" height="16" rx="8" fill="url(#oyoGradIndex)"/>
+          <rect x="58" y="145" width="70" height="16" rx="8" fill="url(#oyoGradIndex)"/>
           <path d="M 230 40 L 320 40 C 390 40 440 85 440 155 C 440 225 390 270 320 270 L 230 270 Z" fill="#0A1922"/>
           <path d="M 285 95 L 315 95 C 355 95 380 120 380 155 C 380 190 355 215 315 215 L 285 215 Z" fill="#FFFFFF"/>
-          <circle cx="210" cy="155" r="115" fill="url(#oyoGradUI)"/>
+          <circle cx="210" cy="155" r="115" fill="url(#oyoGradIndex)"/>
           <circle cx="210" cy="155" r="70" fill="#FFFFFF"/>
-          <rect x="180" y="105" width="60" height="100" rx="12" fill="url(#oyoGradUI)"/>
+          <rect x="180" y="105" width="60" height="100" rx="12" fill="url(#oyoGradIndex)"/>
           <rect x="186" y="113" width="48" height="74" rx="4" fill="#FFFFFF"/>
           <circle cx="210" cy="196" r="4" fill="#FFFFFF"/>
-          <path d="M 214 122 L 200 150 H 211 L 206 178 L 220 150 H 209 Z" fill="url(#oyoGradUI)"/>
+          <path d="M 214 122 L 200 150 H 211 L 206 178 L 220 150 H 209 Z" fill="url(#oyoGradIndex)"/>
         </svg>
         OyoData
       </a>
 
-      <ul class="nav-menu">
+      <!-- Navigation Tab Bar -->
+      <ul class="nav-tabs">
+        <li><a href="#top" class="active">Home</a></li>
         <li><a href="#services">Services</a></li>
-        <li><a href="#pricing">Data Rates</a></li>
-        <li><a href="login.html">Reseller Program</a></li>
+        <li><a href="#reseller">Reseller Business</a></li>
+        <li><a href="signup.html">Register</a></li>
       </ul>
-
-      <div class="nav-actions">
-        <a href="login.html" class="btn btn-ghost">Log In</a>
-        <a href="signup.html" class="btn btn-primary">Get Started</a>
-      </div>
     </div>
   </nav>
 
-  <!-- Hero Banner -->
+  <!-- Hero Section -->
   <section class="hero" id="top">
-    <div class="hero-badge">★ #1 Automated VTU Platform in Nigeria</div>
+    <div class="hero-badge">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+      #1 Automated VTU Platform in Nigeria
+    </div>
     <h1>Cheap &amp; Long-Lasting Data for <span>All Networks</span></h1>
-    <p>Automated SME &amp; CG Data bundles, airtime recharge, cable TV subscriptions, and WAEC/NECO result PINs delivered in seconds.</p>
+    <p>Automated SME &amp; CG Data bundles, instant airtime recharge, cable TV subscriptions, and WAEC/NECO result PINs delivered in seconds.</p>
     
+    <!-- Hero Action Buttons -->
     <div class="hero-cta">
-      <a href="signup.html" class="btn btn-primary" style="padding: 14px 30px; font-size: 0.95rem;">Create Free Account →</a>
-      <a href="login.html" class="btn btn-ghost" style="padding: 14px 26px; font-size: 0.95rem;">Access Dashboard</a>
+      <a href="login.html" class="btn btn-login">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5v3H3v4h7v3zm9-14H5c-1.1 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+        Login
+      </a>
+      <a href="signup.html?quick=true" class="btn btn-quick">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+        Quick Buy (No Login Required)
+      </a>
     </div>
   </section>
 
   <!-- Trust Indicators -->
   <div class="trust-strip">
-    <div class="trust-item"><span>✓</span> 50,000+ Resellers</div>
-    <div class="trust-item"><span>⚡</span> Instant 5-Second Delivery</div>
-    <div class="trust-item"><span>🔒</span> 100% Safe &amp; Secure</div>
-    <div class="trust-item"><span>★</span> 24/7 Automated System</div>
+    <div class="trust-item">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      50,000+ Active Users
+    </div>
+    <div class="trust-item">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+      5-Second Automated Delivery
+    </div>
+    <div class="trust-item">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+      Bank-Grade Security
+    </div>
+    <div class="trust-item">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+      24/7 Automated System
+    </div>
   </div>
 
   <div class="container">
@@ -251,7 +267,7 @@
       </div>
       <div>
         <div class="stat-num">24/7</div>
-        <div class="stat-lbl">Automated Service</div>
+        <div class="stat-lbl">Automated Support</div>
       </div>
     </div>
 
@@ -265,71 +281,66 @@
 
       <div class="services-grid">
         <div class="serv-card">
-          <div class="serv-icon">📶</div>
+          <div class="serv-icon-box">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+          </div>
           <h3>Cheap SME Data</h3>
           <p>Instant activation for MTN, Airtel, Glo, and 9mobile at wholesale prices.</p>
         </div>
 
         <div class="serv-card">
-          <div class="serv-icon">📞</div>
+          <div class="serv-icon-box">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+          </div>
           <h3>Airtime VTU</h3>
           <p>Instant airtime topups for all major Nigerian networks with bulk discounts.</p>
         </div>
 
         <div class="serv-card">
-          <div class="serv-icon">📺</div>
+          <div class="serv-icon-box">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
+          </div>
           <h3>Cable TV Subscriptions</h3>
           <p>Instant renewal for DStv, GOtv, and StarTimes with automated smartcard verification.</p>
         </div>
 
         <div class="serv-card">
-          <div class="serv-icon">⚡</div>
+          <div class="serv-icon-box">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+          </div>
           <h3>Electricity Tokens</h3>
           <p>Pay prepaid and postpaid meter bills for EKEDC, IKEDC, AEDC, IBEDC &amp; get tokens immediately.</p>
         </div>
 
         <div class="serv-card">
-          <div class="serv-icon">🎓</div>
+          <div class="serv-icon-box">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-0.75L9 9V4zm9 16H6V4h1v9l3-2.25L13 13V4h5v16z"/></svg>
+          </div>
           <h3>Exam Result PINs</h3>
           <p>Generate genuine WAEC, NECO, and NABTEB result checker PINs instantly.</p>
         </div>
 
         <div class="serv-card">
-          <div class="serv-icon">💼</div>
+          <div class="serv-icon-box">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+          </div>
           <h3>Reseller Program</h3>
           <p>Upgrade to Reseller tier and get up to 5% OFF all VTU plans forever.</p>
         </div>
       </div>
     </section>
 
-    <!-- Pricing Showcase -->
-    <section id="pricing" style="margin-bottom: 70px;">
-      <div class="sec-head">
-        <span class="tag">WHOLESALE PRICING</span>
-        <h2>Live Data Plan Rates</h2>
-        <p>Check out our affordable rates for both standard users and resellers.</p>
-      </div>
-
-      <div class="pricing-box">
-        <div class="net-tabs">
-          <button class="tab-btn active" onclick="switchNetwork('mtn', this)">MTN Data</button>
-          <button class="tab-btn" onclick="switchNetwork('airtel', this)">Airtel Data</button>
-          <button class="tab-btn" onclick="switchNetwork('glo', this)">Glo Data</button>
-          <button class="tab-btn" onclick="switchNetwork('9mobile', this)">9mobile Data</button>
-        </div>
-
-        <div class="plans-grid" id="plansDisplay">
-          <!-- Dynamic JavaScript Cards -->
-        </div>
+    <!-- Reseller Call To Action Banner -->
+    <section id="reseller">
+      <div class="reseller-cta">
+        <h2>Start Your VTU Business Today and Start Earning</h2>
+        <p>Join over 50,000 smart entrepreneurs leveraging OyoData to resell cheap data, airtime, and bill payments with zero technical experience required.</p>
+        <a href="signup.html" class="btn-cta-main">
+          Get Started Now
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+        </a>
       </div>
     </section>
-
-    <!-- Reseller Upgrade Banner -->
-    <div class="reseller-cta">
-      <h2>Start Your VTU Business Today</h2>
-      <p>Upgrade to a Reseller account for ₦2,000 once and unlock 5% OFF all VTU plans forever.</p>
-      <a href="signup.html" class="btn btn-white">Get Started Free</a>
-    </div>
   </div>
 
   <!-- Footer -->
@@ -339,23 +350,23 @@
         <div class="foot-brand">
           <svg viewBox="0 0 500 280" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 36px; height: auto;">
             <defs>
-              <linearGradient id="oyoGradFootUI" x1="0%" y1="0%" x2="100%" y2="100%">
+              <linearGradient id="oyoGradFoot" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stop-color="#FFB000"/>
                 <stop offset="50%" stop-color="#FF5500"/>
                 <stop offset="100%" stop-color="#E03000"/>
               </linearGradient>
             </defs>
-            <rect x="70" y="85" width="70" height="16" rx="8" fill="url(#oyoGradFootUI)"/>
-            <rect x="40" y="115" width="80" height="16" rx="8" fill="url(#oyoGradFootUI)"/>
-            <rect x="58" y="145" width="70" height="16" rx="8" fill="url(#oyoGradFootUI)"/>
+            <rect x="70" y="85" width="70" height="16" rx="8" fill="url(#oyoGradFoot)"/>
+            <rect x="40" y="115" width="80" height="16" rx="8" fill="url(#oyoGradFoot)"/>
+            <rect x="58" y="145" width="70" height="16" rx="8" fill="url(#oyoGradFoot)"/>
             <path d="M 230 40 L 320 40 C 390 40 440 85 440 155 C 440 225 390 270 320 270 L 230 270 Z" fill="#0A1922"/>
             <path d="M 285 95 L 315 95 C 355 95 380 120 380 155 C 380 190 355 215 315 215 L 285 215 Z" fill="#FFFFFF"/>
-            <circle cx="210" cy="155" r="115" fill="url(#oyoGradFootUI)"/>
+            <circle cx="210" cy="155" r="115" fill="url(#oyoGradFoot)"/>
             <circle cx="210" cy="155" r="70" fill="#FFFFFF"/>
-            <rect x="180" y="105" width="60" height="100" rx="12" fill="url(#oyoGradFootUI)"/>
+            <rect x="180" y="105" width="60" height="100" rx="12" fill="url(#oyoGradFoot)"/>
             <rect x="186" y="113" width="48" height="74" rx="4" fill="#FFFFFF"/>
             <circle cx="210" cy="196" r="4" fill="#FFFFFF"/>
-            <path d="M 214 122 L 200 150 H 211 L 206 178 L 220 150 H 209 Z" fill="url(#oyoGradFootUI)"/>
+            <path d="M 214 122 L 200 150 H 211 L 206 178 L 220 150 H 209 Z" fill="url(#oyoGradFoot)"/>
           </svg>
           OyoData
         </div>
@@ -396,52 +407,5 @@
     </div>
   </footer>
 
-  <script>
-    const samplePlans = {
-      mtn: [
-        { size: "1.0 GB", validity: "30 Days (SME)", price: "₦285" },
-        { size: "2.0 GB", validity: "30 Days (SME)", price: "₦570" },
-        { size: "3.0 GB", validity: "30 Days (SME)", price: "₦855" },
-        { size: "5.0 GB", validity: "30 Days (SME)", price: "₦1,425" }
-      ],
-      airtel: [
-        { size: "1.0 GB", validity: "30 Days (CG)", price: "₦290" },
-        { size: "2.0 GB", validity: "30 Days (CG)", price: "₦580" },
-        { size: "5.0 GB", validity: "30 Days (CG)", price: "₦1,450" },
-        { size: "10.0 GB", validity: "30 Days (CG)", price: "₦2,900" }
-      ],
-      glo: [
-        { size: "1.0 GB", validity: "30 Days", price: "₦275" },
-        { size: "2.0 GB", validity: "30 Days", price: "₦550" },
-        { size: "3.0 GB", validity: "30 Days", price: "₦825" },
-        { size: "5.0 GB", validity: "30 Days", price: "₦1,375" }
-      ],
-      "9mobile": [
-        { size: "1.0 GB", validity: "30 Days", price: "₦180" },
-        { size: "2.0 GB", validity: "30 Days", price: "₦360" },
-        { size: "5.0 GB", validity: "30 Days", price: "₦900" },
-        { size: "10.0 GB", validity: "30 Days", price: "₦1,800" }
-      ]
-    };
-
-    function switchNetwork(net, btn) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const display = document.getElementById('plansDisplay');
-      const plans = samplePlans[net] || [];
-
-      display.innerHTML = plans.map(p => `
-        <div class="plan-card">
-          <div class="plan-size">${p.size}</div>
-          <div class="plan-validity">${p.validity}</div>
-          <div class="plan-price">${p.price}</div>
-          <a href="signup.html" class="btn btn-primary" style="width:100%; justify-content:center; padding:8px 12px; font-size:0.82rem; border-radius:10px;">Buy Plan</a>
-        </div>
-      `).join('');
-    }
-
-    switchNetwork('mtn', document.querySelector('.tab-btn'));
-  </script>
 </body>
 </html>
