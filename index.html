@@ -1,465 +1,447 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>OyoData — Best SME Data & VTU Platform in Nigeria</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg-dark: #0a0914;
-    --card-bg: rgba(23, 20, 48, 0.65);
-    --card-border: rgba(255, 255, 255, 0.08);
-    --text-main: #f3f2f8;
-    --text-muted: #9f9bba;
-    --brand-orange: #ff6b00;
-    --brand-red: #e0301e;
-    --amber: #ffb703;
-    --gradient-glow: radial-gradient(circle at 50% -20%, rgba(244, 132, 31, 0.25), transparent 70%);
-    --glass: rgba(255, 255, 255, 0.03);
-    padding-top: env(safe-area-inset-top, 0px);
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>OyoData — Best SME Data & VTU Platform in Nigeria</title>
 
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
-  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
-  body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; line-height: 1.6; }
-  a { text-decoration: none; color: inherit; }
+  <style>
+    :root {
+      --bg: #f4f5fa;
+      --card-bg: #ffffff;
+      --text-dark: #1b1834;
+      --text-muted: #726e8d;
+      --input-border: #e3e1ee;
+      --brand-orange: #f4841f;
+      --brand-red: #d9381e;
+      --brand-btn: #1b1834;
+      --brand-accent: #fcf4eb;
+      --error-bg: #fce8e6;
+      --error-text: #c5221f;
+      --success-bg: #e6f4ea;
+      --success-text: #137333;
+    }
 
-  /* HEADER / NAV */
-  nav {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(10, 9, 20, 0.82);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--card-border);
-  }
-  .nav-wrap {
-    max-width: 1200px; margin: 0 auto;
-    padding: 16px 24px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.4rem; color: #fff; }
-  .brand-logo { width: 44px; height: auto; display: block; }
-  .nav-menu { display: flex; align-items: center; gap: 32px; list-style: none; }
-  .nav-menu a { font-size: 0.92rem; font-weight: 600; color: var(--text-muted); transition: color 0.2s; }
-  .nav-menu a:hover { color: #fff; }
-  .nav-actions { display: flex; align-items: center; gap: 12px; }
-  .btn {
-    padding: 10px 20px; border-radius: 99px; font-weight: 700; font-size: 0.88rem;
-    display: inline-flex; align-items: center; gap: 8px; transition: all 0.25s ease; cursor: pointer;
-  }
-  .btn-ghost { border: 1px solid var(--card-border); color: #fff; background: var(--glass); }
-  .btn-ghost:hover { border-color: rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.08); }
-  .btn-primary {
-    background: linear-gradient(135deg, var(--brand-orange), var(--brand-red));
-    color: #fff; border: none; box-shadow: 0 8px 24px rgba(224, 48, 30, 0.35);
-  }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(224, 48, 30, 0.5); }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+    body { background-color: var(--bg); color: var(--text-dark); overflow-x: hidden; min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
 
-  /* HERO SECTION */
-  .hero {
-    position: relative; padding: 100px 24px 80px; text-align: center;
-    background: var(--gradient-glow); overflow: hidden;
-  }
-  .hero-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 6px 16px; border-radius: 99px;
-    background: rgba(255, 183, 3, 0.1); border: 1px solid rgba(255, 183, 3, 0.25);
-    color: var(--amber); font-size: 0.82rem; font-weight: 700; margin-bottom: 24px;
-  }
-  .hero h1 {
-    font-size: clamp(2.3rem, 5.5vw, 3.8rem); font-weight: 800;
-    line-height: 1.15; max-width: 860px; margin: 0 auto 20px;
-    letter-spacing: -1px;
-  }
-  .hero h1 span {
-    background: linear-gradient(135deg, #ffb703, #ff6b00);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  }
-  .hero p {
-    font-size: 1.1rem; color: var(--text-muted); max-width: 620px; margin: 0 auto 36px;
-  }
-  .hero-cta { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-bottom: 50px; }
+    /* Top Navigation */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--input-border);
+    }
+    .nav-wrap {
+      max-width: 1100px; margin: 0 auto;
+      padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.4rem; color: var(--brand-red); letter-spacing: -0.5px; }
+    .brand-logo { width: 48px; height: auto; display: block; }
 
-  /* TRUST BADGES */
-  .trust-strip {
-    display: flex; justify-content: center; gap: 24px; flex-wrap: wrap;
-    padding: 16px 24px; background: rgba(255, 255, 255, 0.02);
-    border-top: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border);
-  }
-  .trust-item { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
-  .trust-item span { color: var(--amber); }
+    .nav-menu { display: flex; align-items: center; gap: 28px; list-style: none; }
+    .nav-menu a { font-size: 0.9rem; font-weight: 700; color: var(--text-muted); transition: color 0.2s; }
+    .nav-menu a:hover { color: var(--brand-orange); }
 
-  /* CONTAINER WRAPPER */
-  .container { max-width: 1200px; margin: 0 auto; padding: 90px 24px; }
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .btn {
+      padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 0.88rem;
+      display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; cursor: pointer; border: none;
+    }
+    .btn-ghost { background: #ffffff; border: 1px solid var(--input-border); color: var(--brand-btn); }
+    .btn-ghost:hover { border-color: var(--brand-orange); color: var(--brand-orange); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--brand-orange), var(--brand-red));
+      color: #ffffff; box-shadow: 0 4px 14px rgba(244, 132, 31, 0.3);
+    }
+    .btn-primary:hover { opacity: 0.92; transform: translateY(-1px); }
 
-  /* STATS COUNTER */
-  .stats-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;
-    background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 24px; padding: 36px;
-    backdrop-filter: blur(12px);
-  }
-  .stat-card { text-align: center; }
-  .stat-num { font-size: 2.2rem; font-weight: 800; color: #fff; margin-bottom: 4px; }
-  .stat-lbl { font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    /* Hero Section */
+    .hero {
+      padding: 80px 20px 60px; text-align: center; position: relative;
+      background: radial-gradient(120% 100% at 50% 0%, #ffffff 0%, var(--bg) 100%);
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 16px; border-radius: 20px;
+      background: var(--brand-accent); border: 1px solid rgba(244, 132, 31, 0.3);
+      color: var(--brand-orange); font-size: 0.8rem; font-weight: 800; margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 800;
+      color: var(--text-dark); line-height: 1.15; max-width: 820px; margin: 0 auto 18px; letter-spacing: -0.5px;
+    }
+    .hero h1 span { color: var(--brand-orange); }
+    .hero p {
+      font-size: 1.05rem; color: var(--text-muted); max-width: 600px; margin: 0 auto 32px; line-height: 1.6;
+    }
+    .hero-cta { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-bottom: 40px; }
 
-  /* SECTION TITLE */
-  .sec-title { text-align: center; max-width: 600px; margin: 0 auto 50px; }
-  .sec-title .tag { font-size: 0.8rem; font-weight: 800; color: var(--brand-orange); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
-  .sec-title h2 { font-size: 2.1rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 12px; }
-  .sec-title p { color: var(--text-muted); font-size: 0.98rem; }
+    /* Trust Chips */
+    .trust-strip {
+      display: flex; justify-content: center; gap: 18px; flex-wrap: wrap;
+      padding: 16px 20px; background: #ffffff; border-top: 1px solid var(--input-border); border-bottom: 1px solid var(--input-border);
+    }
+    .trust-item { font-size: 0.82rem; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 6px; }
+    .trust-item span { color: var(--brand-orange); }
 
-  /* SERVICES GRID */
-  .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-  .serv-card {
-    background: var(--card-bg); border: 1px solid var(--card-border);
-    border-radius: 20px; padding: 28px; transition: all 0.3s ease;
-    display: flex; flex-direction: column; justify-content: space-between;
-  }
-  .serv-card:hover { transform: translateY(-5px); border-color: rgba(255, 107, 0, 0.4); box-shadow: 0 12px 30px rgba(0,0,0,0.4); }
-  .serv-icon {
-    width: 52px; height: 52px; border-radius: 14px;
-    background: linear-gradient(135deg, rgba(255, 107, 0, 0.15), rgba(224, 48, 30, 0.15));
-    border: 1px solid rgba(255, 107, 0, 0.3); color: var(--brand-orange);
-    display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 20px;
-  }
-  .serv-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
-  .serv-card p { font-size: 0.88rem; color: var(--text-muted); line-height: 1.55; }
+    /* Main Container */
+    .container { max-width: 1100px; margin: 0 auto; padding: 70px 20px; }
 
-  /* LIVE PRICING CALCULATOR / SHOWCASE */
-  .pricing-box {
-    background: var(--card-bg); border: 1px solid var(--card-border);
-    border-radius: 28px; padding: 36px; backdrop-filter: blur(12px);
-  }
-  .net-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
-  .tab-btn {
-    padding: 10px 24px; border-radius: 99px; background: var(--glass);
-    border: 1px solid var(--card-border); color: var(--text-muted); font-weight: 700;
-    font-size: 0.88rem; cursor: pointer; transition: all 0.2s;
-  }
-  .tab-btn.active { background: var(--brand-orange); color: #fff; border-color: var(--brand-orange); box-shadow: 0 4px 16px rgba(255, 107, 0, 0.3); }
+    /* Hero Stats Card */
+    .stats-card {
+      background: linear-gradient(135deg, #1b1834 0%, #2c2754 100%);
+      color: #ffffff; border-radius: 24px; padding: 32px 24px;
+      box-shadow: 0 12px 30px rgba(27, 24, 52, 0.12);
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; text-align: center;
+      margin-bottom: 80px;
+    }
+    .stat-num { font-size: 2rem; font-weight: 800; color: var(--brand-orange); margin-bottom: 2px; }
+    .stat-lbl { font-size: 0.78rem; text-transform: uppercase; opacity: 0.85; font-weight: 700; letter-spacing: 0.5px; }
 
-  .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-  .plan-card {
-    background: rgba(10, 9, 20, 0.6); border: 1px solid var(--card-border);
-    border-radius: 18px; padding: 20px; text-align: center;
-  }
-  .plan-size { font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; }
-  .plan-validity { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px; }
-  .plan-price { font-size: 1.25rem; font-weight: 800; color: var(--amber); margin-bottom: 14px; }
+    /* Section Headings */
+    .sec-head { text-align: center; max-width: 580px; margin: 0 auto 44px; }
+    .sec-head .tag { font-size: 0.78rem; font-weight: 800; color: var(--brand-orange); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
+    .sec-head h2 { font-size: 1.9rem; font-weight: 800; color: var(--text-dark); margin-bottom: 10px; letter-spacing: -0.5px; }
+    .sec-head p { color: var(--text-muted); font-size: 0.95rem; }
 
-  /* CTA BANNER */
-  .cta-banner {
-    background: linear-gradient(135deg, rgba(255, 107, 0, 0.15), rgba(224, 48, 30, 0.15));
-    border: 1px solid rgba(255, 107, 0, 0.3); border-radius: 28px; padding: 60px 24px;
-    text-align: center; position: relative; overflow: hidden;
-  }
-  .cta-banner h2 { font-size: 2.2rem; font-weight: 800; margin-bottom: 14px; }
-  .cta-banner p { color: var(--text-muted); max-width: 540px; margin: 0 auto 28px; }
+    /* Services Grid */
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+    .serv-card {
+      background: var(--card-bg); border-radius: 20px; padding: 24px;
+      border: 1px solid rgba(226, 224, 238, 0.8);
+      box-shadow: 0 6px 18px rgba(27, 24, 52, 0.03); transition: all 0.25s ease;
+    }
+    .serv-card:hover { transform: translateY(-4px); border-color: var(--brand-orange); box-shadow: 0 10px 24px rgba(244, 132, 31, 0.12); }
+    .serv-icon {
+      width: 48px; height: 48px; border-radius: 14px; background: var(--brand-accent);
+      color: var(--brand-orange); display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; margin-bottom: 16px;
+    }
+    .serv-card h3 { font-size: 1.05rem; font-weight: 800; color: var(--text-dark); margin-bottom: 6px; }
+    .serv-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
 
-  /* FOOTER */
-  footer { background: #06050e; border-top: 1px solid var(--card-border); padding: 60px 24px 30px; font-size: 0.88rem; color: var(--text-muted); }
-  .foot-wrap { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1.5fr repeat(3, 1fr); gap: 40px; margin-bottom: 40px; }
-  .foot-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.2rem; color: #fff; margin-bottom: 12px; }
-  .foot-col h4 { color: #fff; font-size: 0.92rem; margin-bottom: 16px; }
-  .foot-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-  .foot-col a:hover { color: var(--brand-orange); }
-  .foot-bottom { max-width: 1200px; margin: 0 auto; padding-top: 24px; border-top: 1px solid var(--card-border); text-align: center; font-size: 0.8rem; }
+    /* Pricing Plans Showcase Box */
+    .pricing-box {
+      background: var(--card-bg); border-radius: 24px; padding: 32px;
+      border: 1px solid var(--input-border); box-shadow: 0 10px 30px rgba(27, 24, 52, 0.03);
+    }
+    .net-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 28px; flex-wrap: wrap; }
+    .tab-btn {
+      padding: 10px 22px; border-radius: 12px; background: var(--bg);
+      border: 1.5px solid var(--input-border); color: var(--text-muted); font-weight: 700;
+      font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+    }
+    .tab-btn.active { background: var(--brand-btn); color: #ffffff; border-color: var(--brand-btn); }
 
-  @media(max-width: 768px) {
-    .nav-menu { display: none; }
-    .foot-wrap { grid-template-columns: 1fr 1fr; }
-    .hero h1 { font-size: 2.1rem; }
-  }
-</style>
+    .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+    .plan-card {
+      background: #f7f7f9; border: 1.5px solid var(--input-border);
+      border-radius: 16px; padding: 18px; text-align: center;
+    }
+    .plan-size { font-size: 1.3rem; font-weight: 800; color: var(--text-dark); margin-bottom: 2px; }
+    .plan-validity { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px; font-weight: 600; }
+    .plan-price { font-size: 1.2rem; font-weight: 800; color: var(--brand-red); margin-bottom: 12px; }
+
+    /* Upgrade / Reseller CTA Banner */
+    .reseller-cta {
+      background: linear-gradient(135deg, #f4841f 0%, #d9381e 100%);
+      color: #ffffff; border-radius: 24px; padding: 48px 24px; text-align: center;
+      box-shadow: 0 12px 30px rgba(217, 56, 30, 0.25);
+    }
+    .reseller-cta h2 { font-size: 2rem; font-weight: 800; margin-bottom: 10px; }
+    .reseller-cta p { font-size: 0.95rem; opacity: 0.92; max-width: 520px; margin: 0 auto 24px; }
+    .btn-white { background: #ffffff; color: var(--brand-red); font-weight: 800; padding: 14px 32px; border-radius: 14px; font-size: 0.95rem; border: none; cursor: pointer; }
+
+    /* Footer */
+    footer { background: #ffffff; border-top: 1px solid var(--input-border); padding: 50px 20px 24px; font-size: 0.85rem; color: var(--text-muted); }
+    .foot-wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1.5fr repeat(3, 1fr); gap: 32px; margin-bottom: 32px; }
+    .foot-brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.2rem; color: var(--brand-red); margin-bottom: 10px; }
+    .foot-col h4 { color: var(--text-dark); font-size: 0.9rem; font-weight: 800; margin-bottom: 14px; }
+    .foot-col ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .foot-col a:hover { color: var(--brand-orange); }
+    .foot-bottom { max-width: 1100px; margin: 0 auto; padding-top: 20px; border-top: 1px solid var(--input-border); text-align: center; font-size: 0.78rem; font-weight: 600; }
+
+    @media(max-width: 768px) {
+      .nav-menu { display: none; }
+      .foot-wrap { grid-template-columns: 1fr 1fr; }
+      .hero h1 { font-size: 1.9rem; }
+    }
+  </style>
 </head>
 <body>
 
-<!-- NAVIGATION -->
-<nav>
-  <div class="nav-wrap">
-    <a href="#top" class="brand">
-      <svg viewBox="0 0 500 280" fill="none" xmlns="http://www.w3.org/2000/svg" class="brand-logo">
-        <defs>
-          <linearGradient id="oyoGradUI" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#FFB000"/>
-            <stop offset="50%" stop-color="#FF5500"/>
-            <stop offset="100%" stop-color="#E03000"/>
-          </linearGradient>
-        </defs>
-        <rect x="70" y="85" width="70" height="16" rx="8" fill="url(#oyoGradUI)"/>
-        <rect x="40" y="115" width="80" height="16" rx="8" fill="url(#oyoGradUI)"/>
-        <rect x="58" y="145" width="70" height="16" rx="8" fill="url(#oyoGradUI)"/>
-        <path d="M 230 40 L 320 40 C 390 40 440 85 440 155 C 440 225 390 270 320 270 L 230 270 Z" fill="#0A1922"/>
-        <path d="M 285 95 L 315 95 C 355 95 380 120 380 155 C 380 190 355 215 315 215 L 285 215 Z" fill="#FFFFFF"/>
-        <circle cx="210" cy="155" r="115" fill="url(#oyoGradUI)"/>
-        <circle cx="210" cy="155" r="70" fill="#FFFFFF"/>
-        <rect x="180" y="105" width="60" height="100" rx="12" fill="url(#oyoGradUI)"/>
-        <rect x="186" y="113" width="48" height="74" rx="4" fill="#FFFFFF"/>
-        <circle cx="210" cy="196" r="4" fill="#FFFFFF"/>
-        <path d="M 214 122 L 200 150 H 211 L 206 178 L 220 150 H 209 Z" fill="url(#oyoGradUI)"/>
-      </svg>
-      OyoData
-    </a>
-
-    <ul class="nav-menu">
-      <li><a href="#services">Services</a></li>
-      <li><a href="#pricing">Data Plans</a></li>
-      <li><a href="#about">Why Us</a></li>
-    </ul>
-
-    <div class="nav-actions">
-      <a href="login.html" class="btn btn-ghost">Log In</a>
-      <a href="signup.html" class="btn btn-primary">Get Started</a>
-    </div>
-  </div>
-</nav>
-
-<!-- HERO SECTION -->
-<section class="hero" id="top">
-  <div class="hero-badge">⚡ #1 SME Data &amp; VTU Platform in Nigeria</div>
-  <h1>Cheap &amp; Long-Lasting Data for <span>Every Network</span></h1>
-  <p>Automated SME &amp; CG Data bundles, instant airtime VTU, cable subscriptions, and WAEC/NECO result PINs delivered in seconds.</p>
-  
-  <div class="hero-cta">
-    <a href="signup.html" class="btn btn-primary" style="padding: 14px 32px; font-size: 1rem;">Create Free Account →</a>
-    <a href="login.html" class="btn btn-ghost" style="padding: 14px 28px; font-size: 1rem;">User Dashboard</a>
-  </div>
-</section>
-
-<!-- TRUST STRIP -->
-<div class="trust-strip">
-  <div class="trust-item"><span>✓</span> 50,000+ Active Users</div>
-  <div class="trust-item"><span>⚡</span> 3-Second Automated Delivery</div>
-  <div class="trust-item"><span>🔒</span> Bank-Grade Security</div>
-  <div class="trust-item"><span>★</span> 4.8/5 Rating</div>
-</div>
-
-<!-- MAIN CONTENT WRAPPER -->
-<div class="container">
-  
-  <!-- STATS -->
-  <div class="stats-grid" style="margin-bottom: 90px;">
-    <div class="stat-card">
-      <div class="stat-num">50k+</div>
-      <div class="stat-lbl">Registered Resellers</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num">1M+</div>
-      <div class="stat-lbl">Successful Orders</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num">99.9%</div>
-      <div class="stat-lbl">System Uptime</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num">24/7</div>
-      <div class="stat-lbl">Live Customer Support</div>
-    </div>
-  </div>
-
-  <!-- SERVICES -->
-  <section id="services" style="margin-bottom: 90px;">
-    <div class="sec-title">
-      <span class="tag">WHAT WE OFFER</span>
-      <h2>Automated VTU Services</h2>
-      <p>Everything you need to top up your personal devices or start your own data business.</p>
-    </div>
-
-    <div class="services-grid">
-      <div class="serv-card">
-        <div>
-          <div class="serv-icon">📶</div>
-          <h3>Cheap SME Data</h3>
-          <p>Instant activation for MTN, Airtel, Glo, and 9mobile at wholesale reselling rates.</p>
-        </div>
-      </div>
-
-      <div class="serv-card">
-        <div>
-          <div class="serv-icon">📲</div>
-          <h3>Airtime Topup</h3>
-          <p>Discounted VTU airtime recharge for all major networks in Nigeria.</p>
-        </div>
-      </div>
-
-      <div class="serv-card">
-        <div>
-          <div class="serv-icon">📺</div>
-          <h3>Cable TV Subscriptions</h3>
-          <p>Instant renewal for DStv, GOtv, and StarTimes with automated IUC verification.</p>
-        </div>
-      </div>
-
-      <div class="serv-card">
-        <div>
-          <div class="serv-icon">⚡</div>
-          <h3>Electricity Bills</h3>
-          <p>Pay prepaid and postpaid meter bills for IKEDC, EKEDC, AEDC, IBEDC, and get tokens instantly.</p>
-        </div>
-      </div>
-
-      <div class="serv-card">
-        <div>
-          <div class="serv-icon">🎓</div>
-          <h3>Exam Result PINs</h3>
-          <p>Buy WAEC, NECO, and NABTEB result checker PINs delivered directly to your device.</p>
-        </div>
-      </div>
-
-      <div class="serv-card">
-        <div>
-          <div class="serv-icon">💼</div>
-          <h3>Reseller Program</h3>
-          <p>Upgrade to Reseller status and get up to 5% extra discount on every single order.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- PRICING SHOWCASE -->
-  <section id="pricing" style="margin-bottom: 90px;">
-    <div class="sec-title">
-      <span class="tag">TRANSPARENT PRICING</span>
-      <h2>Live Data Rates</h2>
-      <p>Check out our competitive rates across all Nigerian mobile networks.</p>
-    </div>
-
-    <div class="pricing-box">
-      <div class="net-tabs">
-        <button class="tab-btn active" onclick="switchNetwork('mtn', this)">MTN</button>
-        <button class="tab-btn" onclick="switchNetwork('airtel', this)">Airtel</button>
-        <button class="tab-btn" onclick="switchNetwork('glo', this)">Glo</button>
-        <button class="tab-btn" onclick="switchNetwork('9mobile', this)">9mobile</button>
-      </div>
-
-      <div class="plans-grid" id="plansDisplay">
-        <!-- JS dynamic content -->
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA BANNER -->
-  <div class="cta-banner">
-    <h2>Start Earning Daily with OyoData</h2>
-    <p>Join over 50,000 smart Nigerians making profit from data reselling. Zero setup fee, instant registration.</p>
-    <a href="signup.html" class="btn btn-primary" style="padding: 14px 36px; font-size: 1rem;">Create Your Free Account</a>
-  </div>
-
-</div>
-
-<!-- FOOTER -->
-<footer>
-  <div class="foot-wrap">
-    <div>
-      <div class="foot-brand">
-        <svg viewBox="0 0 500 280" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 36px; height: auto;">
+  <!-- Top Header Navigation -->
+  <nav>
+    <div class="nav-wrap">
+      <a href="#top" class="brand">
+        <svg viewBox="0 0 500 280" fill="none" xmlns="http://www.w3.org/2000/svg" class="brand-logo">
           <defs>
-            <linearGradient id="oyoGradFootUI" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="oyoGradUI" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stop-color="#FFB000"/>
               <stop offset="50%" stop-color="#FF5500"/>
               <stop offset="100%" stop-color="#E03000"/>
             </linearGradient>
           </defs>
-          <rect x="70" y="85" width="70" height="16" rx="8" fill="url(#oyoGradFootUI)"/>
-          <rect x="40" y="115" width="80" height="16" rx="8" fill="url(#oyoGradFootUI)"/>
-          <rect x="58" y="145" width="70" height="16" rx="8" fill="url(#oyoGradFootUI)"/>
-          <path d="M 230 40 L 320 40 C 390 40 440 85 440 155 C 440 225 390 270 320 270 L 230 270 Z" fill="#FFFFFF"/>
-          <path d="M 285 95 L 315 95 C 355 95 380 120 380 155 C 380 190 355 215 315 215 L 285 215 Z" fill="#06050e"/>
-          <circle cx="210" cy="155" r="115" fill="url(#oyoGradFootUI)"/>
-          <circle cx="210" cy="155" r="70" fill="#06050e"/>
-          <rect x="180" y="105" width="60" height="100" rx="12" fill="url(#oyoGradFootUI)"/>
-          <rect x="186" y="113" width="48" height="74" rx="4" fill="#06050e"/>
-          <circle cx="210" cy="196" r="4" fill="#06050e"/>
-          <path d="M 214 122 L 200 150 H 211 L 206 178 L 220 150 H 209 Z" fill="url(#oyoGradFootUI)"/>
+          <rect x="70" y="85" width="70" height="16" rx="8" fill="url(#oyoGradUI)"/>
+          <rect x="40" y="115" width="80" height="16" rx="8" fill="url(#oyoGradUI)"/>
+          <rect x="58" y="145" width="70" height="16" rx="8" fill="url(#oyoGradUI)"/>
+          <path d="M 230 40 L 320 40 C 390 40 440 85 440 155 C 440 225 390 270 320 270 L 230 270 Z" fill="#0A1922"/>
+          <path d="M 285 95 L 315 95 C 355 95 380 120 380 155 C 380 190 355 215 315 215 L 285 215 Z" fill="#FFFFFF"/>
+          <circle cx="210" cy="155" r="115" fill="url(#oyoGradUI)"/>
+          <circle cx="210" cy="155" r="70" fill="#FFFFFF"/>
+          <rect x="180" y="105" width="60" height="100" rx="12" fill="url(#oyoGradUI)"/>
+          <rect x="186" y="113" width="48" height="74" rx="4" fill="#FFFFFF"/>
+          <circle cx="210" cy="196" r="4" fill="#FFFFFF"/>
+          <path d="M 214 122 L 200 150 H 211 L 206 178 L 220 150 H 209 Z" fill="url(#oyoGradUI)"/>
         </svg>
         OyoData
+      </a>
+
+      <ul class="nav-menu">
+        <li><a href="#services">Services</a></li>
+        <li><a href="#pricing">Data Rates</a></li>
+        <li><a href="login.html">Reseller Program</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="login.html" class="btn btn-ghost">Log In</a>
+        <a href="signup.html" class="btn btn-primary">Get Started</a>
       </div>
-      <p>Nigeria's leading VTU platform for cheap long-lasting data, airtime, bills, and exam PINs.</p>
+    </div>
+  </nav>
+
+  <!-- Hero Banner -->
+  <section class="hero" id="top">
+    <div class="hero-badge">★ #1 Automated VTU Platform in Nigeria</div>
+    <h1>Cheap &amp; Long-Lasting Data for <span>All Networks</span></h1>
+    <p>Automated SME &amp; CG Data bundles, airtime recharge, cable TV subscriptions, and WAEC/NECO result PINs delivered in seconds.</p>
+    
+    <div class="hero-cta">
+      <a href="signup.html" class="btn btn-primary" style="padding: 14px 30px; font-size: 0.95rem;">Create Free Account →</a>
+      <a href="login.html" class="btn btn-ghost" style="padding: 14px 26px; font-size: 0.95rem;">Access Dashboard</a>
+    </div>
+  </section>
+
+  <!-- Trust Indicators -->
+  <div class="trust-strip">
+    <div class="trust-item"><span>✓</span> 50,000+ Resellers</div>
+    <div class="trust-item"><span>⚡</span> Instant 5-Second Delivery</div>
+    <div class="trust-item"><span>🔒</span> 100% Safe &amp; Secure</div>
+    <div class="trust-item"><span>★</span> 24/7 Automated System</div>
+  </div>
+
+  <div class="container">
+    <!-- Platform Stats -->
+    <div class="stats-card">
+      <div>
+        <div class="stat-num">50,000+</div>
+        <div class="stat-lbl">Active Resellers</div>
+      </div>
+      <div>
+        <div class="stat-num">1,000,000+</div>
+        <div class="stat-lbl">Orders Processed</div>
+      </div>
+      <div>
+        <div class="stat-num">99.9%</div>
+        <div class="stat-lbl">Instant Success Rate</div>
+      </div>
+      <div>
+        <div class="stat-num">24/7</div>
+        <div class="stat-lbl">Automated Service</div>
+      </div>
     </div>
 
-    <div class="foot-col">
-      <h4>Services</h4>
-      <ul>
-        <li><a href="login.html">SME Data</a></li>
-        <li><a href="login.html">Airtime Topup</a></li>
-        <li><a href="login.html">Cable TV</a></li>
-        <li><a href="login.html">Exam PINs</a></li>
-      </ul>
-    </div>
+    <!-- Services Section -->
+    <section id="services" style="margin-bottom: 70px;">
+      <div class="sec-head">
+        <span class="tag">OUR SERVICES</span>
+        <h2>Everything You Need in One Place</h2>
+        <p>Top up your devices or start earning daily as an OyoData reseller.</p>
+      </div>
 
-    <div class="foot-col">
-      <h4>Account</h4>
-      <ul>
-        <li><a href="login.html">Login</a></li>
-        <li><a href="signup.html">Register</a></li>
-        <li><a href="admin.html">Admin Portal</a></li>
-      </ul>
-    </div>
+      <div class="services-grid">
+        <div class="serv-card">
+          <div class="serv-icon">📶</div>
+          <h3>Cheap SME Data</h3>
+          <p>Instant activation for MTN, Airtel, Glo, and 9mobile at wholesale prices.</p>
+        </div>
 
-    <div class="foot-col">
-      <h4>Contact</h4>
-      <ul>
-        <li>Email: support@oyodata.com</li>
-        <li>WhatsApp: +234 800 000 0000</li>
-        <li>Available 24/7</li>
-      </ul>
+        <div class="serv-card">
+          <div class="serv-icon">📞</div>
+          <h3>Airtime VTU</h3>
+          <p>Instant airtime topups for all major Nigerian networks with bulk discounts.</p>
+        </div>
+
+        <div class="serv-card">
+          <div class="serv-icon">📺</div>
+          <h3>Cable TV Subscriptions</h3>
+          <p>Instant renewal for DStv, GOtv, and StarTimes with automated smartcard verification.</p>
+        </div>
+
+        <div class="serv-card">
+          <div class="serv-icon">⚡</div>
+          <h3>Electricity Tokens</h3>
+          <p>Pay prepaid and postpaid meter bills for EKEDC, IKEDC, AEDC, IBEDC &amp; get tokens immediately.</p>
+        </div>
+
+        <div class="serv-card">
+          <div class="serv-icon">🎓</div>
+          <h3>Exam Result PINs</h3>
+          <p>Generate genuine WAEC, NECO, and NABTEB result checker PINs instantly.</p>
+        </div>
+
+        <div class="serv-card">
+          <div class="serv-icon">💼</div>
+          <h3>Reseller Program</h3>
+          <p>Upgrade to Reseller tier and get up to 5% OFF all VTU plans forever.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing Showcase -->
+    <section id="pricing" style="margin-bottom: 70px;">
+      <div class="sec-head">
+        <span class="tag">WHOLESALE PRICING</span>
+        <h2>Live Data Plan Rates</h2>
+        <p>Check out our affordable rates for both standard users and resellers.</p>
+      </div>
+
+      <div class="pricing-box">
+        <div class="net-tabs">
+          <button class="tab-btn active" onclick="switchNetwork('mtn', this)">MTN Data</button>
+          <button class="tab-btn" onclick="switchNetwork('airtel', this)">Airtel Data</button>
+          <button class="tab-btn" onclick="switchNetwork('glo', this)">Glo Data</button>
+          <button class="tab-btn" onclick="switchNetwork('9mobile', this)">9mobile Data</button>
+        </div>
+
+        <div class="plans-grid" id="plansDisplay">
+          <!-- Dynamic JavaScript Cards -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Reseller Upgrade Banner -->
+    <div class="reseller-cta">
+      <h2>Start Your VTU Business Today</h2>
+      <p>Upgrade to a Reseller account for ₦2,000 once and unlock 5% OFF all VTU plans forever.</p>
+      <a href="signup.html" class="btn btn-white">Get Started Free</a>
     </div>
   </div>
 
-  <div class="foot-bottom">
-    Copyright © OyoData 2026. All rights reserved.
-  </div>
-</footer>
-
-<script>
-  const samplePlans = {
-    mtn: [
-      { size: "1.0 GB", validity: "30 Days (SME)", price: "₦285" },
-      { size: "2.0 GB", validity: "30 Days (SME)", price: "₦570" },
-      { size: "3.0 GB", validity: "30 Days (SME)", price: "₦855" },
-      { size: "5.0 GB", validity: "30 Days (SME)", price: "₦1,425" }
-    ],
-    airtel: [
-      { size: "1.0 GB", validity: "30 Days (CG)", price: "₦290" },
-      { size: "2.0 GB", validity: "30 Days (CG)", price: "₦580" },
-      { size: "5.0 GB", validity: "30 Days (CG)", price: "₦1,450" },
-      { size: "10.0 GB", validity: "30 Days (CG)", price: "₦2,900" }
-    ],
-    glo: [
-      { size: "1.0 GB", validity: "30 Days", price: "₦275" },
-      { size: "2.0 GB", validity: "30 Days", price: "₦550" },
-      { size: "3.0 GB", validity: "30 Days", price: "₦825" },
-      { size: "5.0 GB", validity: "30 Days", price: "₦1,375" }
-    ],
-    "9mobile": [
-      { size: "1.0 GB", validity: "30 Days", price: "₦180" },
-      { size: "2.0 GB", validity: "30 Days", price: "₦360" },
-      { size: "5.0 GB", validity: "30 Days", price: "₦900" },
-      { size: "10.0 GB", validity: "30 Days", price: "₦1,800" }
-    ]
-  };
-
-  function switchNetwork(net, btn) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-
-    const display = document.getElementById('plansDisplay');
-    const plans = samplePlans[net] || [];
-
-    display.innerHTML = plans.map(p => `
-      <div class="plan-card">
-        <div class="plan-size">${p.size}</div>
-        <div class="plan-validity">${p.validity}</div>
-        <div class="plan-price">${p.price}</div>
-        <a href="signup.html" class="btn btn-primary" style="width:100%; justify-content:center; padding:8px 12px; font-size:0.8rem;">Buy Now</a>
+  <!-- Footer -->
+  <footer>
+    <div class="foot-wrap">
+      <div>
+        <div class="foot-brand">
+          <svg viewBox="0 0 500 280" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 36px; height: auto;">
+            <defs>
+              <linearGradient id="oyoGradFootUI" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FFB000"/>
+                <stop offset="50%" stop-color="#FF5500"/>
+                <stop offset="100%" stop-color="#E03000"/>
+              </linearGradient>
+            </defs>
+            <rect x="70" y="85" width="70" height="16" rx="8" fill="url(#oyoGradFootUI)"/>
+            <rect x="40" y="115" width="80" height="16" rx="8" fill="url(#oyoGradFootUI)"/>
+            <rect x="58" y="145" width="70" height="16" rx="8" fill="url(#oyoGradFootUI)"/>
+            <path d="M 230 40 L 320 40 C 390 40 440 85 440 155 C 440 225 390 270 320 270 L 230 270 Z" fill="#0A1922"/>
+            <path d="M 285 95 L 315 95 C 355 95 380 120 380 155 C 380 190 355 215 315 215 L 285 215 Z" fill="#FFFFFF"/>
+            <circle cx="210" cy="155" r="115" fill="url(#oyoGradFootUI)"/>
+            <circle cx="210" cy="155" r="70" fill="#FFFFFF"/>
+            <rect x="180" y="105" width="60" height="100" rx="12" fill="url(#oyoGradFootUI)"/>
+            <rect x="186" y="113" width="48" height="74" rx="4" fill="#FFFFFF"/>
+            <circle cx="210" cy="196" r="4" fill="#FFFFFF"/>
+            <path d="M 214 122 L 200 150 H 211 L 206 178 L 220 150 H 209 Z" fill="url(#oyoGradFootUI)"/>
+          </svg>
+          OyoData
+        </div>
+        <p>Nigeria's trusted platform for cheap long-lasting SME data, airtime, bills, and exam PINs.</p>
       </div>
-    `).join('');
-  }
 
-  // Load MTN by default on start
-  switchNetwork('mtn', document.querySelector('.tab-btn'));
-</script>
+      <div class="foot-col">
+        <h4>Services</h4>
+        <ul>
+          <li><a href="login.html">Buy Data</a></li>
+          <li><a href="login.html">Airtime VTU</a></li>
+          <li><a href="login.html">Cable TV</a></li>
+          <li><a href="login.html">Exam PINs</a></li>
+        </ul>
+      </div>
+
+      <div class="foot-col">
+        <h4>Account</h4>
+        <ul>
+          <li><a href="login.html">Log In</a></li>
+          <li><a href="signup.html">Register</a></li>
+          <li><a href="admin.html">Admin Portal</a></li>
+        </ul>
+      </div>
+
+      <div class="foot-col">
+        <h4>Contact</h4>
+        <ul>
+          <li>Email: support@oyodata.com</li>
+          <li>WhatsApp: +234 800 000 0000</li>
+          <li>24/7 Support</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="foot-bottom">
+      Copyright © OyoData 2026. All rights reserved.
+    </div>
+  </footer>
+
+  <script>
+    const samplePlans = {
+      mtn: [
+        { size: "1.0 GB", validity: "30 Days (SME)", price: "₦285" },
+        { size: "2.0 GB", validity: "30 Days (SME)", price: "₦570" },
+        { size: "3.0 GB", validity: "30 Days (SME)", price: "₦855" },
+        { size: "5.0 GB", validity: "30 Days (SME)", price: "₦1,425" }
+      ],
+      airtel: [
+        { size: "1.0 GB", validity: "30 Days (CG)", price: "₦290" },
+        { size: "2.0 GB", validity: "30 Days (CG)", price: "₦580" },
+        { size: "5.0 GB", validity: "30 Days (CG)", price: "₦1,450" },
+        { size: "10.0 GB", validity: "30 Days (CG)", price: "₦2,900" }
+      ],
+      glo: [
+        { size: "1.0 GB", validity: "30 Days", price: "₦275" },
+        { size: "2.0 GB", validity: "30 Days", price: "₦550" },
+        { size: "3.0 GB", validity: "30 Days", price: "₦825" },
+        { size: "5.0 GB", validity: "30 Days", price: "₦1,375" }
+      ],
+      "9mobile": [
+        { size: "1.0 GB", validity: "30 Days", price: "₦180" },
+        { size: "2.0 GB", validity: "30 Days", price: "₦360" },
+        { size: "5.0 GB", validity: "30 Days", price: "₦900" },
+        { size: "10.0 GB", validity: "30 Days", price: "₦1,800" }
+      ]
+    };
+
+    function switchNetwork(net, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const display = document.getElementById('plansDisplay');
+      const plans = samplePlans[net] || [];
+
+      display.innerHTML = plans.map(p => `
+        <div class="plan-card">
+          <div class="plan-size">${p.size}</div>
+          <div class="plan-validity">${p.validity}</div>
+          <div class="plan-price">${p.price}</div>
+          <a href="signup.html" class="btn btn-primary" style="width:100%; justify-content:center; padding:8px 12px; font-size:0.82rem; border-radius:10px;">Buy Plan</a>
+        </div>
+      `).join('');
+    }
+
+    switchNetwork('mtn', document.querySelector('.tab-btn'));
+  </script>
 </body>
 </html>
