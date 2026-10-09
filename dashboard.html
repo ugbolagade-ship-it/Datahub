@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Datahub — Dashboard</title>
+  <title>Datahub — Web App</title>
 
   <style>
     :root {
@@ -26,7 +26,7 @@
     body { background-color: var(--bg); min-height: 100vh; padding-bottom: 90px; color: var(--text-dark); display: flex; justify-content: center; }
     .app-viewport { width: 100%; max-width: 480px; padding: 16px; position: relative; }
 
-    /* Top Bar */
+    /* Top Header */
     .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 0 20px 0; }
     .brand { display: flex; align-items: center; gap: 10px; }
     .brand-logo { width: 34px; height: 34px; }
@@ -38,11 +38,11 @@
       background: linear-gradient(135deg, #1b1834 0%, #2c2754 100%);
       color: #ffffff;
       border-radius: 24px;
-      padding: 24px;
+      padding: 22px;
       position: relative;
       overflow: hidden;
       box-shadow: 0 12px 30px rgba(27, 24, 52, 0.15);
-      margin-bottom: 24px;
+      margin-bottom: 18px;
     }
     .wallet-card::after { content: ''; position: absolute; right: -30px; bottom: -30px; width: 140px; height: 140px; background: rgba(244, 132, 31, 0.12); border-radius: 50%; blur: 20px; }
     .wallet-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -50,13 +50,44 @@
     .wallet-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.75; font-weight: 600; }
     .eye-btn { background: none; border: none; cursor: pointer; color: rgba(255, 255, 255, 0.8); display: flex; align-items: center; justify-content: center; padding: 2px; }
     .eye-btn svg { width: 18px; height: 18px; fill: currentColor; }
-    .user-tag { font-size: 0.75rem; background: rgba(255,255,255,0.12); padding: 4px 10px; border-radius: 20px; word-break: break-all; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .wallet-amount { font-size: 2.3rem; font-weight: 800; margin-bottom: 18px; letter-spacing: -0.5px; }
+    .user-tag { font-size: 0.72rem; background: rgba(255,255,255,0.12); padding: 4px 10px; border-radius: 20px; word-break: break-all; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .wallet-amount { font-size: 2.2rem; font-weight: 800; margin-bottom: 16px; letter-spacing: -0.5px; }
     .wallet-actions { display: flex; gap: 10px; position: relative; z-index: 2; }
-    .btn-topup { background: var(--brand-orange); color: #ffffff; border: none; padding: 12px 20px; border-radius: 14px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(244, 132, 31, 0.3); }
+    .btn-topup { background: var(--brand-orange); color: #ffffff; border: none; padding: 12px 18px; border-radius: 14px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(244, 132, 31, 0.3); }
     .btn-topup svg { width: 16px; height: 16px; fill: currentColor; }
-    .btn-resolve { background: rgba(255, 255, 255, 0.12); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); padding: 12px 16px; border-radius: 14px; font-weight: 600; font-size: 0.85rem; cursor: pointer; backdrop-filter: blur(5px); display: flex; align-items: center; gap: 6px; }
+    .btn-resolve { background: rgba(255, 255, 255, 0.12); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); padding: 12px 14px; border-radius: 14px; font-weight: 600; font-size: 0.82rem; cursor: pointer; backdrop-filter: blur(5px); display: flex; align-items: center; gap: 6px; }
     .btn-resolve svg { width: 15px; height: 15px; fill: currentColor; }
+
+    /* Secondary Referral Wallet Card */
+    .ref-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid var(--input-border);
+      box-shadow: 0 4px 12px rgba(27, 24, 52, 0.02);
+      margin-bottom: 24px;
+    }
+    .ref-info-title { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+    .ref-amount { font-size: 1.3rem; font-weight: 800; color: var(--text-dark); margin-top: 2px; }
+    .btn-transfer-ref { background: var(--brand-accent); color: var(--brand-orange); border: 1px solid var(--brand-orange); padding: 8px 14px; border-radius: 12px; font-weight: 700; font-size: 0.78rem; cursor: pointer; }
+
+    /* Reseller Banner */
+    .reseller-banner {
+      background: linear-gradient(135deg, #f4841f 0%, #d9381e 100%);
+      color: #ffffff;
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .reseller-banner-text h4 { font-size: 1rem; font-weight: 800; margin-bottom: 2px; }
+    .reseller-banner-text p { font-size: 0.78rem; opacity: 0.9; }
+    .btn-upgrade-now { background: #ffffff; color: var(--brand-red); border: none; padding: 10px 16px; border-radius: 12px; font-weight: 800; font-size: 0.8rem; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
     /* Section Headings */
     .section-head { font-size: 1.05rem; font-weight: 800; color: var(--text-dark); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
@@ -95,6 +126,7 @@
     .tx-right { text-align: right; }
     .tx-amount { font-weight: 800; font-size: 0.9rem; }
     .tx-amount.debit { color: var(--brand-red); }
+    .tx-amount.credit { color: var(--success-text); }
     .tx-badge { display: inline-block; font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; margin-top: 2px; }
     .tx-badge.success { background: var(--success-bg); color: var(--success-text); }
     .tx-badge.failed { background: var(--error-bg); color: var(--error-text); }
@@ -152,7 +184,7 @@
       <div class="wallet-card">
         <div class="wallet-top">
           <div class="wallet-title-group">
-            <span class="wallet-title">Available Balance</span>
+            <span class="wallet-title">Main Wallet</span>
             <button class="eye-btn" onclick="toggleBalanceVisibility()" title="Toggle Balance">
               <svg id="eyeIcon" viewBox="0 0 24 24"></svg>
             </button>
@@ -174,9 +206,27 @@
         </div>
       </div>
 
+      <!-- Referral Wallet Card -->
+      <div class="ref-card">
+        <div>
+          <div class="ref-info-title">Referral Bonus Wallet</div>
+          <div class="ref-amount" id="refBalance">₦0.00</div>
+        </div>
+        <button class="btn-transfer-ref" onclick="transferReferralBonus()">Transfer to Main</button>
+      </div>
+
+      <!-- Reseller Upgrade Banner -->
+      <div class="reseller-banner" id="resellerBanner">
+        <div class="reseller-banner-text">
+          <h4>Upgrade to Reseller Tier</h4>
+          <p>Pay ₦2,000 once to unlock 5% OFF all VTU plans forever!</p>
+        </div>
+        <button class="btn-upgrade-now" onclick="upgradeToReseller()">Upgrade ₦2k</button>
+      </div>
+
       <!-- Quick Services -->
       <div class="section-head">
-        <span>Services</span>
+        <span>Quick Services</span>
       </div>
 
       <div class="vtu-grid">
@@ -216,6 +266,31 @@
       </div>
 
       <div id="recentTxList" class="tx-list"></div>
+    </div>
+
+    <!-- SERVICES VIEW -->
+    <div id="viewServices" style="display: none;">
+      <div class="section-head">
+        <span>All Services</span>
+      </div>
+      <div class="vtu-grid" style="grid-template-columns: repeat(2, 1fr); gap: 16px;">
+        <div class="vtu-item" onclick="openService('data')" style="padding: 24px;">
+          <div class="vtu-icon" style="width: 54px; height: 54px;"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></div>
+          <span class="vtu-label" style="font-size: 0.9rem;">Data Bundles</span>
+        </div>
+        <div class="vtu-item" onclick="openService('airtime')" style="padding: 24px;">
+          <div class="vtu-icon" style="width: 54px; height: 54px;"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></div>
+          <span class="vtu-label" style="font-size: 0.9rem;">Airtime VTU</span>
+        </div>
+        <div class="vtu-item" onclick="openService('cable')" style="padding: 24px;">
+          <div class="vtu-icon" style="width: 54px; height: 54px;"><svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg></div>
+          <span class="vtu-label" style="font-size: 0.9rem;">Cable TV Sub</span>
+        </div>
+        <div class="vtu-item" onclick="openService('electricity')" style="padding: 24px;">
+          <div class="vtu-icon" style="width: 54px; height: 54px;"><svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg></div>
+          <span class="vtu-label" style="font-size: 0.9rem;">Electricity Token</span>
+        </div>
+      </div>
     </div>
 
     <!-- TRANSACTION HISTORY VIEW -->
@@ -349,7 +424,7 @@
         <span class="modal-title">Top Up Wallet</span>
         <button class="btn-close" onclick="closeModal('modalTopup')">✕</button>
       </div>
-      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">Transfer funds to your dedicated virtual account to instantly credit your wallet:</p>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">Transfer funds to your dedicated account to instantly credit your wallet:</p>
 
       <div class="bank-box">
         <div class="bank-row">
@@ -394,6 +469,10 @@
       <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></div>
       <span>Home</span>
     </button>
+    <button id="navServices" class="nav-btn" onclick="switchTab('services')">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg></div>
+      <span>Services</span>
+    </button>
     <button id="navHistory" class="nav-btn" onclick="switchTab('history')">
       <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg></div>
       <span>History</span>
@@ -428,6 +507,7 @@
         document.getElementById('userEmail').textContent = user.email;
         window.fetchWalletBalance();
         window.renderTransactions();
+        window.checkResellerStatus();
       } else {
         window.location.href = 'login.html';
       }
@@ -442,20 +522,24 @@
     let selectedNetwork = 'MTN';
     let selectedCableCompany = 'dstv';
     let selectedCableCompanyCode = 1;
-    let actualBalance = '0.00';
+    let actualBalance = 0;
+    let refBalance = parseFloat(localStorage.getItem('dh_ref_balance') || '0');
+    let isReseller = localStorage.getItem('dh_is_reseller') === 'true';
     let isBalanceHidden = localStorage.getItem('dh_hide_balance') === 'true';
 
     // SVG Eye Path Strings
     const SVG_EYE_OPEN = `<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>`;
     const SVG_EYE_CLOSED = `<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.17c0-1.66-1.34-3-3-3l-.17.02z"/>`;
 
-    // Local Storage Mock Transactions
     let transactionHistory = JSON.parse(localStorage.getItem('dh_transactions') || '[]');
 
     // BALANCE DISPLAY TOGGLE LOGIC
     window.updateBalanceDisplay = function() {
       const displayElem = document.getElementById('walletBalance');
+      const refElem = document.getElementById('refBalance');
       const eyeIconElem = document.getElementById('eyeIcon');
+
+      refElem.textContent = `₦${refBalance.toLocaleString('en-NG')}`;
 
       if (isBalanceHidden) {
         displayElem.textContent = '••••••••';
@@ -472,12 +556,76 @@
       window.updateBalanceDisplay();
     };
 
+    window.checkResellerStatus = function() {
+      if (isReseller) {
+        const banner = document.getElementById('resellerBanner');
+        if (banner) banner.style.display = 'none';
+      }
+    };
+
+    window.upgradeToReseller = function() {
+      if (actualBalance < 2000) {
+        alert('Insufficient wallet balance to upgrade. Please top up at least ₦2,000.');
+        openModal('modalTopup');
+        return;
+      }
+
+      if (confirm('Upgrade to Reseller for ₦2,000 to enjoy 5% OFF all VTU plans?')) {
+        actualBalance -= 2000;
+        isReseller = true;
+        localStorage.setItem('dh_is_reseller', 'true');
+
+        // Add transaction record
+        transactionHistory.unshift({
+          type: 'Upgrade',
+          title: 'Reseller Account Upgrade',
+          amount: '2,000',
+          ref: `upg_${Date.now()}`,
+          date: new Date().toLocaleDateString('en-GB'),
+          status: 'SUCCESS'
+        });
+        localStorage.setItem('dh_transactions', JSON.stringify(transactionHistory));
+
+        window.updateBalanceDisplay();
+        window.checkResellerStatus();
+        window.renderTransactions();
+        alert('Congratulations! Your account is now upgraded to Reseller (5% Discount Activated).');
+      }
+    };
+
+    window.transferReferralBonus = function() {
+      if (refBalance <= 0) {
+        alert('You do not have any referral bonus to transfer.');
+        return;
+      }
+
+      const amountToTransfer = refBalance;
+      actualBalance += amountToTransfer;
+      refBalance = 0;
+
+      localStorage.setItem('dh_ref_balance', '0');
+
+      transactionHistory.unshift({
+        type: 'Transfer',
+        title: 'Referral Bonus Transferred to Main',
+        amount: amountToTransfer.toString(),
+        ref: `trf_${Date.now()}`,
+        date: new Date().toLocaleDateString('en-GB'),
+        status: 'SUCCESS'
+      });
+      localStorage.setItem('dh_transactions', JSON.stringify(transactionHistory));
+
+      window.updateBalanceDisplay();
+      window.renderTransactions();
+      alert(`Successfully transferred ₦${amountToTransfer.toLocaleString('en-NG')} to your main wallet!`);
+    };
+
     window.fetchWalletBalance = async function() {
       try {
         const res = await fetch(`${BACKEND_URL}/api/wallet-balance`);
         const data = await res.json();
         if (data.balance) {
-          actualBalance = data.balance;
+          actualBalance = parseFloat(data.balance);
           window.updateBalanceDisplay();
         }
       } catch (err) {
@@ -487,15 +635,20 @@
 
     window.switchTab = function(tab) {
       document.getElementById('viewHome').style.display = 'none';
+      document.getElementById('viewServices').style.display = 'none';
       document.getElementById('viewHistory').style.display = 'none';
       document.getElementById('viewService').style.display = 'none';
 
       document.getElementById('navHome').classList.remove('active');
+      document.getElementById('navServices').classList.remove('active');
       document.getElementById('navHistory').classList.remove('active');
 
       if (tab === 'home') {
         document.getElementById('viewHome').style.display = 'block';
         document.getElementById('navHome').classList.add('active');
+      } else if (tab === 'services') {
+        document.getElementById('viewServices').style.display = 'block';
+        document.getElementById('navServices').classList.add('active');
       } else if (tab === 'history') {
         document.getElementById('viewHistory').style.display = 'block';
         document.getElementById('navHistory').classList.add('active');
@@ -505,6 +658,7 @@
 
     window.openService = function(type) {
       document.getElementById('viewHome').style.display = 'none';
+      document.getElementById('viewServices').style.display = 'none';
       document.getElementById('viewHistory').style.display = 'none';
       document.getElementById('viewService').style.display = 'block';
       document.querySelectorAll('.vtu-form').forEach(f => f.style.display = 'none');
@@ -537,7 +691,7 @@
       window.loadCablePackages();
     };
 
-    // DYNAMIC DATA PLAN LOADER WITH VALIDITY FORMATTING (Buycard.ng style)
+    // DYNAMIC DATA PLAN LOADER (9% Margin + Optional 5% Reseller Discount)
     window.loadDataPlans = async function() {
       const select = document.getElementById('dataPlanSelect');
       const dataType = document.getElementById('dataTypeSelect').value;
@@ -546,7 +700,7 @@
       select.innerHTML = '<option value="">Loading plans...</option>';
 
       try {
-        const response = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${productType}`);
+        const response = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${productType}&is_reseller=${isReseller}`);
         const data = await response.json();
 
         select.innerHTML = '<option value="">Select Plan</option>';
@@ -561,14 +715,10 @@
           const opt = document.createElement('option');
           opt.value = p.plan_id;
 
-          // Extract validity string dynamically from API response keys
           const rawValidity = p.validity || p.plan_validity || p.day || '';
           const validityText = rawValidity ? ` (${rawValidity})` : '';
-
-          // Cleans plan name if it already contains extra network/type tags
           const cleanName = p.name.replace(/\(SME\)|\(CG\)|\(GIFTING\)/gi, '').trim();
 
-          // Formats as: 1GB (1 Month) => ₦873
           opt.textContent = `${cleanName}${validityText} => ₦${p.price.toLocaleString('en-NG')}`;
           select.appendChild(opt);
         });
@@ -583,7 +733,7 @@
       select.innerHTML = '<option value="">Loading packages...</option>';
 
       try {
-        const response = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${selectedCableCompany}`);
+        const response = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${selectedCableCompany}&is_reseller=${isReseller}`);
         const data = await response.json();
 
         select.innerHTML = '<option value="">Select Package</option>';
@@ -627,7 +777,7 @@
             </div>
           </div>
           <div class="tx-right">
-            <div class="tx-amount debit">-₦${tx.amount}</div>
+            <div class="tx-amount ${tx.type === 'Transfer' ? 'credit' : 'debit'}">${tx.type === 'Transfer' ? '+' : '-'}₦${tx.amount}</div>
             <span class="tx-badge ${tx.status === 'SUCCESS' ? 'success' : 'failed'}">${tx.status}</span>
           </div>
         </div>
@@ -643,7 +793,7 @@
             </div>
           </div>
           <div class="tx-right">
-            <div class="tx-amount debit">-₦${tx.amount}</div>
+            <div class="tx-amount ${tx.type === 'Transfer' ? 'credit' : 'debit'}">${tx.type === 'Transfer' ? '+' : '-'}₦${tx.amount}</div>
             <span class="tx-badge ${tx.status === 'SUCCESS' ? 'success' : 'failed'}">${tx.status}</span>
           </div>
         </div>
