@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Datahub — Create Account</title>
+  <title>OyoData — Create Account</title>
 
   <style>
     :root {
@@ -23,20 +23,26 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: var(--bg); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px 16px; }
     .auth-card { background: var(--card-bg); width: 100%; max-width: 400px; border-radius: 24px; padding: 32px 28px; box-shadow: 0 10px 30px rgba(27, 24, 52, 0.03); border: 1px solid #f0eef8; }
-    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
-    .brand-logo { width: 34px; height: 34px; display: block; }
+    
+    /* Clickable Brand Link to index.html */
+    .brand-link { text-decoration: none; display: inline-flex; align-items: center; gap: 10px; margin-bottom: 24px; cursor: pointer; }
+    .brand-logo { width: 36px; height: 36px; display: block; }
     .brand-name { font-size: 1.5rem; font-weight: 800; color: var(--brand-red); letter-spacing: -0.4px; }
+    
     h2 { font-size: 1.55rem; font-weight: 800; color: var(--text-dark); margin-bottom: 6px; }
     .subtitle { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 24px; }
     .form-group { margin-bottom: 16px; }
     label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
     input { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--input-border); font-size: 0.95rem; outline: none; }
     input:focus { border-color: var(--brand-orange); }
+    
     .btn-submit { width: 100%; padding: 14px; border: none; border-radius: 14px; background: linear-gradient(90deg, var(--brand-orange), var(--brand-red)); color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
     .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+    
     .status-alert { margin-top: 16px; padding: 14px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; display: none; }
     .status-alert.error { display: block; background: var(--error-bg); color: var(--error-text); }
     .status-alert.success { display: block; background: var(--success-bg); color: var(--success-text); }
+    
     .toggle-footer { margin-top: 24px; text-align: center; font-size: 0.9rem; color: var(--text-muted); }
     .toggle-footer a { color: var(--brand-red); font-weight: 700; text-decoration: none; }
   </style>
@@ -44,19 +50,20 @@
 <body>
 
   <div class="auth-card">
-    <div class="brand">
+    <!-- Clickable Header Navigating to index.html -->
+    <a href="index.html" class="brand-link" title="Go to Home Page">
       <svg class="brand-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <linearGradient id="dhSignupGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id="oyoSignupGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="#f4841f" />
             <stop offset="100%" stop-color="#d9381e" />
           </linearGradient>
         </defs>
-        <path fill-rule="evenodd" clip-rule="evenodd" d="M15 10 C15 4.5 19.5 0 25 0 H50 C77.6 0 100 22.4 100 50 C100 77.6 77.6 100 50 100 H25 C19.5 100 15 95.5 15 90 V10 Z M38 22 H48 C63.5 22 76 34.5 76 50 C76 65.5 63.5 78 48 78 H38 V22 Z" fill="url(#dhSignupGrad)"/>
-        <rect x="43" y="36" width="10" height="28" rx="5" fill="url(#dhSignupGrad)"/>
+        <circle cx="50" cy="50" r="40" stroke="url(#oyoSignupGrad)" stroke-width="16" />
+        <circle cx="50" cy="50" r="18" fill="url(#oyoSignupGrad)" />
       </svg>
-      <span class="brand-name">Datahub</span>
-    </div>
+      <span class="brand-name">OyoData</span>
+    </a>
 
     <h2>Create Account</h2>
     <p class="subtitle">Sign up to buy data, airtime, and pay bills.</p>
@@ -70,6 +77,11 @@
       <div class="form-group">
         <label for="signupPassword">Password</label>
         <input type="password" id="signupPassword" placeholder="At least 6 characters" minlength="6" required />
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" placeholder="Re-enter your password" minlength="6" required />
       </div>
 
       <button type="submit" class="btn-submit" id="signupBtn">Create Account</button>
@@ -104,10 +116,19 @@
       const status = document.getElementById('signupStatus');
       const email = document.getElementById('signupEmail').value.trim();
       const password = document.getElementById('signupPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      status.className = 'status-alert';
+
+      // Validate matching passwords before contacting Firebase
+      if (password !== confirmPassword) {
+        status.className = 'status-alert error';
+        status.textContent = 'Passwords do not match. Please check and try again.';
+        return;
+      }
 
       btn.disabled = true;
       btn.textContent = 'Creating Account...';
-      status.className = 'status-alert';
 
       try {
         await createUserWithEmailAndPassword(auth, email, password);
