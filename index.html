@@ -16,6 +16,13 @@
       --brand-red: #d9381e;
       --brand-btn: #1b1834;
       --brand-accent: #fcf4eb;
+      
+      /* Dark Footer Design Tokens */
+      --foot-bg: #1e1b38;
+      --foot-text: #c5c2de;
+      --foot-head: #ffffff;
+      --foot-highlight: #ffc107;
+      --foot-border: rgba(255, 255, 255, 0.1);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -42,7 +49,7 @@
     .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.4rem; color: var(--brand-red); letter-spacing: -0.5px; }
     .brand-logo { width: 48px; height: auto; display: block; }
 
-    /* Hamburger Three Lines Toggle Button */
+    /* Hamburger Toggle Button */
     .menu-toggle-btn {
       background: #f0eff6; border: none; border-radius: 12px;
       width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
@@ -50,7 +57,7 @@
     }
     .menu-toggle-btn:hover { background: var(--brand-accent); color: var(--brand-orange); }
 
-    /* Slide-down Mobile Navigation Drawer */
+    /* Mobile Dropdown Drawer */
     .mobile-dropdown {
       display: none; flex-direction: column; gap: 8px;
       position: absolute; top: 100%; left: 0; right: 0;
@@ -169,8 +176,89 @@
       display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 18px rgba(244, 132, 31, 0.35);
     }
 
-    /* Footer */
-    footer { background: #ffffff; border-top: 1px solid var(--input-border); padding: 40px 20px 24px; font-size: 0.85rem; color: var(--text-muted); text-align: center; }
+    /* FOOTER (Matched Exact Screenshot Design) */
+    footer {
+      background-color: var(--foot-bg);
+      color: var(--foot-text);
+      padding: 56px 24px 32px;
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+    .foot-container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .foot-brand-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .foot-brand-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #ffffff;
+      font-family: Georgia, serif;
+    }
+    .foot-desc {
+      color: var(--foot-text);
+      font-size: 0.95rem;
+      margin-bottom: 36px;
+      line-height: 1.65;
+    }
+    .foot-desc strong {
+      color: var(--foot-highlight);
+      font-weight: 700;
+    }
+    .foot-sec-title {
+      color: var(--foot-head);
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-bottom: 16px;
+      margin-top: 28px;
+    }
+    .foot-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .foot-list a {
+      color: var(--foot-text);
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .foot-list a:hover {
+      color: var(--foot-highlight);
+    }
+    .foot-contact-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--foot-text);
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+    .foot-contact-item .icon {
+      width: 18px;
+      height: 18px;
+    }
+    .foot-divider {
+      height: 1px;
+      background: var(--foot-border);
+      margin: 36px 0 24px 0;
+    }
+    .foot-bottom-text {
+      font-size: 0.88rem;
+      color: var(--foot-text);
+      opacity: 0.85;
+      text-align: left;
+    }
+    .foot-bottom-text strong {
+      color: var(--foot-highlight);
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
@@ -348,9 +436,66 @@
     </div>
   </div>
 
-  <!-- Footer -->
+  <!-- EXACT MATCH FOOTER SECTION -->
   <footer>
-    <p>Copyright © OyoData 2026. All rights reserved.</p>
+    <div class="foot-container">
+      <div class="foot-brand-header">
+        <svg viewBox="0 0 500 280" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 32px; height: auto;">
+          <defs>
+            <linearGradient id="oyoGradFootExact" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#FFB000"/>
+              <stop offset="50%" stop-color="#FF5500"/>
+              <stop offset="100%" stop-color="#E03000"/>
+            </linearGradient>
+          </defs>
+          <rect x="70" y="85" width="70" height="16" rx="8" fill="url(#oyoGradFootExact)"/>
+          <rect x="40" y="115" width="80" height="16" rx="8" fill="url(#oyoGradFootExact)"/>
+          <rect x="58" y="145" width="70" height="16" rx="8" fill="url(#oyoGradFootExact)"/>
+          <path d="M 230 40 L 320 40 C 390 40 440 85 440 155 C 440 225 390 270 320 270 L 230 270 Z" fill="#FFFFFF"/>
+          <path d="M 285 95 L 315 95 C 355 95 380 120 380 155 C 380 190 355 215 315 215 L 285 215 Z" fill="#1e1b38"/>
+          <circle cx="210" cy="155" r="115" fill="url(#oyoGradFootExact)"/>
+          <circle cx="210" cy="155" r="70" fill="#1e1b38"/>
+          <rect x="180" y="105" width="60" height="100" rx="12" fill="url(#oyoGradFootExact)"/>
+          <rect x="186" y="113" width="48" height="74" rx="4" fill="#1e1b38"/>
+          <circle cx="210" cy="196" r="4" fill="#1e1b38"/>
+          <path d="M 214 122 L 200 150 H 211 L 206 178 L 220 150 H 209 Z" fill="url(#oyoGradFootExact)"/>
+        </svg>
+        <span class="foot-brand-title">OyoData</span>
+      </div>
+
+      <p class="foot-desc">
+        Pioneer of <strong>cheap and long lasting data</strong> in Nigeria. OyoData is the #1 SME data reselling platform trusted by 50,000+ resellers.
+      </p>
+
+      <div class="foot-sec-title">Services</div>
+      <ul class="foot-list">
+        <li><a href="quickbuy.html">Buy Data</a></li>
+        <li><a href="quickbuy.html">Buy Airtime</a></li>
+        <li><a href="login.html">Cable TV</a></li>
+        <li><a href="login.html">Electricity Bills</a></li>
+        <li><a href="login.html">Result Checker</a></li>
+        <li><a href="login.html">Bulk SMS</a></li>
+      </ul>
+
+      <div class="foot-sec-title">Company</div>
+      <ul class="foot-list">
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+      </ul>
+
+      <div class="foot-sec-title">Contact</div>
+      <div class="foot-contact-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        support@oyodata.com
+      </div>
+
+      <div class="foot-divider"></div>
+
+      <div class="foot-bottom-text">
+        © 2026 OyoData by <strong>OyoData</strong>. All rights reserved.
+      </div>
+    </div>
   </footer>
 
   <script>
