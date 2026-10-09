@@ -21,7 +21,7 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px 16px; }
+    body { background-color: var(--bg); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 16px; }
     .auth-card { background: var(--card-bg); width: 100%; max-width: 400px; border-radius: 24px; padding: 32px 28px; box-shadow: 0 10px 30px rgba(27, 24, 52, 0.03); border: 1px solid #f0eef8; }
     
     /* Clickable Brand Link to index.html */
@@ -51,6 +51,8 @@
     
     .toggle-footer { margin-top: 24px; text-align: center; font-size: 0.9rem; color: var(--text-muted); }
     .toggle-footer a { color: var(--brand-red); font-weight: 700; text-decoration: none; }
+
+    .copyright-footer { margin-top: 28px; text-align: center; font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
   </style>
 </head>
 <body>
@@ -95,6 +97,10 @@
     <div class="toggle-footer">
       New here? <a href="signup.html">Create an account</a>
     </div>
+  </div>
+
+  <div class="copyright-footer">
+    Copyright © OyoData 2026
   </div>
 
   <script type="module">
