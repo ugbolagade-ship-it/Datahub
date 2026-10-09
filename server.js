@@ -9,8 +9,7 @@ app.use(cors());
 const EASY_ACCESS_TOKEN = process.env.EASY_ACCESS_TOKEN;
 const BASE_URL = 'https://easyaccess.com.ng/api/live/v1';
 
-// Profit Margin Set to 9%
-const PROFIT_MARGIN = 0.09;
+const PROFIT_MARGIN = 0.09; // 9% Margin
 
 const getHeaders = () => ({
   'Authorization': `Bearer ${EASY_ACCESS_TOKEN}`,
@@ -19,21 +18,29 @@ const getHeaders = () => ({
   'Content-Type': 'application/json'
 });
 
-// Helper function to calculate selling price (Base + 9%)
+// Standard 9% markup for data plans
 function addMarkup(basePrice, discountPercent = 0) {
   const original = parseFloat(basePrice);
   if (isNaN(original)) return basePrice;
   const markupPrice = original * (1 + PROFIT_MARGIN);
-  // Apply reseller discount if applicable (e.g., 5% off)
   const finalPrice = markupPrice * (1 - (discountPercent / 100));
   return Math.ceil(finalPrice);
 }
 
-// 1. GET DATA & CABLE TV PLANS WITH 9% MARKUP
+// Special rounding function for Cable TV: Rounds up to nearest 100
+function roundUpToHundred(basePrice, discountPercent = 0) {
+  const original = parseFloat(basePrice);
+  if (isNaN(original)) return basePrice;
+  const markupPrice = original * (1 + PROFIT_MARGIN);
+  const finalPrice = markupPrice * (1 - (discountPercent / 100));
+  return Math.ceil(finalPrice / 100) * 100; // e.g., 4378 -> 4400, 11343 -> 11400
+}
+
+// 1. GET DATA & CABLE TV PLANS WITH DYNAMIC MARKUP & ROUNDING
 app.get('/api/get-plans', async (req, res) => {
   const { product_type, is_reseller } = req.query;
   const targetType = product_type || 'mtn_sme';
-  const discount = is_reseller === 'true' ? 5 : 0; // 5% discount for Reseller tier
+  const discount = is_reseller === 'true' ? 5 : 0;
 
   try {
     const response = await axios.get(`${BASE_URL}/get-plans?product_type=${targetType}`, {
@@ -55,10 +62,14 @@ app.get('/api/get-plans', async (req, res) => {
       }
     }
 
+    // Check if this request is for Cable TV
+    const isCable = ['dstv', 'gotv', 'startimes', 'showmax'].includes(targetType.toLowerCase());
+
     const markedUpList = list.map(plan => ({
       ...plan,
       cost_price: plan.price,
-      price: addMarkup(plan.price, discount)
+      // Apply hundred-rounding for cable, normal ceiling rounding for data
+      price: isCable ? roundUpToHundred(plan.price, discount) : addMarkup(plan.price, discount)
     }));
 
     res.json({ status: 'success', plans: markedUpList });
@@ -119,4 +130,4 @@ app.get('/api/wallet-balance', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running with 9% markup on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running with Cable rounding on port ${PORT}`));
