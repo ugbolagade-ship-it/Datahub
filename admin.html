@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Datahub — Admin Command Center</title>
+  <style>
+    :root {
+      --bg: #0f0d1a;
+      --card-bg: #1b1834;
+      --text-light: #ffffff;
+      --text-muted: #a09cb0;
+      --brand-orange: #f4841f;
+      --brand-red: #d9381e;
+      --input-border: #2e2a4a;
+      --success-bg: #133a20;
+      --success-text: #42c26c;
+      --error-bg: #3a1313;
+      --error-text: #e55353;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text-light); padding: 16px; display: flex; justify-content: center; min-height: 100vh; }
+    .admin-container { width: 100%; max-width: 480px; }
+
+    /* Header */
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--input-border); padding-bottom: 12px; }
+    .admin-title { font-size: 1.2rem; font-weight: 800; color: var(--brand-orange); }
+    .badge-admin { background: var(--brand-red); color: #fff; font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
+
+    /* Auth Mask */
+    .auth-box { background: var(--card-bg); border-radius: 20px; padding: 20px; border: 1px solid var(--input-border); margin-bottom: 20px; }
+    
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+    .stat-card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--input-border); }
+    .stat-val { font-size: 1.4rem; font-weight: 800; margin-top: 4px; color: var(--text-light); }
+    .stat-lbl { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+
+    /* Admin Action Forms */
+    .admin-card { background: var(--card-bg); border-radius: 20px; padding: 20px; border: 1px solid var(--input-border); margin-bottom: 20px; }
+    .card-title { font-size: 0.95rem; font-weight: 800; margin-bottom: 14px; color: var(--brand-orange); display: flex; align-items: center; gap: 8px; }
+    
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
+    input, select { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--input-border); background: #131124; color: #fff; font-size: 0.88rem; outline: none; }
+    input:focus, select:focus { border-color: var(--brand-orange); }
+
+    .btn-submit { width: 100%; padding: 14px; border: none; border-radius: 12px; background: var(--brand-orange); color: #fff; font-weight: 800; font-size: 0.88rem; cursor: pointer; }
+    .btn-secondary { background: var(--brand-red); margin-top: 8px; }
+
+    .status-alert { margin-top: 10px; padding: 10px; border-radius: 10px; font-size: 0.8rem; font-weight: 600; display: none; }
+    .status-alert.error { display: block; background: var(--error-bg); color: var(--error-text); }
+    .status-alert.success { display: block; background: var(--success-bg); color: var(--success-text); }
+  </style>
+</head>
+<body>
+
+  <div class="admin-container">
+    <div class="top-bar">
+      <div class="admin-title">Datahub Admin</div>
+      <span class="badge-admin">Master Control</span>
+    </div>
+
+    <!-- ADMIN LOGIN MASK -->
+    <div id="adminAuthBox" class="auth-box">
+      <div class="form-group">
+        <label>Enter Secret Admin Key</label>
+        <input type="password" id="adminSecretKey" placeholder="Paste ADMIN_SECRET_KEY here" />
+      </div>
+      <button class="btn-submit" onclick="authenticateAdmin()">Unlock Control Center</button>
+      <div id="authAlert" class="status-alert"></div>
+    </div>
+
+    <!-- MAIN DASHBOARD CONTENT (HIDDEN BY DEFAULT) -->
+    <div id="adminContent" style="display: none;">
+      
+      <!-- Metrics Overview -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-lbl">Total Users</div>
+          <div class="stat-val" id="statUsers">142</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">Reseller Tier</div>
+          <div class="stat-val" id="statResellers" style="color: var(--brand-orange);">38</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">PayPoint Balance</div>
+          <div class="stat-val" id="statPaypoint">₦45,200</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">Total Revenue</div>
+          <div class="stat-val" id="statRevenue" style="color: var(--success-text);">₦845,000</div>
+        </div>
+      </div>
+
+      <!-- User Wallet Management -->
+      <div class="admin-card">
+        <div class="card-title">💳 Adjust User Wallet Balance</div>
+        
+        <div class="form-group">
+          <label>Target User Email</label>
+          <input type="email" id="targetEmail" placeholder="user@gmail.com" required />
+        </div>
+
+        <div class="form-group">
+          <label>Action</label>
+          <select id="actionType">
+            <option value="credit">Credit User Wallet (+)</option>
+            <option value="debit">Debit User Wallet (-)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Amount (₦)</label>
+          <input type="number" id="adjustAmount" placeholder="e.g. 5000" min="100" required />
+        </div>
+
+        <button class="btn-submit" onclick="processWalletAdjustment()">Execute Adjustment</button>
+        <div id="walletAlert" class="status-alert"></div>
+      </div>
+
+      <!-- Reseller Status Override -->
+      <div class="admin-card">
+        <div class="card-title">⭐ Manage Account Tiers</div>
+        
+        <div class="form-group">
+          <label>Target User Email</label>
+          <input type="email" id="tierTargetEmail" placeholder="user@gmail.com" required />
+        </div>
+
+        <div class="form-group">
+          <label>Set Tier Status</label>
+          <select id="tierStatus">
+            <option value="true">Upgrade to Reseller (5% Off Active)</option>
+            <option value="false">Downgrade to Standard User</option>
+          </select>
+        </div>
+
+        <button class="btn-submit btn-secondary" onclick="processTierChange()">Update Account Tier</button>
+        <div id="tierAlert" class="status-alert"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const BACKEND_URL = "https://datahub-qmzg.onrender.com";
+    let activeAdminKey = "";
+
+    function authenticateAdmin() {
+      const keyInput = document.getElementById('adminSecretKey').value.trim();
+      const alertBox = document.getElementById('authAlert');
+
+      if (!keyInput) {
+        alertBox.className = "status-alert error";
+        alertBox.textContent = "Please enter the Admin Secret Key.";
+        return;
+      }
+
+      activeAdminKey = keyInput;
+      fetchStats();
+    }
+
+    async function fetchStats() {
+      const alertBox = document.getElementById('authAlert');
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/admin/stats`, {
+          headers: { 'x-admin-key': activeAdminKey }
+        });
+        const data = await res.json();
+
+        if (data.status === 'success') {
+          document.getElementById('adminAuthBox').style.display = 'none';
+          document.getElementById('adminContent').style.display = 'block';
+
+          document.getElementById('statUsers').textContent = data.data.total_users;
+          document.getElementById('statResellers').textContent = data.data.resellers_count;
+          document.getElementById('statPaypoint').textContent = data.data.provider_balances.paypoint;
+          document.getElementById('statRevenue').textContent = `₦${data.data.total_revenue.toLocaleString()}`;
+        } else {
+          alertBox.className = "status-alert error";
+          alertBox.textContent = data.message || "Invalid Admin Key.";
+        }
+      } catch (err) {
+        alertBox.className = "status-alert error";
+        alertBox.textContent = "Network connection failed.";
+      }
+    }
+
+    async function processWalletAdjustment() {
+      const email = document.getElementById('targetEmail').value.trim();
+      const action = document.getElementById('actionType').value;
+      const amount = document.getElementById('adjustAmount').value;
+      const alertBox = document.getElementById('walletAlert');
+
+      if (!email || !amount) {
+        alertBox.className = "status-alert error";
+        alertBox.textContent = "Please complete all fields.";
+        return;
+      }
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/admin/fund-wallet`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-key': activeAdminKey
+          },
+          body: JSON.stringify({ user_email: email, action_type: action, amount: amount })
+        });
+        const data = await res.json();
+
+        if (data.status === 'success') {
+          alertBox.className = "status-alert success";
+          alertBox.textContent = data.message;
+        } else {
+          alertBox.className = "status-alert error";
+          alertBox.textContent = data.message;
+        }
+      } catch (err) {
+        alertBox.className = "status-alert error";
+        alertBox.textContent = "Transaction failed.";
+      }
+    }
+
+    async function processTierChange() {
+      const email = document.getElementById('tierTargetEmail').value.trim();
+      const isReseller = document.getElementById('tierStatus').value === 'true';
+      const alertBox = document.getElementById('tierAlert');
+
+      if (!email) {
+        alertBox.className = "status-alert error";
+        alertBox.textContent = "Please enter user email.";
+        return;
+      }
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/admin/toggle-reseller`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-key': activeAdminKey
+          },
+          body: JSON.stringify({ user_email: email, is_reseller: isReseller })
+        });
+        const data = await res.json();
+
+        if (data.status === 'success') {
+          alertBox.className = "status-alert success";
+          alertBox.textContent = data.message;
+        } else {
+          alertBox.className = "status-alert error";
+          alertBox.textContent = data.message;
+        }
+      } catch (err) {
+        alertBox.className = "status-alert error";
+        alertBox.textContent = "Update failed.";
+      }
+    }
+  </script>
+</body>
+</html>
