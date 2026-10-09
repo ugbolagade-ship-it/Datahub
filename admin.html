@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Datahub — Admin Command Center</title>
+  <title>OyoData — Full Master Admin Panel</title>
   <style>
     :root {
       --bg: #0f0d1a;
@@ -21,30 +21,28 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: var(--bg); color: var(--text-light); padding: 16px; display: flex; justify-content: center; min-height: 100vh; }
-    .admin-container { width: 100%; max-width: 480px; }
+    .admin-container { width: 100%; max-width: 520px; }
 
-    /* Header */
     .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--input-border); padding-bottom: 12px; }
+    .brand { display: flex; align-items: center; gap: 8px; }
+    .brand-logo { width: 42px; height: auto; }
     .admin-title { font-size: 1.2rem; font-weight: 800; color: var(--brand-orange); }
     .badge-admin { background: var(--brand-red); color: #fff; font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
 
-    /* Auth Box */
     .auth-box { background: var(--card-bg); border-radius: 20px; padding: 20px; border: 1px solid var(--input-border); margin-bottom: 20px; }
     
-    /* Stats Grid */
     .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
     .stat-card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--input-border); }
     .stat-val { font-size: 1.4rem; font-weight: 800; margin-top: 4px; color: var(--text-light); }
     .stat-lbl { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
 
-    /* Admin Action Forms */
     .admin-card { background: var(--card-bg); border-radius: 20px; padding: 20px; border: 1px solid var(--input-border); margin-bottom: 20px; }
     .card-title { font-size: 0.95rem; font-weight: 800; margin-bottom: 14px; color: var(--brand-orange); display: flex; align-items: center; gap: 8px; }
     
     .form-group { margin-bottom: 14px; }
     .form-group label { display: block; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
-    input, select { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--input-border); background: #131124; color: #fff; font-size: 0.88rem; outline: none; }
-    input:focus, select:focus { border-color: var(--brand-orange); }
+    input, select, textarea { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--input-border); background: #131124; color: #fff; font-size: 0.88rem; outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: var(--brand-orange); }
 
     .btn-submit { width: 100%; padding: 14px; border: none; border-radius: 12px; background: var(--brand-orange); color: #fff; font-weight: 800; font-size: 0.88rem; cursor: pointer; }
     .btn-secondary { background: var(--brand-red); margin-top: 8px; }
@@ -58,27 +56,49 @@
 
   <div class="admin-container">
     <div class="top-bar">
-      <div class="admin-title">Datahub Admin</div>
-      <span class="badge-admin">Live Control</span>
+      <div class="brand">
+        <svg viewBox="0 0 500 280" fill="none" xmlns="http://www.w3.org/2000/svg" class="brand-logo">
+          <defs>
+            <linearGradient id="oyoGradAdmin" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#FFB000"/>
+              <stop offset="50%" stop-color="#FF5500"/>
+              <stop offset="100%" stop-color="#E03000"/>
+            </linearGradient>
+          </defs>
+          <rect x="70" y="85" width="70" height="16" rx="8" fill="url(#oyoGradAdmin)"/>
+          <rect x="40" y="115" width="80" height="16" rx="8" fill="url(#oyoGradAdmin)"/>
+          <rect x="58" y="145" width="70" height="16" rx="8" fill="url(#oyoGradAdmin)"/>
+          <path d="M 230 40 L 320 40 C 390 40 440 85 440 155 C 440 225 390 270 320 270 L 230 270 Z" fill="#0A1922"/>
+          <path d="M 285 95 L 315 95 C 355 95 380 120 380 155 C 380 190 355 215 315 215 L 285 215 Z" fill="#FFFFFF"/>
+          <circle cx="210" cy="155" r="115" fill="url(#oyoGradAdmin)"/>
+          <circle cx="210" cy="155" r="70" fill="#FFFFFF"/>
+          <rect x="180" y="105" width="60" height="100" rx="12" fill="url(#oyoGradAdmin)"/>
+          <rect x="186" y="113" width="48" height="74" rx="4" fill="#FFFFFF"/>
+          <circle cx="210" cy="196" r="4" fill="#FFFFFF"/>
+          <path d="M 214 122 L 200 150 H 211 L 206 178 L 220 150 H 209 Z" fill="url(#oyoGradAdmin)"/>
+        </svg>
+        <div class="admin-title">OyoData Master Admin</div>
+      </div>
+      <span class="badge-admin">Full Control</span>
     </div>
 
-    <!-- ADMIN LOGIN MASK -->
+    <!-- ADMIN LOGIN -->
     <div id="adminAuthBox" class="auth-box">
       <div class="form-group">
         <label>Enter Secret Admin Key</label>
         <input type="password" id="adminSecretKey" placeholder="Paste ADMIN_SECRET_KEY here" />
       </div>
-      <button class="btn-submit" onclick="authenticateAdmin()">Unlock Control Center</button>
+      <button class="btn-submit" onclick="authenticateAdmin()">Unlock Master Controls</button>
       <div id="authAlert" class="status-alert"></div>
     </div>
 
-    <!-- MAIN DASHBOARD CONTENT -->
+    <!-- MAIN CONTROL CENTER -->
     <div id="adminContent" style="display: none;">
       
-      <!-- Metrics Overview (Live Data) -->
+      <!-- Metrics -->
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-lbl">Live System Users</div>
+          <div class="stat-lbl">Live Users</div>
           <div class="stat-val" id="statUsers">...</div>
         </div>
         <div class="stat-card">
@@ -86,18 +106,18 @@
           <div class="stat-val" id="statResellers" style="color: var(--brand-orange);">...</div>
         </div>
         <div class="stat-card">
-          <div class="stat-lbl">Easy Access API</div>
+          <div class="stat-lbl">Easy Access Balance</div>
           <div class="stat-val" id="statProviderBal" style="font-size: 1.1rem;">Fetching...</div>
         </div>
         <div class="stat-card">
           <div class="stat-lbl">System Status</div>
-          <div class="stat-val" id="statStatus" style="color: var(--success-text); font-size: 1.1rem;">ACTIVE</div>
+          <div class="stat-val" style="color: var(--success-text); font-size: 1.1rem;">ACTIVE</div>
         </div>
       </div>
 
-      <!-- User Wallet Management -->
+      <!-- 1. USER WALLET CONTROL -->
       <div class="admin-card">
-        <div class="card-title">💳 Adjust User Wallet Balance</div>
+        <div class="card-title">💳 Manage User Wallet Balance</div>
         
         <div class="form-group">
           <label>Target User Email</label>
@@ -105,7 +125,7 @@
         </div>
 
         <div class="form-group">
-          <label>Action</label>
+          <label>Action Type</label>
           <select id="actionType">
             <option value="credit">Credit User Wallet (+)</option>
             <option value="debit">Debit User Wallet (-)</option>
@@ -114,16 +134,16 @@
 
         <div class="form-group">
           <label>Amount (₦)</label>
-          <input type="number" id="adjustAmount" placeholder="e.g. 5000" min="100" required />
+          <input type="number" id="adjustAmount" placeholder="e.g. 5000" min="1" required />
         </div>
 
-        <button class="btn-submit" onclick="processWalletAdjustment()">Execute Adjustment</button>
+        <button class="btn-submit" onclick="processWalletAdjustment()">Execute Wallet Action</button>
         <div id="walletAlert" class="status-alert"></div>
       </div>
 
-      <!-- Reseller Status Override -->
+      <!-- 2. RESELLER STATUS CONTROL -->
       <div class="admin-card">
-        <div class="card-title">⭐ Manage Account Tiers</div>
+        <div class="card-title">⭐ Upgrade / Downgrade Tiers</div>
         
         <div class="form-group">
           <label>Target User Email</label>
@@ -131,7 +151,7 @@
         </div>
 
         <div class="form-group">
-          <label>Set Tier Status</label>
+          <label>Account Tier</label>
           <select id="tierStatus">
             <option value="true">Upgrade to Reseller (5% Off Active)</option>
             <option value="false">Downgrade to Standard User</option>
@@ -142,16 +162,28 @@
         <div id="tierAlert" class="status-alert"></div>
       </div>
 
+      <!-- 3. SYSTEM ANNOUNCEMENT BANNER -->
+      <div class="admin-card">
+        <div class="card-title">📢 Broadcast Dashboard Announcement</div>
+        
+        <div class="form-group">
+          <label>Announcement Message</label>
+          <textarea id="announceText" rows="3" placeholder="e.g. MTN SME Data is back online! Happy reselling."></textarea>
+        </div>
+
+        <button class="btn-submit" onclick="publishAnnouncement()">Publish Banner to All Users</button>
+        <div id="announceAlert" class="status-alert"></div>
+      </div>
+
     </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const BACKEND_URL = "https://datahub-qmzg.onrender.com";
     
-    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyDgj3g2-VwCf4oWnETazpxxPvl2vpyl3Mo",
       authDomain: "datahub-1e310.firebaseapp.com",
@@ -183,7 +215,6 @@
     window.fetchLiveStats = async function() {
       const alertBox = document.getElementById('authAlert');
       try {
-        // Verify key with Render backend first
         const res = await fetch(`${BACKEND_URL}/api/admin/stats`, {
           headers: { 'x-admin-key': activeAdminKey }
         });
@@ -193,7 +224,6 @@
           document.getElementById('adminAuthBox').style.display = 'none';
           document.getElementById('adminContent').style.display = 'block';
 
-          // Fetch Live User Count from Firestore
           try {
             const usersSnapshot = await getDocs(collection(db, "users"));
             let totalUsers = usersSnapshot.size;
@@ -206,12 +236,10 @@
             document.getElementById('statUsers').textContent = totalUsers || 1;
             document.getElementById('statResellers').textContent = resellerCount;
           } catch (e) {
-            // Fallback display if Firestore read is restricted
             document.getElementById('statUsers').textContent = "Active";
             document.getElementById('statResellers').textContent = "Active";
           }
 
-          // Fetch live provider wallet balance
           try {
             const balRes = await fetch(`${BACKEND_URL}/api/wallet-balance`);
             const balData = await balRes.json();
@@ -230,7 +258,7 @@
         }
       } catch (err) {
         alertBox.className = "status-alert error";
-        alertBox.textContent = "Network connection to server failed.";
+        alertBox.textContent = "Network error connecting to backend.";
       }
     };
 
@@ -257,16 +285,11 @@
         });
         const data = await res.json();
 
-        if (data.status === 'success') {
-          alertBox.className = "status-alert success";
-          alertBox.textContent = data.message;
-        } else {
-          alertBox.className = "status-alert error";
-          alertBox.textContent = data.message;
-        }
+        alertBox.className = "status-alert success";
+        alertBox.textContent = data.message;
       } catch (err) {
         alertBox.className = "status-alert error";
-        alertBox.textContent = "Transaction failed.";
+        alertBox.textContent = "Action failed.";
       }
     };
 
@@ -292,16 +315,34 @@
         });
         const data = await res.json();
 
-        if (data.status === 'success') {
-          alertBox.className = "status-alert success";
-          alertBox.textContent = data.message;
-        } else {
-          alertBox.className = "status-alert error";
-          alertBox.textContent = data.message;
-        }
+        alertBox.className = "status-alert success";
+        alertBox.textContent = data.message;
       } catch (err) {
         alertBox.className = "status-alert error";
-        alertBox.textContent = "Update failed.";
+        alertBox.textContent = "Tier change failed.";
+      }
+    };
+
+    window.publishAnnouncement = async function() {
+      const msg = document.getElementById('announceText').value.trim();
+      const alertBox = document.getElementById('announceAlert');
+
+      if (!msg) {
+        alertBox.className = "status-alert error";
+        alertBox.textContent = "Please enter message text.";
+        return;
+      }
+
+      try {
+        await setDoc(doc(db, "system", "announcement"), {
+          message: msg,
+          updatedAt: new Date().toISOString()
+        });
+        alertBox.className = "status-alert success";
+        alertBox.textContent = "Announcement broadcasted live to all users!";
+      } catch (err) {
+        alertBox.className = "status-alert error";
+        alertBox.textContent = "Failed to broadcast message.";
       }
     };
   </script>
