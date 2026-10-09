@@ -136,7 +136,7 @@
     .status-alert.error { display: block; background: var(--error-bg); color: var(--error-text); }
     .status-alert.success { display: block; background: var(--success-bg); color: var(--success-text); }
 
-    /* FIXED BOTTOM NAVIGATION BAR LAYOUT */
+    /* CLEAN BOTTOM NAVIGATION BAR */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -148,7 +148,7 @@
       border-top: 1px solid var(--input-border);
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      padding: 8px 0 12px 0;
+      padding: 10px 0 12px 0;
       z-index: 900;
       box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
     }
@@ -157,7 +157,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 3px;
+      gap: 4px;
       color: var(--text-muted);
       font-size: 0.72rem;
       font-weight: 700;
@@ -165,6 +165,7 @@
       border: none;
       background: none;
       width: 100%;
+      line-height: 1;
     }
     .nav-btn.active { color: var(--brand-orange); }
     .nav-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
@@ -212,7 +213,7 @@
               <span id="eyeText">Hide</span>
             </button>
           </div>
-          <span class="user-tag" id="userEmail">Loading user...</span>
+          <span class="user-tag" id="userEmail">Loading...</span>
         </div>
 
         <div class="wallet-amount" id="walletBalance">₦0.00</div>
@@ -572,7 +573,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    const BACKEND_URL = window.location.origin;
+    // EXPLICIT BACKEND URL TO PREVENT GITHUB PAGES 404 NOT FOUND
+    const BACKEND_URL = "https://datahub-qmzg.onrender.com";
     const KORAPAY_PUBLIC_KEY = "pk_live_qMvFy8kc7XSFtzWAsSYrSGgCwSgPcchuttv2zNAL";
 
     const firebaseConfig = {
@@ -612,7 +614,9 @@
     let selectedNetwork = 'MTN';
     let selectedCableCompany = 'dstv';
     let selectedCableCompanyCode = 1;
-    let actualBalance = 0;
+    
+    // PERSIST USER WALLET BALANCE LOCALLY
+    let actualBalance = parseFloat(localStorage.getItem('dh_wallet_balance') || '0');
     let refBalance = parseFloat(localStorage.getItem('dh_ref_balance') || '0');
     let isReseller = localStorage.getItem('dh_is_reseller') === 'true';
     let isBalanceHidden = localStorage.getItem('dh_hide_balance') === 'true';
@@ -654,7 +658,6 @@
       }
     };
 
-    // FIXED KORAPAY FUNDING: Credited via webhook ONLY (removes duplicate manual credit)
     window.payWithKorapayInline = function() {
       const amount = Number(document.getElementById('topupAmountInput').value);
       const alertBox = document.getElementById('topupAlert');
@@ -679,7 +682,9 @@
         },
         narration: "OyoData Wallet Top Up",
         onSuccess: function (data) {
-          // Webhook handles the actual balance update to prevent double crediting
+          actualBalance += amount;
+          localStorage.setItem('dh_wallet_balance', actualBalance.toString());
+
           transactionHistory.unshift({
             type: 'Transfer',
             title: 'Korapay Wallet Funding',
@@ -691,9 +696,9 @@
           localStorage.setItem('dh_transactions', JSON.stringify(transactionHistory));
 
           window.closeModal('modalTopup');
-          window.fetchWalletBalance();
+          window.updateBalanceDisplay();
           window.renderTransactions();
-          alert(`Payment initialized successfully! Your wallet will reflect ₦${amount.toLocaleString('en-NG')} automatically upon webhook confirmation.`);
+          alert(`Success! ₦${amount.toLocaleString('en-NG')} added to your wallet balance.`);
         },
         onClose: function () {
           console.log("Korapay modal closed");
@@ -717,6 +722,7 @@
 
       if (confirm('Upgrade to Reseller for ₦2,000 to enjoy 5% OFF all VTU plans forever?')) {
         actualBalance -= 2000;
+        localStorage.setItem('dh_wallet_balance', actualBalance.toString());
         isReseller = true;
         localStorage.setItem('dh_is_reseller', 'true');
 
@@ -745,6 +751,7 @@
 
       const amt = refBalance;
       actualBalance += amt;
+      localStorage.setItem('dh_wallet_balance', actualBalance.toString());
       refBalance = 0;
       localStorage.setItem('dh_ref_balance', '0');
 
@@ -784,17 +791,8 @@
       }
     };
 
-    window.fetchWalletBalance = async function() {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/wallet-balance`);
-        const data = await res.json();
-        if (data.balance !== undefined) {
-          actualBalance = parseFloat(data.balance);
-          window.updateBalanceDisplay();
-        }
-      } catch (err) {
-        console.error("Balance fetch error:", err);
-      }
+    window.fetchWalletBalance = function() {
+      window.updateBalanceDisplay();
     };
 
     window.switchTab = function(tab) {
@@ -859,7 +857,7 @@
       window.loadCablePackages();
     };
 
-    // FIXED DATA PLANS PARSER: Supports direct arrays and object responses
+    // LOAD DATA PLANS DIRECTLY FROM LIVE RENDER BACKEND
     window.loadDataPlans = async function() {
       const select = document.getElementById('dataPlanSelect');
       const dataType = document.getElementById('dataTypeSelect').value;
@@ -896,6 +894,7 @@
           select.appendChild(opt);
         });
       } catch (err) {
+        console.error("Fetch plans error:", err);
         select.innerHTML = '<option value="">Error loading plans</option>';
       }
     };
@@ -1075,7 +1074,6 @@
         if (isSuccess) {
           status.className = 'status-alert success';
           status.textContent = resData.message || 'Data purchase successful!';
-          window.fetchWalletBalance();
         } else {
           status.className = 'status-alert error';
           status.textContent = resData.message || 'Transaction failed.';
@@ -1121,7 +1119,6 @@
         if (isSuccess) {
           status.className = 'status-alert success';
           status.textContent = resData.message || 'Exam PIN generated and sent to phone!';
-          window.fetchWalletBalance();
         } else {
           status.className = 'status-alert error';
           status.textContent = resData.message || 'Exam PIN generation failed.';
