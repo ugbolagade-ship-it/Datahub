@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>OyoData — Quick Buy (No Login Required)</title>
+
+  <style>
+    :root {
+      --bg: #f4f5fa;
+      --card-bg: #ffffff;
+      --text-dark: #1b1834;
+      --text-muted: #726e8d;
+      --input-border: #e3e1ee;
+      --brand-orange: #f4841f;
+      --brand-red: #d9381e;
+      --brand-btn: #1b1834;
+      --brand-accent: #fcf4eb;
+      --error-bg: #fce8e6;
+      --error-text: #c5221f;
+      --success-bg: #e6f4ea;
+      --success-text: #137333;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg); min-height: 100vh; padding: 20px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-dark); }
+    
+    .quick-card { background: var(--card-bg); width: 100%; max-width: 440px; border-radius: 24px; padding: 28px 24px; box-shadow: 0 10px 30px rgba(27, 24, 52, 0.04); border: 1px solid var(--input-border); }
+
+    .brand-link { text-decoration: none; display: inline-flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .brand-logo { width: 44px; height: auto; display: block; }
+    .brand-name { font-size: 1.4rem; font-weight: 800; color: var(--brand-red); letter-spacing: -0.4px; }
+
+    /* Switch Tabs: Buy vs Retrieve Receipt */
+    .tab-bar { display: flex; background: #f0eff6; padding: 4px; border-radius: 14px; margin-bottom: 24px; }
+    .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; font-weight: 700; font-size: 0.82rem; color: var(--text-muted); cursor: pointer; background: transparent; transition: all 0.2s; }
+    .tab-btn.active { background: #ffffff; color: var(--text-dark); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; }
+    input, select { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--input-border); font-size: 0.9rem; outline: none; background: #ffffff; }
+    input:focus, select:focus { border-color: var(--brand-orange); }
+
+    .provider-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: #f7f7f9; padding: 8px; border-radius: 14px; }
+    .provider-btn { background: #ffffff; border: 2px solid transparent; border-radius: 10px; padding: 10px 2px; text-align: center; font-weight: 700; font-size: 0.75rem; color: var(--text-muted); cursor: pointer; }
+    .provider-btn.selected { border-color: var(--brand-orange); color: var(--text-dark); box-shadow: 0 2px 8px rgba(244, 132, 31, 0.15); }
+
+    .btn-action { width: 100%; padding: 14px; border: none; border-radius: 14px; background: linear-gradient(135deg, var(--brand-orange), var(--brand-red)); color: #fff; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
+    
+    .status-alert { margin-top: 16px; padding: 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; display: none; }
+    .status-alert.error { display: block; background: var(--error-bg); color: var(--error-text); }
+    .status-alert.success { display: block; background: var(--success-bg); color: var(--success-text); }
+
+    /* Receipt Box Styling */
+    .receipt-box { background: var(--brand-accent); border: 1.5px dashed var(--brand-orange); border-radius: 18px; padding: 20px; margin-top: 20px; display: none; }
+    .receipt-title { font-weight: 800; font-size: 0.95rem; color: var(--brand-orange); margin-bottom: 12px; border-bottom: 1px dashed var(--brand-orange); padding-bottom: 6px; }
+    .receipt-row { display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 8px; }
+    .receipt-row span:first-child { color: var(--text-muted); font-weight: 600; }
+    .receipt-row span:last-child { font-weight: 800; color: var(--text-dark); }
+
+    .footer-link { margin-top: 20px; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
+    .footer-link a { color: var(--brand-red); font-weight: 700; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <div class="quick-card">
+    <a href="index.html" class="brand-link">
+      <svg viewBox="0 0 500 280" fill="none" xmlns="http://www.w3.org/2000/svg" class="brand-logo">
+        <defs>
+          <linearGradient id="oyoGradQuick" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#FFB000"/>
+            <stop offset="50%" stop-color="#FF5500"/>
+            <stop offset="100%" stop-color="#E03000"/>
+          </linearGradient>
+        </defs>
+        <rect x="70" y="85" width="70" height="16" rx="8" fill="url(#oyoGradQuick)"/>
+        <rect x="40" y="115" width="80" height="16" rx="8" fill="url(#oyoGradQuick)"/>
+        <rect x="58" y="145" width="70" height="16" rx="8" fill="url(#oyoGradQuick)"/>
+        <path d="M 230 40 L 320 40 C 390 40 440 85 440 155 C 440 225 390 270 320 270 L 230 270 Z" fill="#0A1922"/>
+        <path d="M 285 95 L 315 95 C 355 95 380 120 380 155 C 380 190 355 215 315 215 L 285 215 Z" fill="#FFFFFF"/>
+        <circle cx="210" cy="155" r="115" fill="url(#oyoGradQuick)"/>
+        <circle cx="210" cy="155" r="70" fill="#FFFFFF"/>
+        <rect x="180" y="105" width="60" height="100" rx="12" fill="url(#oyoGradQuick)"/>
+        <rect x="186" y="113" width="48" height="74" rx="4" fill="#FFFFFF"/>
+        <circle cx="210" cy="196" r="4" fill="#FFFFFF"/>
+        <path d="M 214 122 L 200 150 H 211 L 206 178 L 220 150 H 209 Z" fill="url(#oyoGradQuick)"/>
+      </svg>
+      <span class="brand-name">OyoData</span>
+    </a>
+
+    <!-- Mode Switcher -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabBuy" onclick="switchMode('buy')">Instant Quick Buy</button>
+      <button class="tab-btn" id="tabFind" onclick="switchMode('find')">Find My Receipt</button>
+    </div>
+
+    <!-- FORM 1: QUICK BUY -->
+    <form id="quickBuyForm" onsubmit="processQuickBuy(event)">
+      <div class="form-group">
+        <label>Network</label>
+        <div class="provider-grid">
+          <div class="provider-btn selected" onclick="selectNet('MTN', this)">MTN</div>
+          <div class="provider-btn" onclick="selectNet('GLO', this)">GLO</div>
+          <div class="provider-btn" onclick="selectNet('AIRTEL', this)">Airtel</div>
+          <div class="provider-btn" onclick="selectNet('9MOBILE', this)">9mobile</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Select Data Plan</label>
+        <select id="quickPlanSelect" required>
+          <option value="1GB">1.0 GB SME (30 Days) — ₦285</option>
+          <option value="2GB">2.0 GB SME (30 Days) — ₦570</option>
+          <option value="3GB">3.0 GB SME (30 Days) — ₦855</option>
+          <option value="5GB">5.0 GB SME (30 Days) — ₦1,425</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Target Phone Number</label>
+        <input type="tel" id="quickPhone" placeholder="08012345678" maxlength="11" required />
+      </div>
+
+      <button type="submit" class="btn-action" id="buyBtn">Pay &amp; Buy Now</button>
+    </form>
+
+    <!-- FORM 2: RECEIPT FINDER BY PHONE -->
+    <form id="findReceiptForm" style="display: none;" onsubmit="findReceipt(event)">
+      <div class="form-group">
+        <label>Enter Your Phone Number</label>
+        <input type="tel" id="searchPhone" placeholder="Enter number used for purchase" maxlength="11" required />
+      </div>
+
+      <button type="submit" class="btn-action">Retrieve Quick Receipt</button>
+    </form>
+
+    <div id="quickAlert" class="status-alert"></div>
+
+    <!-- DISPLAY RECEIPT BOX -->
+    <div id="receiptBox" class="receipt-box">
+      <div class="receipt-title">OyoData Quick Purchase Receipt</div>
+      <div class="receipt-row"><span>Ref Number:</span> <span id="rRef">...</span></div>
+      <div class="receipt-row"><span>Phone Number:</span> <span id="rPhone">...</span></div>
+      <div class="receipt-row"><span>Network Plan:</span> <span id="rPlan">...</span></div>
+      <div class="receipt-row"><span>Date &amp; Time:</span> <span id="rDate">...</span></div>
+      <div class="receipt-row"><span>Status:</span> <span id="rStatus" style="color: var(--success-text);">DELIVERED</span></div>
+    </div>
+
+    <div class="footer-link">
+      Want discount prices? <a href="login.html">Log In</a> or <a href="signup.html">Create Account</a>
+    </div>
+  </div>
+
+  <script>
+    let selectedNetwork = 'MTN';
+
+    function switchMode(mode) {
+      document.getElementById('tabBuy').classList.remove('active');
+      document.getElementById('tabFind').classList.remove('active');
+      document.getElementById('quickBuyForm').style.display = 'none';
+      document.getElementById('findReceiptForm').style.display = 'none';
+      document.getElementById('receiptBox').style.display = 'none';
+      document.getElementById('quickAlert').className = 'status-alert';
+
+      if (mode === 'buy') {
+        document.getElementById('tabBuy').classList.add('active');
+        document.getElementById('quickBuyForm').style.display = 'block';
+      } else {
+        document.getElementById('tabFind').classList.add('active');
+        document.getElementById('findReceiptForm').style.display = 'block';
+      }
+    }
+
+    function selectNet(net, el) {
+      selectedNetwork = net;
+      document.querySelectorAll('.provider-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function processQuickBuy(e) {
+      e.preventDefault();
+      const phone = document.getElementById('quickPhone').value.trim();
+      const plan = document.getElementById('quickPlanSelect').value;
+      const alertBox = document.getElementById('quickAlert');
+      const buyBtn = document.getElementById('buyBtn');
+
+      buyBtn.disabled = true;
+      buyBtn.textContent = "Processing Order...";
+      alertBox.className = "status-alert";
+
+      setTimeout(() => {
+        const refNo = `qb_${Date.now().toString().slice(-6)}`;
+        const receiptData = {
+          ref: refNo,
+          phone: phone,
+          plan: `${selectedNetwork} ${plan}`,
+          date: new Date().toLocaleString('en-GB'),
+          status: 'DELIVERED SUCCESS'
+        };
+
+        // Store locally indexed by Phone Number
+        let quickDb = JSON.parse(localStorage.getItem('dh_quick_receipts') || '{}');
+        quickDb[phone] = receiptData;
+        localStorage.setItem('dh_quick_receipts', JSON.stringify(quickDb));
+
+        alertBox.className = "status-alert success";
+        alertBox.textContent = "Order successful! Data delivered directly.";
+
+        document.getElementById('rRef').textContent = refNo;
+        document.getElementById('rPhone').textContent = phone;
+        document.getElementById('rPlan').textContent = `${selectedNetwork} ${plan}`;
+        document.getElementById('rDate').textContent = receiptData.date;
+        document.getElementById('receiptBox').style.display = 'block';
+
+        buyBtn.disabled = false;
+        buyBtn.textContent = "Pay & Buy Now";
+      }, 1500);
+    }
+
+    function findReceipt(e) {
+      e.preventDefault();
+      const phone = document.getElementById('searchPhone').value.trim();
+      const alertBox = document.getElementById('quickAlert');
+      const receiptBox = document.getElementById('receiptBox');
+
+      let quickDb = JSON.parse(localStorage.getItem('dh_quick_receipts') || '{}');
+      const found = quickDb[phone];
+
+      if (found) {
+        alertBox.className = "status-alert success";
+        alertBox.textContent = "Receipt found!";
+        document.getElementById('rRef').textContent = found.ref;
+        document.getElementById('rPhone').textContent = found.phone;
+        document.getElementById('rPlan').textContent = found.plan;
+        document.getElementById('rDate').textContent = found.date;
+        receiptBox.style.display = 'block';
+      } else {
+        receiptBox.style.display = 'none';
+        alertBox.className = "status-alert error";
+        alertBox.textContent = "No quick receipt found for this phone number.";
+      }
+    }
+  </script>
+</body>
+</html>
