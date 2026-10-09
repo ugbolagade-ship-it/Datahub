@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>OyoData — Dashboard</title>
 
+  <!-- Korapay Collections Inline SDK -->
+  <script src="https://korablobstorage.blob.core.windows.net/modal-bucket/korapay-collections.min.js"></script>
+
   <style>
     :root {
       --bg: #f4f5fa;
@@ -138,7 +141,7 @@
     .status-alert.error { display: block; background: var(--error-bg); color: var(--error-text); }
     .status-alert.success { display: block; background: var(--success-bg); color: var(--success-text); }
 
-    .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid var(--input-border); display: flex; justify-content: space-around; padding: 10px 0 14px 0; z-index: 900; }
+    .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid var(--input-border); display: flex; justify-style: space-around; padding: 10px 0 14px 0; z-index: 900; }
     .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); font-size: 0.7rem; font-weight: 700; cursor: pointer; border: none; background: none; }
     .nav-btn.active { color: var(--brand-orange); }
     .nav-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
@@ -484,30 +487,22 @@
     </div>
   </div>
 
-  <!-- MODAL: TOP UP WALLET -->
+  <!-- MODAL: TOP UP WALLET (KORAPAY INTEGRATED) -->
   <div id="modalTopup" class="modal-overlay">
     <div class="modal-sheet">
       <div class="modal-header">
-        <span class="modal-title">Top Up Wallet</span>
+        <span class="modal-title">Instant Wallet Top Up</span>
         <button class="btn-close" onclick="closeModal('modalTopup')">✕</button>
       </div>
-      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">Transfer funds to your dedicated account to instantly credit your wallet:</p>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">Fund your account instantly via Card, Bank Transfer, or USSD with Korapay:</p>
 
-      <div class="bank-box">
-        <div class="bank-row">
-          <span class="bank-label">Bank Name</span>
-          <span class="bank-val">Moniepoint Microfinance</span>
-        </div>
-        <div class="bank-row">
-          <span class="bank-label">Account Number</span>
-          <span class="bank-val" style="color: var(--brand-orange); font-size: 1rem;">6478901234</span>
-        </div>
-        <div class="bank-row">
-          <span class="bank-label">Account Name</span>
-          <span class="bank-val">OyoData / Your Account</span>
-        </div>
+      <div class="form-group">
+        <label>Amount to Top Up (₦)</label>
+        <input type="number" id="topupAmountInput" placeholder="e.g. 2000" min="100" required />
       </div>
-      <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">Automated deposit takes 5 - 30 seconds to reflect.</p>
+
+      <button class="btn-action" style="background: linear-gradient(135deg, var(--brand-orange), var(--brand-red));" onclick="payWithKorapayInline()">Pay via Korapay</button>
+      <div id="topupAlert" class="status-alert"></div>
     </div>
   </div>
 
@@ -554,7 +549,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    const BACKEND_URL = "https://datahub-qmzg.onrender.com";
+    const BACKEND_URL = window.location.origin;
+    const KORAPAY_PUBLIC_KEY = "pk_live_qMvFy8kc7XSFtzWAsSYrSGgCwSgPcchuttv2zNAL";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDgj3g2-VwCf4oWnETazpxxPvl2vpyl3Mo",
@@ -569,8 +565,11 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
+    let userEmailAddress = "customer@oyodata.com";
+
     onAuthStateChanged(auth, (user) => {
       if (user) {
+        userEmailAddress = user.email;
         document.getElementById('userEmail').textContent = user.email;
         document.getElementById('refLinkInput').value = `https://ugbolagade-ship-it.github.io/OyoData/signup.html?ref=${user.uid.slice(0, 6)}`;
         window.fetchWalletBalance();
@@ -630,6 +629,54 @@
         const banner = document.getElementById('resellerBanner');
         if (banner) banner.style.display = 'none';
       }
+    };
+
+    // KORAPAY INLINE WALLET TOP UP
+    window.payWithKorapayInline = function() {
+      const amount = Number(document.getElementById('topupAmountInput').value);
+      const alertBox = document.getElementById('topupAlert');
+
+      if (!amount || amount < 100) {
+        alertBox.className = "status-alert error";
+        alertBox.textContent = "Please enter a valid amount (Minimum ₦100).";
+        return;
+      }
+
+      alertBox.className = "status-alert";
+      const txRef = `oyo_fund_${Date.now()}`;
+
+      window.Korapay.initialize({
+        key: KORAPAY_PUBLIC_KEY,
+        reference: txRef,
+        amount: amount,
+        currency: "NGN",
+        customer: {
+          name: "OyoData User",
+          email: userEmailAddress
+        },
+        narration: "OyoData Wallet Top Up",
+        onSuccess: function (data) {
+          actualBalance += amount;
+          window.updateBalanceDisplay();
+
+          transactionHistory.unshift({
+            type: 'Transfer',
+            title: 'Korapay Wallet Funding',
+            amount: amount.toString(),
+            ref: txRef,
+            date: new Date().toLocaleDateString('en-GB'),
+            status: 'SUCCESS'
+          });
+          localStorage.setItem('dh_transactions', JSON.stringify(transactionHistory));
+
+          window.closeModal('modalTopup');
+          window.renderTransactions();
+          alert(`Success! ₦${amount.toLocaleString('en-NG')} credited to your wallet.`);
+        },
+        onClose: function () {
+          console.log("Korapay modal closed");
+        }
+      });
     };
 
     window.copyReferralLink = function() {
@@ -862,6 +909,42 @@
         });
       } catch (err) {
         select.innerHTML = '<option value="">Error loading packages</option>';
+      }
+    };
+
+    window.verifyIUC = async function() {
+      const status = document.getElementById('statusAlert');
+      const smartcard = document.getElementById('smartcardNo').value.trim();
+
+      if (!smartcard) {
+        status.style.display = 'block';
+        status.className = 'status-alert error';
+        status.textContent = 'Please enter a Smartcard/IUC number.';
+        return;
+      }
+
+      status.style.display = 'block';
+      status.className = 'status-alert';
+      status.textContent = 'Verifying Smartcard...';
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/verify-tv`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ company: selectedCableCompanyCode, iucno: smartcard })
+        });
+        const resData = await response.json();
+
+        if (resData.customer_name || resData.status === 'success') {
+          status.className = 'status-alert success';
+          status.textContent = `Verified: ${resData.customer_name || 'Valid Smartcard'}`;
+        } else {
+          status.className = 'status-alert error';
+          status.textContent = 'Smartcard verification failed.';
+        }
+      } catch (err) {
+        status.className = 'status-alert error';
+        status.textContent = 'Error connecting to verification server.';
       }
     };
 
