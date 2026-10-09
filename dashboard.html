@@ -46,9 +46,25 @@
     }
     .wallet-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .wallet-title-group { display: flex; align-items: center; gap: 8px; }
-    .wallet-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.75; font-weight: 600; }
-    .eye-btn { background: none; border: none; cursor: pointer; color: rgba(255, 255, 255, 0.85); display: flex; align-items: center; justify-content: center; padding: 4px; }
-    .eye-btn svg { width: 20px; height: 20px; fill: currentColor; }
+    .wallet-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.85; font-weight: 700; }
+    
+    /* Visible Eye Toggle Button */
+    .eye-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 8px;
+      cursor: pointer;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 8px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      gap: 4px;
+    }
+    .eye-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
     .user-tag { font-size: 0.72rem; background: rgba(255,255,255,0.12); padding: 4px 10px; border-radius: 20px; word-break: break-all; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .wallet-amount { font-size: 2.2rem; font-weight: 800; margin-bottom: 16px; letter-spacing: -0.5px; }
     .wallet-actions { display: flex; gap: 10px; position: relative; z-index: 2; }
@@ -66,9 +82,9 @@
     /* Section Headings */
     .section-head { font-size: 1.05rem; font-weight: 800; color: var(--text-dark); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
 
-    /* Quick VTU Grid */
-    .vtu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
-    .vtu-item { background: var(--card-bg); border-radius: 18px; padding: 16px 8px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; border: 1px solid rgba(226, 224, 238, 0.6); box-shadow: 0 4px 12px rgba(27, 24, 52, 0.02); }
+    /* VTU Grid (Adjusted to 5 items layout) */
+    .vtu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
+    .vtu-item { background: var(--card-bg); border-radius: 18px; padding: 16px 8px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; border: 1px solid rgba(226, 224, 238, 0.6); box-shadow: 0 4px 12px rgba(27, 24, 52, 0.02); }
     .vtu-icon { width: 44px; height: 44px; border-radius: 14px; background: var(--brand-accent); display: flex; align-items: center; justify-content: center; color: var(--brand-orange); }
     .vtu-icon svg { width: 22px; height: 22px; fill: currentColor; }
     .vtu-label { font-size: 0.75rem; font-weight: 700; color: var(--text-dark); text-align: center; }
@@ -162,13 +178,14 @@
 
     <!-- MAIN HOME VIEW -->
     <div id="viewHome">
-      <!-- Wallet Card with Functional Hide Balance Toggle -->
+      <!-- Wallet Card with Balance Hide Toggle Button -->
       <div class="wallet-card">
         <div class="wallet-top">
           <div class="wallet-title-group">
-            <span class="wallet-title">Main Wallet</span>
-            <button class="eye-btn" onclick="toggleBalanceVisibility()" title="Toggle Balance">
+            <span class="wallet-title">MAIN WALLET</span>
+            <button class="eye-btn" onclick="toggleBalanceVisibility()" title="Toggle Balance Visibility">
               <svg id="eyeIcon" viewBox="0 0 24 24"></svg>
+              <span id="eyeText">Hide</span>
             </button>
           </div>
           <span class="user-tag" id="userEmail">Session loading...</span>
@@ -197,7 +214,7 @@
         <button class="btn-upgrade-now" onclick="upgradeToReseller()">Upgrade ₦2k</button>
       </div>
 
-      <!-- Quick Services -->
+      <!-- Quick Services Grid (5 Services Including Exam PINs) -->
       <div class="section-head">
         <span>Quick Services</span>
       </div>
@@ -218,6 +235,10 @@
         <div class="vtu-item" onclick="openService('electricity')">
           <div class="vtu-icon"><svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg></div>
           <span class="vtu-label">Electric</span>
+        </div>
+        <div class="vtu-item" onclick="openService('exam')">
+          <div class="vtu-icon"><svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-0.75L9 9V4zm9 16H6V4h1v9l3-2.25L13 13V4h5v16z"/></svg></div>
+          <span class="vtu-label">Exam PIN</span>
         </div>
       </div>
 
@@ -259,32 +280,34 @@
         <span>Referred Users Status</span>
       </div>
 
-      <div class="tx-list" id="referredUsersList">
-        <!-- Rendered via JavaScript -->
-      </div>
+      <div class="tx-list" id="referredUsersList"></div>
     </div>
 
-    <!-- SERVICES VIEW -->
+    <!-- SERVICES TAB VIEW -->
     <div id="viewServices" style="display: none;">
       <div class="section-head">
         <span>All VTU Services</span>
       </div>
-      <div class="vtu-grid" style="grid-template-columns: repeat(2, 1fr); gap: 16px;">
-        <div class="vtu-item" onclick="openService('data')" style="padding: 24px;">
-          <div class="vtu-icon" style="width: 54px; height: 54px;"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></div>
-          <span class="vtu-label" style="font-size: 0.9rem;">Data Bundles</span>
+      <div class="vtu-grid" style="grid-template-columns: repeat(2, 1fr); gap: 14px;">
+        <div class="vtu-item" onclick="openService('data')" style="padding: 20px;">
+          <div class="vtu-icon" style="width: 48px; height: 48px;"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></div>
+          <span class="vtu-label" style="font-size: 0.85rem;">Data Bundles</span>
         </div>
-        <div class="vtu-item" onclick="openService('airtime')" style="padding: 24px;">
-          <div class="vtu-icon" style="width: 54px; height: 54px;"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></div>
-          <span class="vtu-label" style="font-size: 0.9rem;">Airtime VTU</span>
+        <div class="vtu-item" onclick="openService('airtime')" style="padding: 20px;">
+          <div class="vtu-icon" style="width: 48px; height: 48px;"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></div>
+          <span class="vtu-label" style="font-size: 0.85rem;">Airtime VTU</span>
         </div>
-        <div class="vtu-item" onclick="openService('cable')" style="padding: 24px;">
-          <div class="vtu-icon" style="width: 54px; height: 54px;"><svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg></div>
-          <span class="vtu-label" style="font-size: 0.9rem;">Cable TV Sub</span>
+        <div class="vtu-item" onclick="openService('cable')" style="padding: 20px;">
+          <div class="vtu-icon" style="width: 48px; height: 48px;"><svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg></div>
+          <span class="vtu-label" style="font-size: 0.85rem;">Cable TV Sub</span>
         </div>
-        <div class="vtu-item" onclick="openService('electricity')" style="padding: 24px;">
-          <div class="vtu-icon" style="width: 54px; height: 54px;"><svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg></div>
-          <span class="vtu-label" style="font-size: 0.9rem;">Electricity Token</span>
+        <div class="vtu-item" onclick="openService('electricity')" style="padding: 20px;">
+          <div class="vtu-icon" style="width: 48px; height: 48px;"><svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg></div>
+          <span class="vtu-label" style="font-size: 0.85rem;">Electricity Token</span>
+        </div>
+        <div class="vtu-item" onclick="openService('exam')" style="padding: 20px;">
+          <div class="vtu-icon" style="width: 48px; height: 48px;"><svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-0.75L9 9V4zm9 16H6V4h1v9l3-2.25L13 13V4h5v16z"/></svg></div>
+          <span class="vtu-label" style="font-size: 0.85rem;">Exam Result PINs</span>
         </div>
       </div>
     </div>
@@ -408,6 +431,27 @@
         <button type="submit" class="btn-action">Pay Bill</button>
       </form>
 
+      <!-- EXAM PIN FORM -->
+      <form id="formExam" class="vtu-form" style="display: none;">
+        <div class="form-group">
+          <label>Exam Body</label>
+          <select id="examTypeSelect" required>
+            <option value="waec">WAEC Result Checker</option>
+            <option value="neco">NECO Result Checker</option>
+            <option value="nabteb">NABTEB Result Checker</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Quantity</label>
+          <input type="number" id="examQuantity" value="1" min="1" max="5" required />
+        </div>
+        <div class="form-group">
+          <label>Recipient Phone Number</label>
+          <input type="tel" id="examPhone" placeholder="08012345678" maxlength="11" required />
+        </div>
+        <button type="submit" class="btn-action">Generate Result PIN</button>
+      </form>
+
       <div id="statusAlert" class="status-alert"></div>
       <button class="btn-back" onclick="switchTab('home')">← Back to Home</button>
     </div>
@@ -491,7 +535,7 @@
     </div>
   </div>
 
-  <!-- Bottom Navigation Bar with Dedicated Referral Button -->
+  <!-- Bottom Navigation Bar -->
   <div class="bottom-nav">
     <button id="navHome" class="nav-btn active" onclick="switchTab('home')">
       <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></div>
@@ -568,15 +612,18 @@
       const displayElem = document.getElementById('walletBalance');
       const refElem = document.getElementById('refWalletBalance');
       const eyeIconElem = document.getElementById('eyeIcon');
+      const eyeTextElem = document.getElementById('eyeText');
 
       if (refElem) refElem.textContent = `₦${refBalance.toLocaleString('en-NG')}`;
 
       if (isBalanceHidden) {
         displayElem.textContent = '••••••••';
         eyeIconElem.innerHTML = SVG_EYE_CLOSED;
+        if (eyeTextElem) eyeTextElem.textContent = 'Show';
       } else {
         displayElem.textContent = `₦${parseFloat(actualBalance).toLocaleString('en-NG')}`;
         eyeIconElem.innerHTML = SVG_EYE_OPEN;
+        if (eyeTextElem) eyeTextElem.textContent = 'Hide';
       }
     };
 
@@ -743,6 +790,7 @@
       else if (type === 'airtime') { document.getElementById('formAirtime').style.display = 'block'; }
       else if (type === 'cable') { document.getElementById('formCable').style.display = 'block'; window.loadCablePackages(); }
       else if (type === 'electricity') { document.getElementById('formElectricity').style.display = 'block'; }
+      else if (type === 'exam') { document.getElementById('formExam').style.display = 'block'; }
     };
 
     window.openModal = function(id) { document.getElementById(id).style.display = 'flex'; };
@@ -801,7 +849,7 @@
       }
     };
 
-    // DYNAMIC CABLE PACKAGE LOADER (FETCHES ROUNDED HUNDRED PRICES FROM SERVER)
+    // DYNAMIC CABLE PACKAGE LOADER
     window.loadCablePackages = async function() {
       const select = document.getElementById('cablePackageSelect');
       select.innerHTML = '<option value="">Loading packages...</option>';
@@ -952,6 +1000,53 @@
       } catch (err) {
         status.className = 'status-alert error';
         status.textContent = 'Network error during transaction.';
+      }
+    });
+
+    // Handle Exam PIN Purchase
+    document.getElementById('formExam').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = document.getElementById('statusAlert');
+      status.style.display = 'block';
+      status.className = 'status-alert';
+      status.textContent = 'Generating Exam PIN...';
+
+      const refId = `pin_${Date.now()}`;
+      const examType = document.getElementById('examTypeSelect').value;
+      const quantity = document.getElementById('examQuantity').value;
+      const phone = document.getElementById('examPhone').value.trim();
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/buy-exam-pin`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ exam_type: examType, quantity: quantity, mobile_number: phone })
+        });
+
+        const resData = await response.json();
+        const isSuccess = resData.status === 'success' || resData.code === 200;
+
+        transactionHistory.unshift({
+          type: 'Exam PIN',
+          title: `${examType.toUpperCase()} PIN (${quantity}x) — ${phone}`,
+          amount: '1,200',
+          ref: refId,
+          date: new Date().toLocaleDateString('en-GB'),
+          status: isSuccess ? 'SUCCESS' : 'FAILED'
+        });
+        localStorage.setItem('dh_transactions', JSON.stringify(transactionHistory));
+
+        if (isSuccess) {
+          status.className = 'status-alert success';
+          status.textContent = resData.message || 'Exam PIN generated and sent to phone!';
+          window.fetchWalletBalance();
+        } else {
+          status.className = 'status-alert error';
+          status.textContent = resData.message || 'Exam PIN generation failed.';
+        }
+      } catch (err) {
+        status.className = 'status-alert error';
+        status.textContent = 'Network error generating PIN.';
       }
     });
   </script>
