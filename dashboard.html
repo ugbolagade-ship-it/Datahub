@@ -516,30 +516,50 @@
     </div>
   </div>
 
-  <!-- MODAL: DEDICATED VIRTUAL ACCOUNT TOP UP -->
+  <!-- MODAL: DUAL OPTION TOP UP -->
   <div id="modalTopup" class="modal-overlay">
-    <div class="modal-sheet">
+    <div class="modal-sheet" style="max-height: 90vh; overflow-y: auto;">
       <div class="modal-header">
-        <span class="modal-title">Your Dedicated Bank Account</span>
+        <span class="modal-title">Select Top-Up Method</span>
         <button class="btn-close" onclick="closeModal('modalTopup')">✕</button>
       </div>
-      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">Transfer funds from any bank app to your dedicated account number below for automated, instant wallet funding:</p>
 
-      <div class="bank-box">
-        <div class="bank-row">
-          <span class="bank-label">Bank Name</span>
-          <span class="bank-val" id="userBankName">Loading...</span>
+      <!-- OPTION 1: INSTANT INLINE PAYMENT -->
+      <div style="background: #f7f7f9; border-radius: 16px; padding: 16px; margin-bottom: 16px;">
+        <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 4px;">Option 1: Instant Payment Checkout</h4>
+        <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">Pay directly using Card, USSD, or Bank Transfer without BVN/NIN.</p>
+        
+        <div class="form-group" style="margin-bottom: 10px;">
+          <input type="number" id="topupAmountInput" placeholder="Enter amount (min ₦100)" min="100" />
         </div>
-        <div class="bank-row">
-          <span class="bank-label">Account Number</span>
-          <span class="bank-val" id="userAccountNo" style="color: var(--brand-orange); font-size: 1.1rem; font-weight: 800;">Loading...</span>
+        <button class="btn-action" style="background: linear-gradient(135deg, var(--brand-orange), var(--brand-red)); padding: 12px;" onclick="payWithKorapayCheckout()">Pay Instantly</button>
+      </div>
+
+      <div style="text-align: center; margin: 10px 0; font-weight: 700; color: var(--text-muted); font-size: 0.8rem;">— OR —</div>
+
+      <!-- OPTION 2: PERMANENT DEDICATED ACCOUNT -->
+      <div style="background: #f7f7f9; border-radius: 16px; padding: 16px;">
+        <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 4px;">Option 2: Permanent Virtual Account</h4>
+        <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">Get your dedicated bank account number for automatic bank transfers.</p>
+
+        <!-- Displayed when account exists -->
+        <div id="vaDisplayBox" class="bank-box" style="display: none;">
+          <div class="bank-row"><span class="bank-label">Bank Name</span><span class="bank-val" id="userBankName">Loading...</span></div>
+          <div class="bank-row"><span class="bank-label">Account Number</span><span class="bank-val" id="userAccountNo" style="color: var(--brand-orange); font-size: 1.1rem; font-weight: 800;">Loading...</span></div>
+          <div class="bank-row"><span class="bank-label">Account Name</span><span class="bank-val" id="userAccountName">Loading...</span></div>
         </div>
-        <div class="bank-row">
-          <span class="bank-label">Account Name</span>
-          <span class="bank-val" id="userAccountName">Loading...</span>
+
+        <!-- Displayed when BVN/NIN is required -->
+        <div id="vaKycForm">
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label style="font-size: 0.75rem;">Enter BVN or NIN (Required by CBN for Dedicated Accounts)</label>
+            <input type="tel" id="kycNumberInput" placeholder="11-digit BVN or NIN" maxlength="11" />
+          </div>
+          <button class="btn-action" style="padding: 12px; background: var(--brand-btn);" onclick="generatePermanentAccount()">Generate Permanent Account</button>
         </div>
       </div>
-      <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">Automated bank deposit. Takes 5 to 30 seconds to reflect.</p>
+
+      <div id="topupAlert" class="status-alert"></div>
     </div>
   </div>
 
@@ -588,6 +608,7 @@
 
     // LIVE RENDER BACKEND URL
     const BACKEND_URL = "https://datahub-qmzg.onrender.com";
+    const KORAPAY_PUBLIC_KEY = "pk_live_qMvFy8kc7XSFtzWAsSYrSGgCwSgPcchuttv2zNAL";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDgj3g2-VwCf4oWnETazpxxPvl2vpyl3Mo",
@@ -670,23 +691,123 @@
       }
     };
 
-    // FETCH DEDICATED VIRTUAL ACCOUNT
+    // FETCH PERMANENT VIRTUAL ACCOUNT STATUS
     window.fetchDedicatedAccount = async function(email) {
       try {
         const res = await fetch(`${BACKEND_URL}/api/get-virtual-account`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email, name: email.split('@')[0] })
+          body: JSON.stringify({ email: email })
         });
         const data = await res.json();
+
         if (data.status && data.account) {
           document.getElementById('userBankName').textContent = data.account.bank_name;
           document.getElementById('userAccountNo').textContent = data.account.account_number;
           document.getElementById('userAccountName').textContent = data.account.account_name;
+          document.getElementById('vaDisplayBox').style.display = 'block';
+          document.getElementById('vaKycForm').style.display = 'none';
+        } else {
+          document.getElementById('vaDisplayBox').style.display = 'none';
+          document.getElementById('vaKycForm').style.display = 'block';
         }
       } catch (err) {
-        console.error("Dedicated account error:", err);
+        console.error("Dedicated account status check:", err);
       }
+    };
+
+    // GENERATE PERMANENT ACCOUNT VIA BVN/NIN
+    window.generatePermanentAccount = async function() {
+      const kycValue = document.getElementById('kycNumberInput').value.trim();
+      const alertBox = document.getElementById('topupAlert');
+
+      if (kycValue.length !== 11) {
+        alertBox.className = "status-alert error";
+        alertBox.textContent = "Please enter a valid 11-digit BVN or NIN.";
+        return;
+      }
+
+      alertBox.className = "status-alert";
+      alertBox.textContent = "Verifying details with Korapay...";
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/get-virtual-account`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            email: userEmailAddress,
+            name: userEmailAddress.split('@')[0],
+            bvn: kycValue,
+            nin: kycValue
+          })
+        });
+        const data = await res.json();
+
+        if (data.status && data.account) {
+          document.getElementById('userBankName').textContent = data.account.bank_name;
+          document.getElementById('userAccountNo').textContent = data.account.account_number;
+          document.getElementById('userAccountName').textContent = data.account.account_name;
+          document.getElementById('vaDisplayBox').style.display = 'block';
+          document.getElementById('vaKycForm').style.display = 'none';
+          alertBox.className = "status-alert success";
+          alertBox.textContent = "Permanent Virtual Account generated successfully!";
+        } else {
+          alertBox.className = "status-alert error";
+          alertBox.textContent = data.message || "Failed to generate account. Please verify your BVN/NIN.";
+        }
+      } catch (err) {
+        alertBox.className = "status-alert error";
+        alertBox.textContent = "Server error while creating account. Please try again.";
+      }
+    };
+
+    // OPTION 1: INSTANT CHECKOUT PAYMENTS
+    window.payWithKorapayCheckout = function() {
+      const amount = Number(document.getElementById('topupAmountInput').value);
+      const alertBox = document.getElementById('topupAlert');
+
+      if (!amount || amount < 100) {
+        alertBox.className = "status-alert error";
+        alertBox.textContent = "Please enter a valid amount (Minimum ₦100).";
+        return;
+      }
+
+      alertBox.className = "status-alert";
+      const txRef = `oyo_fund_${Date.now()}`;
+
+      window.Korapay.initialize({
+        key: KORAPAY_PUBLIC_KEY,
+        reference: txRef,
+        amount: amount,
+        currency: "NGN",
+        customer: {
+          name: userEmailAddress.split('@')[0],
+          email: userEmailAddress
+        },
+        narration: "OyoData Wallet Top Up",
+        onSuccess: function (data) {
+          actualBalance += amount;
+          localStorage.setItem('dh_wallet_balance', actualBalance.toString());
+
+          transactionHistory.unshift({
+            type: 'Transfer',
+            title: 'Korapay Wallet Funding',
+            amount: amount.toString(),
+            ref: txRef,
+            date: new Date().toLocaleDateString('en-GB'),
+            status: 'SUCCESS'
+          });
+          localStorage.setItem('dh_transactions', JSON.stringify(transactionHistory));
+
+          window.closeModal('modalTopup');
+          window.updateBalanceDisplay();
+          window.renderTransactions();
+          alert(`Success! ₦${amount.toLocaleString('en-NG')} added to your wallet balance.`);
+        },
+        onClose: function () {
+          console.log("Korapay modal closed");
+        }
+      });
     };
 
     window.copyReferralLink = function() {
