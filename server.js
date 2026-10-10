@@ -6,6 +6,7 @@ const path = require('path');
 
 const app = express();
 
+// Enable CORS for all incoming connections (GitHub Pages frontend)
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -16,7 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '/')));
 
-// CONFIGURATION & KEYS
+// CONFIGURATION & CREDENTIALS
 const EASY_ACCESS_TOKEN = process.env.EASY_ACCESS_TOKEN || '';
 const EASY_ACCESS_BASE = 'https://easyaccess.com.ng/api/live/v1';
 
@@ -24,7 +25,7 @@ const KORAPAY_SECRET_KEY = process.env.KORAPAY_SECRET_KEY || 'sk_live_GBnW4AxFZV
 const KORAPAY_PUBLIC_KEY = process.env.KORAPAY_PUBLIC_KEY || 'pk_live_qMvFy8kc7XSFtzWAsSYrSGgCwSgPcchuttv2zNAL';
 const KORAPAY_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
 
-const PROFIT_MARGIN = 0.09;
+const PROFIT_MARGIN = 0.09; // 9% markup for standard users
 
 // In-Memory Database Store
 const db = {
@@ -55,16 +56,25 @@ function calculateSellingPrice(basePrice, isReseller = false, isCable = false) {
 }
 
 // -------------------------------------------------------------
-// DEDICATED VIRTUAL ACCOUNT CREATION (KORAPAY API)
+// DEDICATED VIRTUAL ACCOUNT CREATION (KORAPAY API WITH BVN/NIN)
 // -------------------------------------------------------------
 
 app.post('/api/get-virtual-account', async (req, res) => {
-  const { email, name } = req.body;
-  if (!email) return res.status(400).json({ status: false, message: 'Email required' });
+  const { email, name, bvn, nin } = req.body;
+  if (!email) return res.status(400).json({ status: false, message: 'Email is required' });
 
-  // Return existing account if generated previously
+  // Return existing account if already generated for this user
   if (db.virtualAccounts[email]) {
     return res.json({ status: true, account: db.virtualAccounts[email] });
+  }
+
+  // Require BVN or NIN for new account creation
+  if (!bvn && !nin) {
+    return res.status(200).json({ 
+      status: false, 
+      needs_kyc: true, 
+      message: 'BVN or NIN is required to generate a permanent bank account.' 
+    });
   }
 
   try {
@@ -74,7 +84,11 @@ app.post('/api/get-virtual-account', async (req, res) => {
         email: email,
         name: name || "OyoData Customer"
       },
-      bank_code: "035", // Wema Bank / Moniepoint default
+      kyc: {
+        bvn: bvn || undefined,
+        nin: nin || undefined
+      },
+      bank_code: "035", // Wema Bank
       currency: "NGN"
     };
 
@@ -94,14 +108,15 @@ app.post('/api/get-virtual-account', async (req, res) => {
       db.virtualAccounts[email] = accData;
       return res.json({ status: true, account: accData });
     } else {
-      return res.status(400).json({ status: false, message: response.data?.message || 'Failed to generate VA' });
+      return res.status(400).json({ 
+        status: false, 
+        message: response.data?.message || 'Verification failed with Korapay. Please verify your BVN/NIN.' 
+      });
     }
   } catch (err) {
-    console.error("Virtual Account Error:", err.response?.data || err.message);
-    // Fallback response for interface
-    const fallbackAcc = { bank_name: "Wema Bank", account_number: "6478901234", account_name: `OyoData / ${email.split('@')[0]}` };
-    db.virtualAccounts[email] = fallbackAcc;
-    return res.json({ status: true, account: fallbackAcc });
+    console.error("Korapay VA Creation Error:", err.response?.data || err.message);
+    const errorMsg = err.response?.data?.message || 'Failed to generate bank account. Ensure your BVN/NIN details are valid.';
+    return res.status(400).json({ status: false, message: errorMsg });
   }
 });
 
@@ -177,7 +192,28 @@ app.post('/api/purchase-data', async (req, res) => {
   }
 });
 
-// KORAPAY SECURE WEBHOOK (PREVENTS DUPLICATE CREDITS)
+app.post('/api/verify-tv', async (req, res) => {
+  const { company, iucno } = req.body;
+
+  try {
+    const response = await axios.post(`${EASY_ACCESS_BASE}/verify-tv`, {
+      company: Number(company),
+      iucno: String(iucno)
+    }, {
+      headers: getEasyAccessHeaders(),
+      validateStatus: () => true
+    });
+
+    return res.json(response.data);
+  } catch (error) {
+    return res.status(400).json({ status: 'failed', message: 'Verification failed' });
+  }
+});
+
+// -------------------------------------------------------------
+// KORAPAY SECURE WEBHOOK (AUTOMATED WALLET FUNDING)
+// -------------------------------------------------------------
+
 app.post('/api/korapay-webhook', (req, res) => {
   try {
     const signature = req.headers['x-korapay-signature'];
@@ -197,7 +233,7 @@ app.post('/api/korapay-webhook', (req, res) => {
     if ((event === 'charge.success' || event === 'transfer.success') && data?.status === 'success') {
       const reference = data.reference;
 
-      // Prevent duplicate processing
+      // Prevent processing duplicate webhooks
       if (db.processedReferences.has(reference)) {
         return res.status(200).json({ status: true, message: "Transaction already processed" });
       }
