@@ -68,7 +68,7 @@ app.post('/api/get-virtual-account', async (req, res) => {
     return res.json({ status: true, account: db.virtualAccounts[email] });
   }
 
-  // Require BVN or NIN for new account creation
+  // Require BVN or NIN for new permanent account creation
   if (!bvn && !nin) {
     return res.status(200).json({ 
       status: false, 
@@ -80,6 +80,8 @@ app.post('/api/get-virtual-account', async (req, res) => {
   try {
     const payload = {
       account_name: name || "OyoData Customer",
+      permanent: true,       // Required by Korapay Virtual Account API
+      is_permanent: true,    // Supported flag for Korapay dedicated accounts
       customer: {
         email: email,
         name: name || "OyoData Customer"
