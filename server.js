@@ -25,10 +25,9 @@ const KORAPAY_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
 
 const PROFIT_MARGIN = 0.09; 
 
-// In-Memory Database Store
+// In-Memory Database Store (Syncs user balances, reseller status & history)
 const db = {
-  users: {}, // Stores user profile { balance, ref_balance, is_reseller, transactions }
-  virtualAccounts: {},
+  users: {},
   processedReferences: new Set()
 };
 
@@ -50,7 +49,7 @@ function calculateSellingPrice(basePrice, isReseller = false, isCable = false) {
 }
 
 // -------------------------------------------------------------
-// USER PROFILE & DATABASE SYNCHRONIZATION ENDPOINTS
+// USER DATABASE SYNCHRONIZATION ENDPOINTS
 // -------------------------------------------------------------
 
 app.post('/api/get-user-profile', (req, res) => {
@@ -58,12 +57,7 @@ app.post('/api/get-user-profile', (req, res) => {
   if (!email) return res.status(400).json({ status: false, message: 'Email required' });
 
   if (!db.users[email]) {
-    db.users[email] = {
-      balance: 0,
-      ref_balance: 0,
-      is_reseller: false,
-      transactions: []
-    };
+    db.users[email] = { balance: 0, ref_balance: 0, is_reseller: false, transactions: [] };
   }
 
   return res.json({ status: true, profile: db.users[email] });
@@ -89,81 +83,30 @@ app.post('/api/update-user-data', (req, res) => {
 });
 
 // -------------------------------------------------------------
-// DEDICATED VIRTUAL ACCOUNT CREATION (KORAPAY API)
-// -------------------------------------------------------------
-
-app.post('/api/get-virtual-account', async (req, res) => {
-  const { email, name, bvn, nin } = req.body;
-  if (!email) return res.status(400).json({ status: false, message: 'Email is required' });
-
-  if (db.virtualAccounts[email]) {
-    return res.json({ status: true, account: db.virtualAccounts[email] });
-  }
-
-  if (!bvn && !nin) {
-    return res.status(200).json({ 
-      status: false, 
-      needs_kyc: true, 
-      message: 'BVN or NIN is required to generate a permanent bank account.' 
-    });
-  }
-
-  try {
-    const payload = {
-      account_name: name || "OyoData Customer",
-      permanent: true,
-      is_permanent: true,
-      customer: { email: email, name: name || "OyoData Customer" },
-      kyc: { bvn: bvn || undefined, nin: nin || undefined },
-      bank_code: "035", // Wema Bank
-      currency: "NGN"
-    };
-
-    const response = await axios.post(`${KORAPAY_BASE_URL}/virtual-bank-account`, payload, {
-      headers: { Authorization: `Bearer ${KORAPAY_SECRET_KEY}`, 'Content-Type': 'application/json' }
-    });
-
-    if (response.data && response.data.status) {
-      const accData = {
-        bank_name: response.data.data.bank_name || "Wema Bank",
-        account_number: response.data.data.account_number,
-        account_name: response.data.data.account_name
-      };
-      db.virtualAccounts[email] = accData;
-      return res.json({ status: true, account: accData });
-    } else {
-      return res.status(400).json({ status: false, message: response.data?.message || 'Verification failed.' });
-    }
-  } catch (err) {
-    console.error("Korapay VA Error:", err.response?.data || err.message);
-    return res.status(400).json({ status: false, message: err.response?.data?.message || 'Failed to generate bank account.' });
-  }
-});
-
-// -------------------------------------------------------------
-// EASY ACCESS DATA & VTU ENDPOINTS
+// ROBUST VTU & DATA PLANS FETCHING
 // -------------------------------------------------------------
 
 app.get('/api/get-plans', async (req, res) => {
-  const { product_type, is_reseller } = req.query;
-  const targetType = (product_type || 'mtn_sme').toLowerCase();
-  const resellerStatus = is_reseller === 'true';
+  const targetType = (req.query.product_type || 'mtn_sme').toLowerCase();
+  const resellerStatus = req.query.is_reseller === 'true';
   const isCable = ['dstv', 'gotv', 'startimes', 'showmax'].includes(targetType);
 
   try {
     const response = await axios.get(`${EASY_ACCESS_BASE}/get-plans?product_type=${targetType}`, {
       headers: getEasyAccessHeaders(),
-      timeout: 10000,
+      timeout: 12000,
       validateStatus: () => true
     });
 
     let raw = response.data;
     let list = [];
 
-    if (Array.isArray(raw)) list = raw;
-    else if (typeof raw === 'object' && raw !== null) {
+    if (Array.isArray(raw)) {
+      list = raw;
+    } else if (typeof raw === 'object' && raw !== null) {
       if (Array.isArray(raw.plans)) list = raw.plans;
       else if (Array.isArray(raw.data)) list = raw.data;
+      else if (Array.isArray(raw.packages)) list = raw.packages;
       else {
         for (const key in raw) {
           if (Array.isArray(raw[key])) { list = raw[key]; break; }
@@ -172,10 +115,10 @@ app.get('/api/get-plans', async (req, res) => {
     }
 
     const markedUpList = list.map(plan => {
-      const originalPrice = plan.price || plan.plan_price || plan.amount || 0;
+      const originalPrice = plan.price || plan.plan_price || plan.amount || plan.package_amount || 0;
       return {
         plan_id: plan.plan_id || plan.id || plan.package_id,
-        name: plan.name || plan.plan_name || plan.package_name || 'Data Plan',
+        name: plan.name || plan.plan_name || plan.package_name || 'VTU Plan',
         validity: plan.validity || plan.plan_validity || plan.day || '30 Days',
         cost_price: originalPrice,
         price: calculateSellingPrice(originalPrice, resellerStatus, isCable)
@@ -184,6 +127,7 @@ app.get('/api/get-plans', async (req, res) => {
 
     return res.json({ status: 'success', plans: markedUpList });
   } catch (error) {
+    console.error("Get plans error:", error.message);
     return res.status(200).json({ status: 'failed', message: error.message, plans: [] });
   }
 });
@@ -219,9 +163,73 @@ app.post('/api/verify-tv', async (req, res) => {
 });
 
 // -------------------------------------------------------------
-// KORAPAY SECURE WEBHOOK
+// LIVE KORAPAY VERIFICATION FOR "RESOLVE REF ID"
 // -------------------------------------------------------------
 
+app.post('/api/verify-korapay-payment', async (req, res) => {
+  const { email, reference } = req.body;
+  if (!email || !reference) {
+    return res.status(400).json({ status: false, message: 'Email and Reference ID are required.' });
+  }
+
+  try {
+    const response = await axios.get(`${KORAPAY_BASE_URL}/charges/${reference}`, {
+      headers: { Authorization: `Bearer ${KORAPAY_SECRET_KEY}` }
+    });
+
+    const txData = response.data?.data;
+
+    if (response.data && response.data.status && txData?.status === 'success') {
+      const amountPaid = Number(txData.amount);
+
+      if (!db.users[email]) {
+        db.users[email] = { balance: 0, ref_balance: 0, is_reseller: false, transactions: [] };
+      }
+
+      if (db.processedReferences.has(reference)) {
+        return res.json({ 
+          status: true, 
+          already_credited: true, 
+          message: 'Transaction verified! This payment has already been credited.',
+          profile: db.users[email]
+        });
+      }
+
+      db.processedReferences.add(reference);
+      db.users[email].balance += amountPaid;
+
+      const newTx = {
+        type: 'Transfer',
+        title: 'Korapay Wallet Top Up',
+        amount: amountPaid.toString(),
+        ref: reference,
+        date: new Date().toLocaleDateString('en-GB'),
+        status: 'SUCCESS'
+      };
+
+      db.users[email].transactions.unshift(newTx);
+
+      return res.json({
+        status: true,
+        already_credited: false,
+        message: `Success! ₦${amountPaid.toLocaleString('en-NG')} verified and added to your wallet balance.`,
+        profile: db.users[email]
+      });
+    } else {
+      return res.status(400).json({ 
+        status: false, 
+        message: 'Payment not marked as successful on Korapay. Check again shortly.' 
+      });
+    }
+  } catch (err) {
+    return res.status(400).json({ 
+      status: false, 
+      message: err.response?.data?.message || 'Could not locate transaction on Korapay. Verify Reference ID.' 
+    });
+  }
+});
+
+// WEBHOOK FOR AUTOMATIC UNATTENDED PAYMENTS
 app.post('/api/korapay-webhook', (req, res) => {
   try {
     const signature = req.headers['x-korapay-signature'];
@@ -244,7 +252,7 @@ app.post('/api/korapay-webhook', (req, res) => {
         db.users[userEmail].balance += amountPaid;
         db.users[userEmail].transactions.unshift({
           type: 'Transfer',
-          title: 'Automated Bank Funding',
+          title: 'Automated Wallet Funding',
           amount: amountPaid.toString(),
           ref: reference,
           date: new Date().toLocaleDateString('en-GB'),
