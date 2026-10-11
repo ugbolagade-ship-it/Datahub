@@ -73,7 +73,6 @@
     .btn-topup { background: var(--brand-orange); color: #ffffff; border: none; padding: 12px 18px; border-radius: 14px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(244, 132, 31, 0.3); }
     .btn-topup svg { width: 16px; height: 16px; fill: currentColor; }
     .btn-resolve { background: rgba(255, 255, 255, 0.12); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); padding: 12px 14px; border-radius: 14px; font-weight: 600; font-size: 0.82rem; cursor: pointer; backdrop-filter: blur(5px); display: flex; align-items: center; gap: 6px; }
-    .btn-resolve svg { width: 15px; height: 15px; fill: currentColor; }
 
     /* Reseller Banner */
     .reseller-banner { background: linear-gradient(135deg, #f4841f 0%, #d9381e 100%); color: #ffffff; border-radius: 20px; padding: 18px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
@@ -111,7 +110,8 @@
     .btn-ref-act.bank { background: #f0eff6; color: var(--text-dark); }
 
     .tx-list { display: flex; flex-direction: column; gap: 10px; }
-    .tx-item { background: var(--card-bg); border-radius: 16px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(226, 224, 238, 0.6); }
+    .tx-item { background: var(--card-bg); border-radius: 16px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(226, 224, 238, 0.6); cursor: pointer; transition: transform 0.15s ease; }
+    .tx-item:active { transform: scale(0.98); }
     .tx-left { display: flex; align-items: center; gap: 12px; }
     .tx-icon { width: 40px; height: 40px; border-radius: 12px; background: #f4f5fa; display: flex; align-items: center; justify-content: center; color: var(--brand-orange); }
     .tx-icon svg { width: 20px; height: 20px; fill: currentColor; }
@@ -132,10 +132,15 @@
     .modal-title { font-size: 1.1rem; font-weight: 800; }
     .btn-close { background: #f0eff6; border: none; width: 32px; height: 32px; border-radius: 50%; font-weight: 800; cursor: pointer; }
 
-    .bank-box { background: var(--brand-accent); border: 1.5px dashed var(--brand-orange); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
-    .bank-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; }
-    .bank-label { color: var(--text-muted); font-weight: 600; }
-    .bank-val { font-weight: 800; color: var(--text-dark); }
+    /* RECEIPT MODAL STYLING */
+    .receipt-box { background: #f9f9fc; border: 1px solid var(--input-border); border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 16px; }
+    .receipt-header-icon { width: 56px; height: 56px; border-radius: 50%; background: var(--success-bg); color: var(--success-text); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; }
+    .receipt-header-icon svg { width: 28px; height: 28px; fill: currentColor; }
+    .receipt-amount { font-size: 2rem; font-weight: 800; color: var(--text-dark); margin: 6px 0; }
+    .receipt-details-list { border-top: 1px dashed var(--input-border); margin-top: 16px; padding-top: 14px; text-align: left; }
+    .receipt-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.85rem; }
+    .receipt-label { color: var(--text-muted); font-weight: 600; }
+    .receipt-val { font-weight: 700; color: var(--text-dark); word-break: break-all; }
 
     .status-alert { margin-top: 14px; padding: 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; display: none; }
     .status-alert.error { display: block; background: var(--error-bg); color: var(--error-text); }
@@ -516,50 +521,66 @@
     </div>
   </div>
 
-  <!-- MODAL: DUAL OPTION TOP UP -->
+  <!-- MODAL: DIRECT TOP UP -->
   <div id="modalTopup" class="modal-overlay">
-    <div class="modal-sheet" style="max-height: 90vh; overflow-y: auto;">
+    <div class="modal-sheet">
       <div class="modal-header">
-        <span class="modal-title">Select Top-Up Method</span>
+        <span class="modal-title">Top Up Wallet</span>
         <button class="btn-close" onclick="closeModal('modalTopup')">✕</button>
       </div>
 
-      <!-- OPTION 1: INSTANT INLINE PAYMENT -->
-      <div style="background: #f7f7f9; border-radius: 16px; padding: 16px; margin-bottom: 16px;">
-        <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 4px;">Option 1: Instant Payment Checkout</h4>
-        <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">Pay directly using Card, USSD, or Bank Transfer without BVN/NIN.</p>
+      <div style="background: #f7f7f9; border-radius: 16px; padding: 16px; margin-bottom: 12px;">
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">Enter the amount you would like to add to your wallet. You will proceed to payment via Card, Bank Transfer, or USSD.</p>
         
-        <div class="form-group" style="margin-bottom: 10px;">
-          <input type="number" id="topupAmountInput" placeholder="Enter amount (min ₦100)" min="100" />
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Amount (₦)</label>
+          <input type="number" id="topupAmountInput" placeholder="Enter amount (min ₦100)" min="100" required />
         </div>
-        <button class="btn-action" style="background: linear-gradient(135deg, var(--brand-orange), var(--brand-red)); padding: 12px;" onclick="payWithKorapayCheckout()">Pay Instantly</button>
-      </div>
-
-      <div style="text-align: center; margin: 10px 0; font-weight: 700; color: var(--text-muted); font-size: 0.8rem;">— OR —</div>
-
-      <!-- OPTION 2: PERMANENT DEDICATED ACCOUNT -->
-      <div style="background: #f7f7f9; border-radius: 16px; padding: 16px;">
-        <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 4px;">Option 2: Permanent Virtual Account</h4>
-        <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">Get your dedicated bank account number for automatic bank transfers.</p>
-
-        <!-- Displayed when account exists -->
-        <div id="vaDisplayBox" class="bank-box" style="display: none;">
-          <div class="bank-row"><span class="bank-label">Bank Name</span><span class="bank-val" id="userBankName">Loading...</span></div>
-          <div class="bank-row"><span class="bank-label">Account Number</span><span class="bank-val" id="userAccountNo" style="color: var(--brand-orange); font-size: 1.1rem; font-weight: 800;">Loading...</span></div>
-          <div class="bank-row"><span class="bank-label">Account Name</span><span class="bank-val" id="userAccountName">Loading...</span></div>
-        </div>
-
-        <!-- Displayed when BVN/NIN is required -->
-        <div id="vaKycForm">
-          <div class="form-group" style="margin-bottom: 8px;">
-            <label style="font-size: 0.75rem;">Enter BVN or NIN (Required by CBN for Dedicated Accounts)</label>
-            <input type="tel" id="kycNumberInput" placeholder="11-digit BVN or NIN" maxlength="11" />
-          </div>
-          <button class="btn-action" style="padding: 12px; background: var(--brand-btn);" onclick="generatePermanentAccount()">Generate Permanent Account</button>
-        </div>
+        <button class="btn-action" style="background: linear-gradient(135deg, var(--brand-orange), var(--brand-red)); padding: 14px;" onclick="payWithKorapayCheckout()">Proceed to Checkout</button>
       </div>
 
       <div id="topupAlert" class="status-alert"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: TRANSACTION RECEIPT -->
+  <div id="modalReceipt" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">Transaction Receipt</span>
+        <button class="btn-close" onclick="closeModal('modalReceipt')">✕</button>
+      </div>
+
+      <div class="receipt-box">
+        <div class="receipt-header-icon" id="receiptStatusIcon">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        </div>
+        <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;" id="receiptTitle">Transaction Title</div>
+        <div class="receipt-amount" id="receiptAmount">₦0.00</div>
+        <span class="tx-badge success" id="receiptBadge">SUCCESS</span>
+
+        <div class="receipt-details-list">
+          <div class="receipt-row">
+            <span class="receipt-label">Reference ID</span>
+            <span class="receipt-val" id="receiptRef">N/A</span>
+          </div>
+          <div class="receipt-row">
+            <span class="receipt-label">Date & Time</span>
+            <span class="receipt-val" id="receiptDate">N/A</span>
+          </div>
+          <div class="receipt-row">
+            <span class="receipt-label">Payment Method</span>
+            <span class="receipt-val" id="receiptType">Wallet</span>
+          </div>
+          <div class="receipt-row">
+            <span class="receipt-label">Account Email</span>
+            <span class="receipt-val" id="receiptUserEmail">N/A</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-action" style="background: var(--brand-orange);" onclick="copyReceiptDetails()">Copy Reference ID</button>
+      <button class="btn-back" style="margin-top: 8px;" onclick="closeModal('modalReceipt')">Close Receipt</button>
     </div>
   </div>
 
@@ -637,7 +658,6 @@
         document.getElementById('refLinkInput').value = `https://ugbolagade-ship-it.github.io/OyoData/signup.html?ref=${user.uid.slice(0, 6)}`;
         
         await syncUserProfile(user.email);
-        window.fetchDedicatedAccount(user.email);
       } else {
         window.location.href = 'login.html';
       }
@@ -714,77 +734,7 @@
       }
     };
 
-    // FETCH PERMANENT VIRTUAL ACCOUNT STATUS
-    window.fetchDedicatedAccount = async function(email) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/get-virtual-account`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email })
-        });
-        const data = await res.json();
-
-        if (data.status && data.account) {
-          document.getElementById('userBankName').textContent = data.account.bank_name;
-          document.getElementById('userAccountNo').textContent = data.account.account_number;
-          document.getElementById('userAccountName').textContent = data.account.account_name;
-          document.getElementById('vaDisplayBox').style.display = 'block';
-          document.getElementById('vaKycForm').style.display = 'none';
-        } else {
-          document.getElementById('vaDisplayBox').style.display = 'none';
-          document.getElementById('vaKycForm').style.display = 'block';
-        }
-      } catch (err) {
-        console.error("Dedicated account status check:", err);
-      }
-    };
-
-    // GENERATE PERMANENT ACCOUNT VIA BVN/NIN
-    window.generatePermanentAccount = async function() {
-      const kycValue = document.getElementById('kycNumberInput').value.trim();
-      const alertBox = document.getElementById('topupAlert');
-
-      if (kycValue.length !== 11) {
-        alertBox.className = "status-alert error";
-        alertBox.textContent = "Please enter a valid 11-digit BVN or NIN.";
-        return;
-      }
-
-      alertBox.className = "status-alert";
-      alertBox.textContent = "Verifying details with Korapay...";
-
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/get-virtual-account`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            email: userEmailAddress,
-            name: userEmailAddress.split('@')[0],
-            bvn: kycValue,
-            nin: kycValue
-          })
-        });
-        const data = await res.json();
-
-        if (data.status && data.account) {
-          document.getElementById('userBankName').textContent = data.account.bank_name;
-          document.getElementById('userAccountNo').textContent = data.account.account_number;
-          document.getElementById('userAccountName').textContent = data.account.account_name;
-          document.getElementById('vaDisplayBox').style.display = 'block';
-          document.getElementById('vaKycForm').style.display = 'none';
-          alertBox.className = "status-alert success";
-          alertBox.textContent = "Permanent Virtual Account generated successfully!";
-        } else {
-          alertBox.className = "status-alert error";
-          alertBox.textContent = data.message || "Failed to generate account. Please verify your BVN/NIN.";
-        }
-      } catch (err) {
-        alertBox.className = "status-alert error";
-        alertBox.textContent = "Server error while creating account. Please try again.";
-      }
-    };
-
-    // OPTION 1: INSTANT CHECKOUT PAYMENTS
+    // DIRECT CHECKOUT PAYMENTS
     window.payWithKorapayCheckout = function() {
       const amount = Number(document.getElementById('topupAmountInput').value);
       const alertBox = document.getElementById('topupAlert');
@@ -810,16 +760,9 @@
         narration: "OyoData Wallet Top Up",
         onSuccess: async function (data) {
           const newBalance = actualBalance + amount;
-          const newTx = {
-            type: 'Transfer',
-            title: 'Korapay Wallet Funding',
-            amount: amount.toString(),
-            ref: txRef,
-            date: new Date().toLocaleDateString('en-GB'),
-            status: 'SUCCESS'
-          };
 
-          await syncUserProfile(userEmailAddress, { balance: newBalance, transaction: newTx });
+          // Sync balance to backend (Backend webhook logs the transaction)
+          await syncUserProfile(userEmailAddress, { balance: newBalance });
           window.closeModal('modalTopup');
           alert(`Success! ₦${amount.toLocaleString('en-NG')} added to your wallet balance.`);
         },
@@ -953,113 +896,7 @@
       window.loadCablePackages();
     };
 
-    // DATA PLANS FETCHING FUNCTION
-    window.loadDataPlans = async function() {
-      const select = document.getElementById('dataPlanSelect');
-      const dataType = document.getElementById('dataTypeSelect').value;
-      
-      let formattedProductType = `${selectedNetwork.toLowerCase()}_${dataType}`;
-      if (selectedNetwork === 'AIRTEL') formattedProductType = 'airtel_cg';
-      if (selectedNetwork === 'GLO') formattedProductType = 'glo_cg';
-      if (selectedNetwork === '9MOBILE') formattedProductType = '9mobile_sme';
-
-      select.innerHTML = '<option value="">Loading plans...</option>';
-
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${formattedProductType}&is_reseller=${isReseller}`);
-        const data = await response.json();
-
-        select.innerHTML = '<option value="">Select Plan</option>';
-        
-        let plansList = [];
-        if (Array.isArray(data)) {
-          plansList = data;
-        } else if (data && Array.isArray(data.plans)) {
-          plansList = data.plans;
-        }
-
-        if (plansList.length === 0) {
-          select.innerHTML = '<option value="">No plans available</option>';
-          return;
-        }
-
-        plansList.forEach(p => {
-          const opt = document.createElement('option');
-          opt.value = p.plan_id || p.id;
-          const rawValidity = p.validity || p.plan_validity || p.day || '';
-          const validityText = rawValidity ? ` (${rawValidity})` : '';
-          const cleanName = (p.name || p.plan_name || '').replace(/\(SME\)|\(CG\)|\(GIFTING\)/gi, '').trim();
-
-          opt.textContent = `${cleanName}${validityText} => ₦${p.price.toLocaleString('en-NG')}`;
-          select.appendChild(opt);
-        });
-      } catch (err) {
-        console.error("Fetch plans error:", err);
-        select.innerHTML = '<option value="">Error loading plans</option>';
-      }
-    };
-
-    window.loadCablePackages = async function() {
-      const select = document.getElementById('cablePackageSelect');
-      select.innerHTML = '<option value="">Loading packages...</option>';
-
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${selectedCableCompany}&is_reseller=${isReseller}`);
-        const data = await response.json();
-
-        select.innerHTML = '<option value="">Select Package</option>';
-        let packages = Array.isArray(data) ? data : (data.plans || []);
-
-        packages.forEach(p => {
-          const opt = document.createElement('option');
-          opt.value = p.plan_id || p.id;
-          const rawValidity = p.validity || p.plan_validity || '';
-          const validityText = rawValidity ? ` (${rawValidity})` : '';
-
-          opt.textContent = `${p.name || p.plan_name}${validityText} => ₦${p.price.toLocaleString('en-NG')}`;
-          select.appendChild(opt);
-        });
-      } catch (err) {
-        select.innerHTML = '<option value="">Error loading packages</option>';
-      }
-    };
-
-    window.verifyIUC = async function() {
-      const status = document.getElementById('statusAlert');
-      const smartcard = document.getElementById('smartcardNo').value.trim();
-
-      if (!smartcard) {
-        status.style.display = 'block';
-        status.className = 'status-alert error';
-        status.textContent = 'Please enter a Smartcard/IUC number.';
-        return;
-      }
-
-      status.style.display = 'block';
-      status.className = 'status-alert';
-      status.textContent = 'Verifying Smartcard...';
-
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/verify-tv`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ company: selectedCableCompanyCode, iucno: smartcard })
-        });
-        const resData = await response.json();
-
-        if (resData.customer_name || resData.status === 'success') {
-          status.className = 'status-alert success';
-          status.textContent = `Verified: ${resData.customer_name || 'Valid Smartcard'}`;
-        } else {
-          status.className = 'status-alert error';
-          status.textContent = 'Smartcard verification failed.';
-        }
-      } catch (err) {
-        status.className = 'status-alert error';
-        status.textContent = 'Error connecting to verification server.';
-      }
-    };
-
+    // RENDER TRANSACTIONS AND ATTACH RECEIPT CLICK EVENT
     window.renderTransactions = function() {
       const recentContainer = document.getElementById('recentTxList');
       const fullContainer = document.getElementById('fullTxList');
@@ -1075,8 +912,8 @@
 
       const svgData = `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>`;
 
-      const html = transactionHistory.map(tx => `
-        <div class="tx-item">
+      const renderTxItem = (tx, index) => `
+        <div class="tx-item" onclick="viewReceipt(${index})">
           <div class="tx-left">
             <div class="tx-icon">${svgData}</div>
             <div>
@@ -1089,25 +926,35 @@
             <span class="tx-badge ${tx.status === 'SUCCESS' ? 'success' : 'failed'}">${tx.status}</span>
           </div>
         </div>
-      `).join('');
+      `;
 
-      recentContainer.innerHTML = transactionHistory.slice(0, 3).map(tx => `
-        <div class="tx-item">
-          <div class="tx-left">
-            <div class="tx-icon">${svgData}</div>
-            <div>
-              <div class="tx-title">${tx.title}</div>
-              <div class="tx-date">${tx.date}</div>
-            </div>
-          </div>
-          <div class="tx-right">
-            <div class="tx-amount ${tx.type === 'Transfer' ? 'credit' : 'debit'}">${tx.type === 'Transfer' ? '+' : '-'}₦${tx.amount}</div>
-            <span class="tx-badge ${tx.status === 'SUCCESS' ? 'success' : 'failed'}">${tx.status}</span>
-          </div>
-        </div>
-      `).join('');
+      fullContainer.innerHTML = transactionHistory.map((tx, idx) => renderTxItem(tx, idx)).join('');
+      recentContainer.innerHTML = transactionHistory.slice(0, 3).map((tx, idx) => renderTxItem(tx, idx)).join('');
+    };
 
-      fullContainer.innerHTML = html;
+    // DISPLAY RECEIPT MODAL
+    window.viewReceipt = function(index) {
+      const tx = transactionHistory[index];
+      if (!tx) return;
+
+      document.getElementById('receiptTitle').textContent = tx.title;
+      document.getElementById('receiptAmount').textContent = `${tx.type === 'Transfer' ? '+' : '-'}₦${tx.amount}`;
+      document.getElementById('receiptRef').textContent = tx.ref;
+      document.getElementById('receiptDate').textContent = tx.date;
+      document.getElementById('receiptType').textContent = tx.type;
+      document.getElementById('receiptUserEmail').textContent = userEmailAddress;
+
+      const badge = document.getElementById('receiptBadge');
+      badge.textContent = tx.status;
+      badge.className = `tx-badge ${tx.status === 'SUCCESS' ? 'success' : 'failed'}`;
+
+      openModal('modalReceipt');
+    };
+
+    window.copyReceiptDetails = function() {
+      const refId = document.getElementById('receiptRef').textContent;
+      navigator.clipboard.writeText(refId);
+      alert(`Reference ID (${refId}) copied to clipboard!`);
     };
 
     window.resolveTransaction = function() {
