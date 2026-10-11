@@ -25,7 +25,7 @@ const KORAPAY_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
 
 const PROFIT_MARGIN = 0.09; 
 
-// In-Memory Database Store (Syncs user balances, reseller status & history)
+// In-Memory Database Store
 const db = {
   users: {},
   processedReferences: new Set()
@@ -83,7 +83,7 @@ app.post('/api/update-user-data', (req, res) => {
 });
 
 // -------------------------------------------------------------
-// ROBUST VTU & DATA PLANS FETCHING
+// VTU PLANS & PURCHASE WITH BALANCE DEDUCTION
 // -------------------------------------------------------------
 
 app.get('/api/get-plans', async (req, res) => {
@@ -101,9 +101,8 @@ app.get('/api/get-plans', async (req, res) => {
     let raw = response.data;
     let list = [];
 
-    if (Array.isArray(raw)) {
-      list = raw;
-    } else if (typeof raw === 'object' && raw !== null) {
+    if (Array.isArray(raw)) list = raw;
+    else if (typeof raw === 'object' && raw !== null) {
       if (Array.isArray(raw.plans)) list = raw.plans;
       else if (Array.isArray(raw.data)) list = raw.data;
       else if (Array.isArray(raw.packages)) list = raw.packages;
@@ -127,13 +126,21 @@ app.get('/api/get-plans', async (req, res) => {
 
     return res.json({ status: 'success', plans: markedUpList });
   } catch (error) {
-    console.error("Get plans error:", error.message);
     return res.status(200).json({ status: 'failed', message: error.message, plans: [] });
   }
 });
 
 app.post('/api/purchase-data', async (req, res) => {
-  const { network, dataplan, mobileno, client_reference } = req.body;
+  const { email, network, dataplan, mobileno, price, client_reference } = req.body;
+  if (!email || !db.users[email]) return res.status(400).json({ status: 'failed', message: 'User not authenticated' });
+
+  const cost = Number(price || 0);
+
+  // Check sufficient balance
+  if (db.users[email].balance < cost) {
+    return res.status(400).json({ status: 'failed', message: 'Insufficient wallet balance. Please top up your wallet.' });
+  }
+
   try {
     const response = await axios.post(`${EASY_ACCESS_BASE}/purchase-data`, {
       network: Number(network),
@@ -142,9 +149,29 @@ app.post('/api/purchase-data', async (req, res) => {
       client_reference: client_reference || `ref_${Date.now()}`
     }, { headers: getEasyAccessHeaders(), validateStatus: () => true });
 
-    return res.json(response.data);
+    const resData = response.data;
+    const isSuccess = resData.code === 200 || (resData.status && resData.status.toLowerCase() === 'success');
+
+    if (isSuccess) {
+      // Deduct balance
+      db.users[email].balance -= cost;
+
+      const newTx = {
+        type: 'Data',
+        title: `Data Purchase — ${mobileno}`,
+        amount: cost.toString(),
+        ref: client_reference,
+        date: new Date().toLocaleDateString('en-GB'),
+        status: 'SUCCESS'
+      };
+
+      db.users[email].transactions.unshift(newTx);
+      return res.json({ status: 'success', message: resData.message || 'Data purchase successful!', profile: db.users[email], transaction: newTx });
+    } else {
+      return res.status(400).json({ status: 'failed', message: resData.message || 'Data purchase failed at provider.' });
+    }
   } catch (error) {
-    return res.status(400).json({ status: 'failed', message: 'Provider data purchase failed' });
+    return res.status(400).json({ status: 'failed', message: 'Network error processing purchase.' });
   }
 });
 
@@ -169,7 +196,7 @@ app.post('/api/verify-tv', async (req, res) => {
 app.post('/api/verify-korapay-payment', async (req, res) => {
   const { email, reference } = req.body;
   if (!email || !reference) {
-    return res.status(400).json({ status: false, message: 'Email and Reference ID are required.' });
+    return res.status(400).json({ status: false, message: 'Email and Reference ID required.' });
   }
 
   try {
@@ -190,7 +217,7 @@ app.post('/api/verify-korapay-payment', async (req, res) => {
         return res.json({ 
           status: true, 
           already_credited: true, 
-          message: 'Transaction verified! This payment has already been credited.',
+          message: 'Transaction verified! Payment was already credited.',
           profile: db.users[email]
         });
       }
@@ -212,24 +239,18 @@ app.post('/api/verify-korapay-payment', async (req, res) => {
       return res.json({
         status: true,
         already_credited: false,
-        message: `Success! ₦${amountPaid.toLocaleString('en-NG')} verified and added to your wallet balance.`,
+        message: `Success! ₦${amountPaid.toLocaleString('en-NG')} verified and added to balance.`,
         profile: db.users[email]
       });
     } else {
-      return res.status(400).json({ 
-        status: false, 
-        message: 'Payment not marked as successful on Korapay. Check again shortly.' 
-      });
+      return res.status(400).json({ status: false, message: 'Payment not marked as successful on Korapay.' });
     }
   } catch (err) {
-    return res.status(400).json({ 
-      status: false, 
-      message: err.response?.data?.message || 'Could not locate transaction on Korapay. Verify Reference ID.' 
-    });
+    return res.status(400).json({ status: false, message: 'Could not locate transaction. Verify Reference ID.' });
   }
 });
 
-// WEBHOOK FOR AUTOMATIC UNATTENDED PAYMENTS
+// WEBHOOK
 app.post('/api/korapay-webhook', (req, res) => {
   try {
     const signature = req.headers['x-korapay-signature'];
