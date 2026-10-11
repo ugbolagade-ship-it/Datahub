@@ -530,7 +530,7 @@
       </div>
 
       <div style="background: #f7f7f9; border-radius: 16px; padding: 16px; margin-bottom: 12px;">
-        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">Enter the amount you would like to add to your wallet. You will proceed to payment via Card, Bank Transfer, or USSD.</p>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">Enter amount to add to your wallet. Proceed via Card, Bank Transfer, or USSD.</p>
         
         <div class="form-group" style="margin-bottom: 12px;">
           <label>Amount (₦)</label>
@@ -588,17 +588,17 @@
   <div id="modalSolve" class="modal-overlay">
     <div class="modal-sheet">
       <div class="modal-header">
-        <span class="modal-title">Resolve Transaction</span>
+        <span class="modal-title">Resolve Ref ID</span>
         <button class="btn-close" onclick="closeModal('modalSolve')">✕</button>
       </div>
-      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">Enter your transaction Reference ID below to re-query status or resolve issue:</p>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">Closed your tab early during payment? Paste your Reference ID below to credit your wallet instantly:</p>
 
       <div class="form-group">
         <label>Reference ID</label>
-        <input type="text" id="solveRefId" placeholder="e.g. ref_1712456789" required />
+        <input type="text" id="solveRefId" placeholder="e.g. oyo_fund_1712456789" required />
       </div>
 
-      <button class="btn-action" onclick="resolveTransaction()">Verify & Resolve</button>
+      <button class="btn-action" onclick="resolveTransaction()">Verify & Credit Payment</button>
       <div id="solverStatus" class="status-alert"></div>
     </div>
   </div>
@@ -760,16 +760,57 @@
         narration: "OyoData Wallet Top Up",
         onSuccess: async function (data) {
           const newBalance = actualBalance + amount;
-
-          // Sync balance to backend (Backend webhook logs the transaction)
           await syncUserProfile(userEmailAddress, { balance: newBalance });
           window.closeModal('modalTopup');
           alert(`Success! ₦${amount.toLocaleString('en-NG')} added to your wallet balance.`);
         },
-        onClose: function () {
-          console.log("Korapay modal closed");
-        }
+        onClose: function () {}
       });
+    };
+
+    // VERIFY UNCREDITED PAYMENT WITH KORAPAY DIRECTLY
+    window.resolveTransaction = async function() {
+      const ref = document.getElementById('solveRefId').value.trim();
+      const status = document.getElementById('solverStatus');
+      status.style.display = 'block';
+
+      if (!ref) {
+        status.className = 'status-alert error';
+        status.textContent = 'Please enter a valid Reference ID.';
+        return;
+      }
+
+      status.className = 'status-alert';
+      status.textContent = 'Verifying payment with Korapay...';
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/verify-korapay-payment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: userEmailAddress, reference: ref })
+        });
+
+        const resData = await response.json();
+
+        if (resData.status) {
+          status.className = 'status-alert success';
+          status.textContent = resData.message;
+
+          if (resData.profile) {
+            actualBalance = resData.profile.balance;
+            refBalance = resData.profile.ref_balance;
+            transactionHistory = resData.profile.transactions || [];
+            window.updateBalanceDisplay();
+            window.renderTransactions();
+          }
+        } else {
+          status.className = 'status-alert error';
+          status.textContent = resData.message || 'Payment verification failed.';
+        }
+      } catch (err) {
+        status.className = 'status-alert error';
+        status.textContent = 'Server error during verification. Please try again.';
+      }
     };
 
     window.copyReferralLink = function() {
@@ -896,7 +937,113 @@
       window.loadCablePackages();
     };
 
-    // RENDER TRANSACTIONS AND ATTACH RECEIPT CLICK EVENT
+    // LOAD DATA PLANS WITH PRODUCT TYPE LOGIC
+    window.loadDataPlans = async function() {
+      const select = document.getElementById('dataPlanSelect');
+      const dataType = document.getElementById('dataTypeSelect').value;
+      
+      let formattedProductType = `${selectedNetwork.toLowerCase()}_${dataType}`;
+      if (selectedNetwork === 'AIRTEL') formattedProductType = 'airtel_cg';
+      if (selectedNetwork === 'GLO') formattedProductType = 'glo_cg';
+      if (selectedNetwork === '9MOBILE') formattedProductType = '9mobile_sme';
+
+      select.innerHTML = '<option value="">Loading plans...</option>';
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${formattedProductType}&is_reseller=${isReseller}`);
+        const data = await response.json();
+
+        select.innerHTML = '<option value="">Select Plan</option>';
+        
+        let plansList = [];
+        if (Array.isArray(data)) {
+          plansList = data;
+        } else if (data && Array.isArray(data.plans)) {
+          plansList = data.plans;
+        }
+
+        if (plansList.length === 0) {
+          select.innerHTML = '<option value="">No plans available</option>';
+          return;
+        }
+
+        plansList.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.plan_id || p.id;
+          const rawValidity = p.validity || p.plan_validity || p.day || '';
+          const validityText = rawValidity ? ` (${rawValidity})` : '';
+          const cleanName = (p.name || p.plan_name || '').replace(/\(SME\)|\(CG\)|\(GIFTING\)/gi, '').trim();
+
+          opt.textContent = `${cleanName}${validityText} => ₦${Number(p.price).toLocaleString('en-NG')}`;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        console.error("Fetch plans error:", err);
+        select.innerHTML = '<option value="">Error loading plans</option>';
+      }
+    };
+
+    window.loadCablePackages = async function() {
+      const select = document.getElementById('cablePackageSelect');
+      select.innerHTML = '<option value="">Loading packages...</option>';
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${selectedCableCompany}&is_reseller=${isReseller}`);
+        const data = await response.json();
+
+        select.innerHTML = '<option value="">Select Package</option>';
+        let packages = Array.isArray(data) ? data : (data.plans || []);
+
+        packages.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.plan_id || p.id;
+          const rawValidity = p.validity || p.plan_validity || '';
+          const validityText = rawValidity ? ` (${rawValidity})` : '';
+
+          opt.textContent = `${p.name || p.plan_name}${validityText} => ₦${Number(p.price).toLocaleString('en-NG')}`;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        select.innerHTML = '<option value="">Error loading packages</option>';
+      }
+    };
+
+    window.verifyIUC = async function() {
+      const status = document.getElementById('statusAlert');
+      const smartcard = document.getElementById('smartcardNo').value.trim();
+
+      if (!smartcard) {
+        status.style.display = 'block';
+        status.className = 'status-alert error';
+        status.textContent = 'Please enter a Smartcard/IUC number.';
+        return;
+      }
+
+      status.style.display = 'block';
+      status.className = 'status-alert';
+      status.textContent = 'Verifying Smartcard...';
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/verify-tv`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ company: selectedCableCompanyCode, iucno: smartcard })
+        });
+        const resData = await response.json();
+
+        if (resData.customer_name || resData.status === 'success') {
+          status.className = 'status-alert success';
+          status.textContent = `Verified: ${resData.customer_name || 'Valid Smartcard'}`;
+        } else {
+          status.className = 'status-alert error';
+          status.textContent = 'Smartcard verification failed.';
+        }
+      } catch (err) {
+        status.className = 'status-alert error';
+        status.textContent = 'Error connecting to verification server.';
+      }
+    };
+
     window.renderTransactions = function() {
       const recentContainer = document.getElementById('recentTxList');
       const fullContainer = document.getElementById('fullTxList');
@@ -932,7 +1079,6 @@
       recentContainer.innerHTML = transactionHistory.slice(0, 3).map((tx, idx) => renderTxItem(tx, idx)).join('');
     };
 
-    // DISPLAY RECEIPT MODAL
     window.viewReceipt = function(index) {
       const tx = transactionHistory[index];
       if (!tx) return;
@@ -955,32 +1101,6 @@
       const refId = document.getElementById('receiptRef').textContent;
       navigator.clipboard.writeText(refId);
       alert(`Reference ID (${refId}) copied to clipboard!`);
-    };
-
-    window.resolveTransaction = function() {
-      const ref = document.getElementById('solveRefId').value.trim();
-      const status = document.getElementById('solverStatus');
-      status.style.display = 'block';
-
-      if (!ref) {
-        status.className = 'status-alert error';
-        status.textContent = 'Please enter a valid Reference ID.';
-        return;
-      }
-
-      status.className = 'status-alert';
-      status.textContent = 'Querying transaction status...';
-
-      setTimeout(() => {
-        const found = transactionHistory.find(t => t.ref === ref);
-        if (found) {
-          status.className = 'status-alert success';
-          status.textContent = `Found: ${found.title} (${found.status}). Delivered to target.`;
-        } else {
-          status.className = 'status-alert error';
-          status.textContent = 'Reference ID not found or already settled.';
-        }
-      }, 1200);
     };
 
     document.getElementById('formBuyData').addEventListener('submit', async (e) => {
