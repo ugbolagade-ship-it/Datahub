@@ -650,6 +650,7 @@
     let isReseller = false;
     let isBalanceHidden = localStorage.getItem('dh_hide_balance') === 'true';
     let transactionHistory = [];
+    let loadedPlansMap = {};
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -699,7 +700,7 @@
     let selectedCableCompany = 'dstv';
     let selectedCableCompanyCode = 1;
 
-    const SVG_EYE_OPEN = `<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>`;
+    const SVG_EYE_OPEN = `<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3 z"/>`;
     const SVG_EYE_CLOSED = `<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.17c0-1.66-1.34-3-3-3l-.17.02z"/>`;
 
     window.updateBalanceDisplay = function() {
@@ -937,7 +938,7 @@
       window.loadCablePackages();
     };
 
-    // LOAD DATA PLANS WITH PRODUCT TYPE LOGIC
+    // LOAD DATA PLANS WITH PRODUCT TYPE LOGIC & PRICE MAPPING
     window.loadDataPlans = async function() {
       const select = document.getElementById('dataPlanSelect');
       const dataType = document.getElementById('dataTypeSelect').value;
@@ -948,6 +949,7 @@
       if (selectedNetwork === '9MOBILE') formattedProductType = '9mobile_sme';
 
       select.innerHTML = '<option value="">Loading plans...</option>';
+      loadedPlansMap = {};
 
       try {
         const response = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${formattedProductType}&is_reseller=${isReseller}`);
@@ -968,8 +970,11 @@
         }
 
         plansList.forEach(p => {
+          const planId = p.plan_id || p.id;
+          loadedPlansMap[planId] = p;
+
           const opt = document.createElement('option');
-          opt.value = p.plan_id || p.id;
+          opt.value = planId;
           const rawValidity = p.validity || p.plan_validity || p.day || '';
           const validityText = rawValidity ? ` (${rawValidity})` : '';
           const cleanName = (p.name || p.plan_name || '').replace(/\(SME\)|\(CG\)|\(GIFTING\)/gi, '').trim();
@@ -995,8 +1000,11 @@
         let packages = Array.isArray(data) ? data : (data.plans || []);
 
         packages.forEach(p => {
+          const planId = p.plan_id || p.id;
+          loadedPlansMap[planId] = p;
+
           const opt = document.createElement('option');
-          opt.value = p.plan_id || p.id;
+          opt.value = planId;
           const rawValidity = p.validity || p.plan_validity || '';
           const validityText = rawValidity ? ` (${rawValidity})` : '';
 
@@ -1069,7 +1077,7 @@
             </div>
           </div>
           <div class="tx-right">
-            <div class="tx-amount ${tx.type === 'Transfer' ? 'credit' : 'debit'}">${tx.type === 'Transfer' ? '+' : '-'}₦${tx.amount}</div>
+            <div class="tx-amount ${tx.type === 'Transfer' ? 'credit' : 'debit'}">${tx.type === 'Transfer' ? '+' : '-'}₦${Number(tx.amount).toLocaleString('en-NG')}</div>
             <span class="tx-badge ${tx.status === 'SUCCESS' ? 'success' : 'failed'}">${tx.status}</span>
           </div>
         </div>
@@ -1079,12 +1087,9 @@
       recentContainer.innerHTML = transactionHistory.slice(0, 3).map((tx, idx) => renderTxItem(tx, idx)).join('');
     };
 
-    window.viewReceipt = function(index) {
-      const tx = transactionHistory[index];
-      if (!tx) return;
-
+    window.showDirectReceipt = function(tx) {
       document.getElementById('receiptTitle').textContent = tx.title;
-      document.getElementById('receiptAmount').textContent = `${tx.type === 'Transfer' ? '+' : '-'}₦${tx.amount}`;
+      document.getElementById('receiptAmount').textContent = `${tx.type === 'Transfer' ? '+' : '-'}₦${Number(tx.amount).toLocaleString('en-NG')}`;
       document.getElementById('receiptRef').textContent = tx.ref;
       document.getElementById('receiptDate').textContent = tx.date;
       document.getElementById('receiptType').textContent = tx.type;
@@ -1097,15 +1102,36 @@
       openModal('modalReceipt');
     };
 
+    window.viewReceipt = function(index) {
+      const tx = transactionHistory[index];
+      if (tx) window.showDirectReceipt(tx);
+    };
+
     window.copyReceiptDetails = function() {
       const refId = document.getElementById('receiptRef').textContent;
       navigator.clipboard.writeText(refId);
       alert(`Reference ID (${refId}) copied to clipboard!`);
     };
 
+    // DATA PURCHASE WITH BALANCE CHECK & INSTANT RECEIPT POPUP
     document.getElementById('formBuyData').addEventListener('submit', async (e) => {
       e.preventDefault();
       const status = document.getElementById('statusAlert');
+      const planId = document.getElementById('dataPlanSelect').value;
+      const phone = document.getElementById('dataPhone').value.trim();
+      const selectedPlan = loadedPlansMap[planId];
+
+      if (!selectedPlan) {
+        alert("Please select a valid plan.");
+        return;
+      }
+
+      if (actualBalance < selectedPlan.price) {
+        alert(`Insufficient balance (₦${actualBalance.toLocaleString()}). You need ₦${selectedPlan.price.toLocaleString()} for this plan.`);
+        openModal('modalTopup');
+        return;
+      }
+
       status.style.display = 'block';
       status.className = 'status-alert';
       status.textContent = 'Processing transaction...';
@@ -1114,9 +1140,11 @@
       const refId = `ref_${Date.now()}`;
 
       const payload = {
+        email: userEmailAddress,
         network: networkMap[selectedNetwork],
-        dataplan: document.getElementById('dataPlanSelect').value,
-        mobileno: document.getElementById('dataPhone').value.trim(),
+        dataplan: planId,
+        mobileno: phone,
+        price: selectedPlan.price,
         client_reference: refId
       };
 
@@ -1128,22 +1156,18 @@
         });
 
         const resData = await response.json();
-        const isSuccess = resData.code === 200 || (resData.status && resData.status.toLowerCase() === 'success');
 
-        const newTx = {
-          type: 'Data',
-          title: `${selectedNetwork} Data — ${payload.mobileno}`,
-          amount: '485',
-          ref: refId,
-          date: new Date().toLocaleDateString('en-GB'),
-          status: isSuccess ? 'SUCCESS' : 'FAILED'
-        };
+        if (resData.status === 'success' && resData.profile) {
+          actualBalance = resData.profile.balance;
+          transactionHistory = resData.profile.transactions;
+          window.updateBalanceDisplay();
+          window.renderTransactions();
 
-        await syncUserProfile(userEmailAddress, { transaction: newTx });
-
-        if (isSuccess) {
           status.className = 'status-alert success';
           status.textContent = resData.message || 'Data purchase successful!';
+
+          // Show Receipt Immediately
+          window.showDirectReceipt(resData.transaction);
         } else {
           status.className = 'status-alert error';
           status.textContent = resData.message || 'Transaction failed.';
@@ -1190,6 +1214,7 @@
         if (isSuccess) {
           status.className = 'status-alert success';
           status.textContent = resData.message || 'Exam PIN generated and sent to phone!';
+          window.showDirectReceipt(newTx);
         } else {
           status.className = 'status-alert error';
           status.textContent = resData.message || 'Exam PIN generation failed.';
