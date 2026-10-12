@@ -86,7 +86,7 @@
     <div id="adminAuthBox" class="auth-box">
       <div class="form-group">
         <label>Enter Secret Admin Key</label>
-        <input type="password" id="adminSecretKey" placeholder="Paste ADMIN_SECRET_KEY here" />
+        <input type="password" id="adminSecretKey" placeholder="Default: oyodata_admin_secure_99" />
       </div>
       <button class="btn-submit" onclick="authenticateAdmin()">Unlock Master Controls</button>
       <div id="authAlert" class="status-alert"></div>
@@ -178,27 +178,11 @@
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
+  <script>
     const BACKEND_URL = "https://datahub-qmzg.onrender.com";
-    
-    const firebaseConfig = {
-      apiKey: "AIzaSyDgj3g2-VwCf4oWnETazpxxPvl2vpyl3Mo",
-      authDomain: "datahub-1e310.firebaseapp.com",
-      projectId: "datahub-1e310",
-      storageBucket: "datahub-1e310.firebasestorage.app",
-      messagingSenderId: "560867367131",
-      appId: "1:560867367131:web:70933fcb051cb71fe914fe"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
     let activeAdminKey = "";
 
-    window.authenticateAdmin = async function() {
+    async function authenticateAdmin() {
       const keyInput = document.getElementById('adminSecretKey').value.trim();
       const alertBox = document.getElementById('authAlert');
 
@@ -209,10 +193,10 @@
       }
 
       activeAdminKey = keyInput;
-      window.fetchLiveStats();
-    };
+      fetchLiveStats();
+    }
 
-    window.fetchLiveStats = async function() {
+    async function fetchLiveStats() {
       const alertBox = document.getElementById('authAlert');
       try {
         const res = await fetch(`${BACKEND_URL}/api/admin/stats`, {
@@ -224,21 +208,8 @@
           document.getElementById('adminAuthBox').style.display = 'none';
           document.getElementById('adminContent').style.display = 'block';
 
-          try {
-            const usersSnapshot = await getDocs(collection(db, "users"));
-            let totalUsers = usersSnapshot.size;
-            let resellerCount = 0;
-
-            usersSnapshot.forEach(doc => {
-              if (doc.data().isReseller === true) resellerCount++;
-            });
-
-            document.getElementById('statUsers').textContent = totalUsers || 1;
-            document.getElementById('statResellers').textContent = resellerCount;
-          } catch (e) {
-            document.getElementById('statUsers').textContent = "Active";
-            document.getElementById('statResellers').textContent = "Active";
-          }
+          document.getElementById('statUsers').textContent = data.total_users;
+          document.getElementById('statResellers').textContent = data.resellers;
 
           try {
             const balRes = await fetch(`${BACKEND_URL}/api/wallet-balance`);
@@ -258,11 +229,11 @@
         }
       } catch (err) {
         alertBox.className = "status-alert error";
-        alertBox.textContent = "Network error connecting to backend.";
+        alertBox.textContent = "Network error connecting to backend server.";
       }
-    };
+    }
 
-    window.processWalletAdjustment = async function() {
+    async function processWalletAdjustment() {
       const email = document.getElementById('targetEmail').value.trim();
       const action = document.getElementById('actionType').value;
       const amount = document.getElementById('adjustAmount').value;
@@ -285,15 +256,20 @@
         });
         const data = await res.json();
 
-        alertBox.className = "status-alert success";
-        alertBox.textContent = data.message;
+        if (data.status === 'success') {
+          alertBox.className = "status-alert success";
+          alertBox.textContent = data.message;
+        } else {
+          alertBox.className = "status-alert error";
+          alertBox.textContent = data.message;
+        }
       } catch (err) {
         alertBox.className = "status-alert error";
         alertBox.textContent = "Action failed.";
       }
-    };
+    }
 
-    window.processTierChange = async function() {
+    async function processTierChange() {
       const email = document.getElementById('tierTargetEmail').value.trim();
       const isReseller = document.getElementById('tierStatus').value === 'true';
       const alertBox = document.getElementById('tierAlert');
@@ -315,15 +291,20 @@
         });
         const data = await res.json();
 
-        alertBox.className = "status-alert success";
-        alertBox.textContent = data.message;
+        if (data.status === 'success') {
+          alertBox.className = "status-alert success";
+          alertBox.textContent = data.message;
+        } else {
+          alertBox.className = "status-alert error";
+          alertBox.textContent = data.message;
+        }
       } catch (err) {
         alertBox.className = "status-alert error";
         alertBox.textContent = "Tier change failed.";
       }
-    };
+    }
 
-    window.publishAnnouncement = async function() {
+    async function publishAnnouncement() {
       const msg = document.getElementById('announceText').value.trim();
       const alertBox = document.getElementById('announceAlert');
 
@@ -334,17 +315,28 @@
       }
 
       try {
-        await setDoc(doc(db, "system", "announcement"), {
-          message: msg,
-          updatedAt: new Date().toISOString()
+        const res = await fetch(`${BACKEND_URL}/api/admin/announcement`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-key': activeAdminKey
+          },
+          body: JSON.stringify({ message: msg })
         });
-        alertBox.className = "status-alert success";
-        alertBox.textContent = "Announcement broadcasted live to all users!";
+        const data = await res.json();
+
+        if (data.status === 'success') {
+          alertBox.className = "status-alert success";
+          alertBox.textContent = "Announcement broadcasted live!";
+        } else {
+          alertBox.className = "status-alert error";
+          alertBox.textContent = data.message;
+        }
       } catch (err) {
         alertBox.className = "status-alert error";
         alertBox.textContent = "Failed to broadcast message.";
       }
-    };
+    }
   </script>
 </body>
 </html>
