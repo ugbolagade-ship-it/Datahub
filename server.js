@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const crypto = require('crypto');
+const fs = require('fs');
 const path = require('path');
 
 const app = express();
@@ -20,16 +21,36 @@ const EASY_ACCESS_TOKEN = process.env.EASY_ACCESS_TOKEN || '';
 const EASY_ACCESS_BASE = 'https://easyaccess.com.ng/api/live/v1';
 
 const KORAPAY_SECRET_KEY = process.env.KORAPAY_SECRET_KEY || 'sk_live_GBnW4AxFZVP1FpBhiwG8UNLHZwcpQkAVyuiPKReH';
-const KORAPAY_PUBLIC_KEY = process.env.KORAPAY_PUBLIC_KEY || 'pk_live_qMvFy8kc7XSFtzWAsSYrSGgCwSgPcchuttv2zNAL';
 const KORAPAY_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
+const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY || 'oyodata_admin_secure_99';
 
 const PROFIT_MARGIN = 0.09; 
+const DB_FILE = path.join(__dirname, 'db.json');
 
-// In-Memory Database Store
-const db = {
-  users: {},
-  processedReferences: new Set()
-};
+// Persistent Database Handler
+let db = { users: {}, processedReferences: [] };
+if (fs.existsSync(DB_FILE)) {
+  try {
+    const data = fs.readFileSync(DB_FILE, 'utf8');
+    const parsed = JSON.parse(data);
+    db.users = parsed.users || {};
+    db.processedReferences = new Set(parsed.processedReferences || []);
+  } catch (e) {
+    console.error("Error reading db.json, initializing fresh store.");
+  }
+}
+
+function saveDatabase() {
+  try {
+    const dataToSave = {
+      users: db.users,
+      processedReferences: Array.from(db.processedReferences)
+    };
+    fs.writeFileSync(DB_FILE, JSON.stringify(dataToSave, null, 2));
+  } catch (e) {
+    console.error("Error saving to db.json:", e);
+  }
+}
 
 const getEasyAccessHeaders = () => ({
   'Authorization': `Bearer ${EASY_ACCESS_TOKEN}`,
@@ -45,19 +66,39 @@ function calculateSellingPrice(basePrice, isReseller = false, isCable = false) {
   const resellerDiscount = isReseller ? 5 : 0;
   const markupPrice = original * (1 + PROFIT_MARGIN);
   const finalPrice = markupPrice * (1 - (resellerDiscount / 100));
-  return Math.ceil(finalPrice);
+  // Add automatic 1.5% charge markup
+  const withGatewayFee = finalPrice * 1.015;
+  return Math.ceil(withGatewayFee);
 }
 
 // -------------------------------------------------------------
-// USER DATABASE SYNCHRONIZATION ENDPOINTS
+// USER PROFILE & REFERRAL ENDPOINTS
 // -------------------------------------------------------------
 
 app.post('/api/get-user-profile', (req, res) => {
-  const { email } = req.body;
+  const { email, referredBy } = req.body;
   if (!email) return res.status(400).json({ status: false, message: 'Email required' });
 
   if (!db.users[email]) {
-    db.users[email] = { balance: 0, ref_balance: 0, is_reseller: false, transactions: [] };
+    db.users[email] = { 
+      balance: 0, 
+      ref_balance: 0, 
+      is_reseller: false, 
+      transactions: [],
+      referred_by: referredBy || null,
+      referred_users: []
+    };
+    
+    // Link to referrer if code provided
+    if (referredBy) {
+      for (const uEmail in db.users) {
+        if (uEmail !== email && uEmail.slice(0, 6) === referredBy) {
+          db.users[uEmail].referred_users.push({ email, status: 'Active', date: new Date().toLocaleDateString('en-GB') });
+          break;
+        }
+      }
+    }
+    saveDatabase();
   }
 
   return res.json({ status: true, profile: db.users[email] });
@@ -68,8 +109,10 @@ app.post('/api/update-user-data', (req, res) => {
   if (!email) return res.status(400).json({ status: false, message: 'Email required' });
 
   if (!db.users[email]) {
-    db.users[email] = { balance: 0, ref_balance: 0, is_reseller: false, transactions: [] };
+    db.users[email] = { balance: 0, ref_balance: 0, is_reseller: false, transactions: [], referred_users: [] };
   }
+
+  const wasReseller = db.users[email].is_reseller;
 
   if (balance !== undefined) db.users[email].balance = Number(balance);
   if (ref_balance !== undefined) db.users[email].ref_balance = Number(ref_balance);
@@ -79,11 +122,31 @@ app.post('/api/update-user-data', (req, res) => {
     db.users[email].transactions.unshift(transaction);
   }
 
+  // If user just upgraded to reseller, check if they were referred and reward ₦1,000 to referrer
+  if (!wasReseller && db.users[email].is_reseller && db.users[email].referred_by) {
+    const refCode = db.users[email].referred_by;
+    for (const uEmail in db.users) {
+      if (uEmail.slice(0, 6) === refCode) {
+        db.users[uEmail].ref_balance += 1000;
+        db.users[uEmail].transactions.unshift({
+          type: 'Transfer',
+          title: `Referral Commission from ${email}`,
+          amount: '1000',
+          ref: `ref_com_${Date.now()}`,
+          date: new Date().toLocaleDateString('en-GB'),
+          status: 'SUCCESS'
+        });
+        break;
+      }
+    }
+  }
+
+  saveDatabase();
   return res.json({ status: true, profile: db.users[email] });
 });
 
 // -------------------------------------------------------------
-// VTU PLANS & PURCHASE WITH BALANCE DEDUCTION
+// VTU PLANS & PURCHASES WITH REAL DATA
 // -------------------------------------------------------------
 
 app.get('/api/get-plans', async (req, res) => {
@@ -136,9 +199,8 @@ app.post('/api/purchase-data', async (req, res) => {
 
   const cost = Number(price || 0);
 
-  // Check sufficient balance
   if (db.users[email].balance < cost) {
-    return res.status(400).json({ status: 'failed', message: 'Insufficient wallet balance. Please top up your wallet.' });
+    return res.status(400).json({ status: 'failed', message: 'Insufficient wallet balance.' });
   }
 
   try {
@@ -153,9 +215,7 @@ app.post('/api/purchase-data', async (req, res) => {
     const isSuccess = resData.code === 200 || (resData.status && resData.status.toLowerCase() === 'success');
 
     if (isSuccess) {
-      // Deduct balance
       db.users[email].balance -= cost;
-
       const newTx = {
         type: 'Data',
         title: `Data Purchase — ${mobileno}`,
@@ -164,8 +224,9 @@ app.post('/api/purchase-data', async (req, res) => {
         date: new Date().toLocaleDateString('en-GB'),
         status: 'SUCCESS'
       };
-
       db.users[email].transactions.unshift(newTx);
+      saveDatabase();
+
       return res.json({ status: 'success', message: resData.message || 'Data purchase successful!', profile: db.users[email], transaction: newTx });
     } else {
       return res.status(400).json({ status: 'failed', message: resData.message || 'Data purchase failed at provider.' });
@@ -175,29 +236,38 @@ app.post('/api/purchase-data', async (req, res) => {
   }
 });
 
-app.post('/api/verify-tv', async (req, res) => {
-  const { company, iucno } = req.body;
-  try {
-    const response = await axios.post(`${EASY_ACCESS_BASE}/verify-tv`, {
-      company: Number(company),
-      iucno: String(iucno)
-    }, { headers: getEasyAccessHeaders(), validateStatus: () => true });
+// -------------------------------------------------------------
+// ADMIN CONTROLS (Real Portal Management)
+// -------------------------------------------------------------
 
-    return res.json(response.data);
-  } catch (error) {
-    return res.status(400).json({ status: 'failed', message: 'Verification failed' });
-  }
+app.get('/api/admin/get-all-users', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (adminKey !== ADMIN_SECRET_KEY) return res.status(401).json({ status: false, message: 'Unauthorized' });
+  return res.json({ status: true, users: db.users });
+});
+
+app.post('/api/admin/modify-user', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (adminKey !== ADMIN_SECRET_KEY) return res.status(401).json({ status: false, message: 'Unauthorized' });
+
+  const { email, balance, ref_balance, is_reseller } = req.body;
+  if (!db.users[email]) return res.status(404).json({ status: false, message: 'User not found' });
+
+  if (balance !== undefined) db.users[email].balance = Number(balance);
+  if (ref_balance !== undefined) db.users[email].ref_balance = Number(ref_balance);
+  if (is_reseller !== undefined) db.users[email].is_reseller = Boolean(is_reseller);
+
+  saveDatabase();
+  return res.json({ status: true, message: 'User updated successfully', profile: db.users[email] });
 });
 
 // -------------------------------------------------------------
-// LIVE KORAPAY VERIFICATION FOR "RESOLVE REF ID"
+// PAYMENT VERIFICATION & WEBHOOKS
 // -------------------------------------------------------------
 
 app.post('/api/verify-korapay-payment', async (req, res) => {
   const { email, reference } = req.body;
-  if (!email || !reference) {
-    return res.status(400).json({ status: false, message: 'Email and Reference ID required.' });
-  }
+  if (!email || !reference) return res.status(400).json({ status: false, message: 'Email and Reference ID required.' });
 
   try {
     const response = await axios.get(`${KORAPAY_BASE_URL}/charges/${reference}`, {
@@ -205,21 +275,15 @@ app.post('/api/verify-korapay-payment', async (req, res) => {
     });
 
     const txData = response.data?.data;
-
     if (response.data && response.data.status && txData?.status === 'success') {
       const amountPaid = Number(txData.amount);
 
       if (!db.users[email]) {
-        db.users[email] = { balance: 0, ref_balance: 0, is_reseller: false, transactions: [] };
+        db.users[email] = { balance: 0, ref_balance: 0, is_reseller: false, transactions: [], referred_users: [] };
       }
 
       if (db.processedReferences.has(reference)) {
-        return res.json({ 
-          status: true, 
-          already_credited: true, 
-          message: 'Transaction verified! Payment was already credited.',
-          profile: db.users[email]
-        });
+        return res.json({ status: true, message: 'Payment already credited.', profile: db.users[email] });
       }
 
       db.processedReferences.add(reference);
@@ -233,58 +297,15 @@ app.post('/api/verify-korapay-payment', async (req, res) => {
         date: new Date().toLocaleDateString('en-GB'),
         status: 'SUCCESS'
       };
-
       db.users[email].transactions.unshift(newTx);
+      saveDatabase();
 
-      return res.json({
-        status: true,
-        already_credited: false,
-        message: `Success! ₦${amountPaid.toLocaleString('en-NG')} verified and added to balance.`,
-        profile: db.users[email]
-      });
+      return res.json({ status: true, message: `Success! ₦${amountPaid.toLocaleString('en-NG')} added to balance.`, profile: db.users[email] });
     } else {
-      return res.status(400).json({ status: false, message: 'Payment not marked as successful on Korapay.' });
+      return res.status(400).json({ status: false, message: 'Payment not successful on Korapay.' });
     }
   } catch (err) {
-    return res.status(400).json({ status: false, message: 'Could not locate transaction. Verify Reference ID.' });
-  }
-});
-
-// WEBHOOK
-app.post('/api/korapay-webhook', (req, res) => {
-  try {
-    const signature = req.headers['x-korapay-signature'];
-    if (!signature) return res.status(401).send("Missing signature");
-
-    const calculatedHash = crypto.createHmac('sha256', KORAPAY_SECRET_KEY).update(JSON.stringify(req.body)).digest('hex');
-    if (calculatedHash !== signature) return res.status(400).send("Signature verification failed");
-
-    const { event, data } = req.body;
-
-    if ((event === 'charge.success' || event === 'transfer.success') && data?.status === 'success') {
-      const reference = data.reference;
-      if (db.processedReferences.has(reference)) return res.status(200).json({ status: true });
-
-      db.processedReferences.add(reference);
-      const userEmail = data.customer?.email;
-      const amountPaid = Number(data.amount);
-
-      if (userEmail && db.users[userEmail]) {
-        db.users[userEmail].balance += amountPaid;
-        db.users[userEmail].transactions.unshift({
-          type: 'Transfer',
-          title: 'Automated Wallet Funding',
-          amount: amountPaid.toString(),
-          ref: reference,
-          date: new Date().toLocaleDateString('en-GB'),
-          status: 'SUCCESS'
-        });
-      }
-    }
-
-    return res.status(200).json({ status: true });
-  } catch (err) {
-    return res.status(500).send("Server Error");
+    return res.status(400).json({ status: false, message: 'Could not locate transaction on Korapay.' });
   }
 });
 
