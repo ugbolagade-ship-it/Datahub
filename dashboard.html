@@ -735,7 +735,7 @@
       }
     };
 
-    // DIRECT CHECKOUT PAYMENTS
+    // DIRECT CHECKOUT PAYMENTS WITH SERVER-SIDE VERIFICATION
     window.payWithKorapayCheckout = function() {
       const amount = Number(document.getElementById('topupAmountInput').value);
       const alertBox = document.getElementById('topupAlert');
@@ -760,10 +760,34 @@
         },
         narration: "OyoData Wallet Top Up",
         onSuccess: async function (data) {
-          const newBalance = actualBalance + amount;
-          await syncUserProfile(userEmailAddress, { balance: newBalance });
-          window.closeModal('modalTopup');
-          alert(`Success! ₦${amount.toLocaleString('en-NG')} added to your wallet balance.`);
+          alertBox.className = "status-alert";
+          alertBox.style.display = "block";
+          alertBox.textContent = "Verifying payment with server...";
+
+          try {
+            const response = await fetch(`${BACKEND_URL}/api/verify-korapay-payment`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: userEmailAddress, reference: data.reference || txRef })
+            });
+
+            const resData = await response.json();
+
+            if (resData.status && resData.profile) {
+              actualBalance = resData.profile.balance;
+              transactionHistory = resData.profile.transactions || [];
+              window.updateBalanceDisplay();
+              window.renderTransactions();
+              window.closeModal('modalTopup');
+              alert(`Success! ₦${amount.toLocaleString('en-NG')} added to your wallet balance.`);
+            } else {
+              alertBox.className = "status-alert error";
+              alertBox.textContent = resData.message || "Payment verification failed. Use 'Resolve Ref ID' to retry.";
+            }
+          } catch (err) {
+            alertBox.className = "status-alert error";
+            alertBox.textContent = "Error verifying payment. Use 'Resolve Ref ID' to retry.";
+          }
         },
         onClose: function () {}
       });
