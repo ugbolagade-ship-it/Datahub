@@ -410,5 +410,47 @@ app.post('/api/verify-korapay-payment', async (req, res) => {
   }
 });
 
+// Korapay Automatic Webhook Endpoint
+app.post('/api/korapay-webhook', async (req, res) => {
+  try {
+    const data = req.body;
+    if (data && data.event === 'charge.success' && data.data) {
+      const txData = data.data;
+      const userEmail = txData.customer?.email;
+      const reference = txData.reference;
+      const amountPaid = Number(txData.amount);
+
+      if (userEmail && reference) {
+        const existingTx = await TxRef.findOne({ reference });
+        if (!existingTx) {
+          await TxRef.create({ reference });
+
+          let user = await User.findOne({ email: userEmail });
+          if (!user) {
+            user = new User({ email: userEmail });
+          }
+
+          user.balance += amountPaid;
+          user.transactions.unshift({
+            type: 'Transfer',
+            title: 'Korapay Automatic Top Up',
+            amount: amountPaid.toString(),
+            ref: reference,
+            date: new Date().toLocaleDateString('en-GB'),
+            status: 'SUCCESS'
+          });
+
+          await user.save();
+          console.log(`[Webhook] Automatically credited ₦${amountPaid} to ${userEmail}`);
+        }
+      }
+    }
+    return res.status(200).send('Webhook Received');
+  } catch (err) {
+    console.error('Webhook Error:', err);
+    return res.status(200).send('Webhook Error');
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`OyoData Server online on port ${PORT}`));
