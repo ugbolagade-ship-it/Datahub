@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>OyoData — Best SME Data & VTU Platform in Nigeria</title>
-
+  <title>OyoData — Best SME Data &amp; VTU Platform in Nigeria</title>
+  <script src="https://korablobstorage.blob.core.windows.net/modal-bucket/korapay-collections.min.js"></script>
   <style>
-    :root {
+#view-landing{
       --bg: #f4f5fa;
       --card-bg: #ffffff;
       --text-dark: #1b1834;
@@ -17,222 +17,192 @@
       --brand-btn: #1b1834;
       --brand-accent: #fcf4eb;
       
-      /* Dark Footer Design Tokens */
+      
       --foot-bg: #1e1b38;
       --foot-text: #c5c2de;
       --foot-head: #ffffff;
       --foot-highlight: #ffc107;
       --foot-border: rgba(255, 255, 255, 0.1);
     }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-    html { scroll-behavior: smooth; }
-    body { background-color: var(--bg); color: var(--text-dark); overflow-x: hidden; min-height: 100vh; }
-    a { text-decoration: none; color: inherit; }
-
-    /* SVG Icon Helpers */
-    .icon { width: 20px; height: 20px; fill: currentColor; display: inline-block; vertical-align: middle; }
-
-    /* Header Bar */
-    nav {
+#view-landing,#view-landing *{ box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+#view-landing{ background-color: var(--bg); color: var(--text-dark); overflow-x: hidden; min-height: 100vh; }
+#view-landing a{ text-decoration: none; color: inherit; }
+#view-landing .icon{ width: 20px; height: 20px; fill: currentColor; display: inline-block; vertical-align: middle; }
+#view-landing nav{
       position: sticky; top: 0; z-index: 100;
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--input-border);
     }
-    .nav-wrap {
+#view-landing .nav-wrap{
       max-width: 1100px; margin: 0 auto;
       padding: 14px 20px;
       display: flex; align-items: center; justify-content: space-between;
       position: relative;
     }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.4rem; color: var(--brand-red); letter-spacing: -0.5px; }
-    .brand-logo { width: 48px; height: auto; display: block; }
-
-    /* Hamburger Toggle Button */
-    .menu-toggle-btn {
+#view-landing .brand{ display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.4rem; color: var(--brand-red); letter-spacing: -0.5px; }
+#view-landing .brand-logo{ width: 48px; height: auto; display: block; }
+#view-landing .menu-toggle-btn{
       background: #f0eff6; border: none; border-radius: 12px;
       width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
       cursor: pointer; color: var(--text-dark); transition: background 0.2s;
     }
-    .menu-toggle-btn:hover { background: var(--brand-accent); color: var(--brand-orange); }
-
-    /* Mobile Dropdown Drawer */
-    .mobile-dropdown {
+#view-landing .menu-toggle-btn:hover{ background: var(--brand-accent); color: var(--brand-orange); }
+#view-landing .mobile-dropdown{
       display: none; flex-direction: column; gap: 8px;
       position: absolute; top: 100%; left: 0; right: 0;
       background: #ffffff; border-bottom: 1px solid var(--input-border);
       padding: 16px 20px; box-shadow: 0 10px 25px rgba(27, 24, 52, 0.08);
       animation: fadeIn 0.2s ease-out;
     }
-    .mobile-dropdown.open { display: flex; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
-
-    .nav-link-item {
+#view-landing .mobile-dropdown.open{ display: flex; }
+@keyframes fadeIn{ from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+#view-landing .nav-link-item{
       padding: 12px 16px; border-radius: 12px; font-weight: 700; font-size: 0.9rem;
       color: var(--text-dark); display: flex; align-items: center; gap: 10px;
       background: #f7f7f9; transition: all 0.2s;
     }
-    .nav-link-item:hover { background: var(--brand-accent); color: var(--brand-orange); }
-
-    /* Hero Section */
-    .hero {
+#view-landing .nav-link-item:hover{ background: var(--brand-accent); color: var(--brand-orange); }
+#view-landing .hero{
       padding: 50px 20px 40px; text-align: center; position: relative;
       background: radial-gradient(120% 100% at 50% 0%, #ffffff 0%, var(--bg) 100%);
     }
-    .hero-badge {
+#view-landing .hero-badge{
       display: inline-flex; align-items: center; gap: 8px;
       padding: 6px 16px; border-radius: 20px;
       background: var(--brand-accent); border: 1px solid rgba(244, 132, 31, 0.3);
       color: var(--brand-orange); font-size: 0.8rem; font-weight: 800; margin-bottom: 20px;
     }
-    .hero h1 {
+#view-landing .hero h1{
       font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800;
       color: var(--text-dark); line-height: 1.15; max-width: 820px; margin: 0 auto 18px; letter-spacing: -0.5px;
     }
-    .hero h1 span { color: var(--brand-orange); }
-    .hero p {
+#view-landing .hero h1 span{ color: var(--brand-orange); }
+#view-landing .hero p{
       font-size: 1.02rem; color: var(--text-muted); max-width: 600px; margin: 0 auto 32px; line-height: 1.6;
     }
-
-    /* Hero Buttons */
-    .hero-cta { display: flex; flex-direction: column; align-items: center; gap: 12px; max-width: 380px; margin: 0 auto 36px; width: 100%; }
-    .btn {
+#view-landing .hero-cta{ display: flex; flex-direction: column; align-items: center; gap: 12px; max-width: 380px; margin: 0 auto 36px; width: 100%; }
+#view-landing .btn{
       width: 100%; padding: 14px 20px; border-radius: 14px; font-weight: 700; font-size: 0.95rem;
       display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; cursor: pointer; border: none;
     }
-    .btn-getstarted {
+#view-landing .btn-getstarted{
       background: linear-gradient(135deg, var(--brand-orange), var(--brand-red));
       color: #ffffff; box-shadow: 0 4px 14px rgba(244, 132, 31, 0.35);
     }
-    .btn-getstarted:hover { opacity: 0.94; transform: translateY(-1px); }
-
-    .btn-login {
+#view-landing .btn-getstarted:hover{ opacity: 0.94; transform: translateY(-1px); }
+#view-landing .btn-login{
       background: var(--brand-btn); color: #ffffff;
       box-shadow: 0 4px 14px rgba(27, 24, 52, 0.2);
     }
-    .btn-login:hover { background: #2c2754; transform: translateY(-1px); }
-    
-    .btn-quick {
+#view-landing .btn-login:hover{ background: #2c2754; transform: translateY(-1px); }
+#view-landing .btn-quick{
       background: linear-gradient(135deg, var(--brand-orange), var(--brand-red));
       color: #ffffff; box-shadow: 0 4px 14px rgba(244, 132, 31, 0.35);
     }
-    .btn-quick:hover { opacity: 0.94; transform: translateY(-1px); }
-
-    /* Trust Chips */
-    .trust-strip {
+#view-landing .btn-quick:hover{ opacity: 0.94; transform: translateY(-1px); }
+#view-landing .trust-strip{
       display: flex; flex-direction: column; align-items: center; gap: 12px;
       padding: 24px 20px; background: #ffffff; border-top: 1px solid var(--input-border); border-bottom: 1px solid var(--input-border);
     }
-    .trust-item { font-size: 0.88rem; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 8px; }
-    .trust-item .icon { color: var(--brand-orange); width: 18px; height: 18px; }
-
-    /* Main Container */
-    .container { max-width: 1100px; margin: 0 auto; padding: 50px 20px; }
-
-    /* Stats Card */
-    .stats-card {
+#view-landing .trust-item{ font-size: 0.88rem; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 8px; }
+#view-landing .trust-item .icon{ color: var(--brand-orange); width: 18px; height: 18px; }
+#view-landing .container{ max-width: 1100px; margin: 0 auto; padding: 50px 20px; }
+#view-landing .stats-card{
       background: linear-gradient(135deg, #1b1834 0%, #2c2754 100%);
       color: #ffffff; border-radius: 24px; padding: 32px 24px;
       box-shadow: 0 12px 30px rgba(27, 24, 52, 0.12);
       display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; text-align: center;
       margin-bottom: 60px;
     }
-    .stat-num { font-size: 2rem; font-weight: 800; color: var(--brand-orange); margin-bottom: 2px; }
-    .stat-lbl { font-size: 0.78rem; text-transform: uppercase; opacity: 0.85; font-weight: 700; letter-spacing: 0.5px; }
-
-    /* Services Grid */
-    .sec-head { text-align: center; max-width: 580px; margin: 0 auto 40px; }
-    .sec-head .tag { font-size: 0.78rem; font-weight: 800; color: var(--brand-orange); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
-    .sec-head h2 { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); margin-bottom: 10px; }
-
-    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
-    .serv-card {
+#view-landing .stat-num{ font-size: 2rem; font-weight: 800; color: var(--brand-orange); margin-bottom: 2px; }
+#view-landing .stat-lbl{ font-size: 0.78rem; text-transform: uppercase; opacity: 0.85; font-weight: 700; letter-spacing: 0.5px; }
+#view-landing .sec-head{ text-align: center; max-width: 580px; margin: 0 auto 40px; }
+#view-landing .sec-head .tag{ font-size: 0.78rem; font-weight: 800; color: var(--brand-orange); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
+#view-landing .sec-head h2{ font-size: 1.8rem; font-weight: 800; color: var(--text-dark); margin-bottom: 10px; }
+#view-landing .services-grid{ display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+#view-landing .serv-card{
       background: var(--card-bg); border-radius: 20px; padding: 24px;
       border: 1px solid rgba(226, 224, 238, 0.8);
       box-shadow: 0 6px 18px rgba(27, 24, 52, 0.03); transition: all 0.25s ease;
     }
-    .serv-card:hover { transform: translateY(-4px); border-color: var(--brand-orange); }
-    .serv-icon-box {
+#view-landing .serv-card:hover{ transform: translateY(-4px); border-color: var(--brand-orange); }
+#view-landing .serv-icon-box{
       width: 44px; height: 44px; border-radius: 12px; background: var(--brand-accent);
       color: var(--brand-orange); display: flex; align-items: center; justify-content: center;
       margin-bottom: 16px;
     }
-    .serv-card h3 { font-size: 1rem; font-weight: 800; color: var(--text-dark); margin-bottom: 6px; }
-    .serv-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
-
-    /* Reseller Banner */
-    .reseller-cta {
+#view-landing .serv-card h3{ font-size: 1rem; font-weight: 800; color: var(--text-dark); margin-bottom: 6px; }
+#view-landing .serv-card p{ font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+#view-landing .reseller-cta{
       background: linear-gradient(135deg, #1b1834 0%, #2c2754 100%);
       color: #ffffff; border-radius: 24px; padding: 40px 24px; text-align: center;
       box-shadow: 0 12px 30px rgba(27, 24, 52, 0.15); border: 1px solid rgba(255, 255, 255, 0.1);
       margin-top: 60px;
     }
-    .reseller-cta h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 10px; }
-    .reseller-cta p { font-size: 0.95rem; opacity: 0.88; max-width: 580px; margin: 0 auto 24px; line-height: 1.6; }
-    .btn-cta-main {
+#view-landing .reseller-cta h2{ font-size: 1.8rem; font-weight: 800; margin-bottom: 10px; }
+#view-landing .reseller-cta p{ font-size: 0.95rem; opacity: 0.88; max-width: 580px; margin: 0 auto 24px; line-height: 1.6; }
+#view-landing .btn-cta-main{
       background: linear-gradient(135deg, var(--brand-orange), var(--brand-red));
       color: #ffffff; font-weight: 800; padding: 14px 32px; border-radius: 14px; font-size: 0.95rem; border: none; cursor: pointer;
       display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 18px rgba(244, 132, 31, 0.35);
     }
-
-    /* FOOTER (Matched Exact Screenshot Design) */
-    footer {
+#view-landing footer{
       background-color: var(--foot-bg);
       color: var(--foot-text);
       padding: 56px 24px 32px;
       font-size: 0.92rem;
       line-height: 1.6;
     }
-    .foot-container {
+#view-landing .foot-container{
       max-width: 600px;
       margin: 0 auto;
     }
-    .foot-brand-header {
+#view-landing .foot-brand-header{
       display: flex;
       align-items: center;
       gap: 12px;
       margin-bottom: 16px;
     }
-    .foot-brand-title {
+#view-landing .foot-brand-title{
       font-size: 1.45rem;
       font-weight: 800;
       color: #ffffff;
       font-family: Georgia, serif;
     }
-    .foot-desc {
+#view-landing .foot-desc{
       color: var(--foot-text);
       font-size: 0.95rem;
       margin-bottom: 36px;
       line-height: 1.65;
     }
-    .foot-desc strong {
+#view-landing .foot-desc strong{
       color: var(--foot-highlight);
       font-weight: 700;
     }
-    .foot-sec-title {
+#view-landing .foot-sec-title{
       color: var(--foot-head);
       font-size: 1.1rem;
       font-weight: 800;
       margin-bottom: 16px;
       margin-top: 28px;
     }
-    .foot-list {
+#view-landing .foot-list{
       list-style: none;
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
-    .foot-list a {
+#view-landing .foot-list a{
       color: var(--foot-text);
       font-size: 0.95rem;
       font-weight: 500;
       transition: color 0.2s;
     }
-    .foot-list a:hover {
+#view-landing .foot-list a:hover{
       color: var(--foot-highlight);
     }
-    .foot-contact-item {
+#view-landing .foot-contact-item{
       display: flex;
       align-items: center;
       gap: 10px;
@@ -240,33 +210,229 @@
       font-size: 0.95rem;
       font-weight: 500;
     }
-    .foot-contact-item .icon {
+#view-landing .foot-contact-item .icon{
       width: 18px;
       height: 18px;
     }
-    .foot-divider {
+#view-landing .foot-divider{
       height: 1px;
       background: var(--foot-border);
       margin: 36px 0 24px 0;
     }
-    .foot-bottom-text {
+#view-landing .foot-bottom-text{
       font-size: 0.88rem;
       color: var(--foot-text);
       opacity: 0.85;
       text-align: left;
     }
-    .foot-bottom-text strong {
+#view-landing .foot-bottom-text strong{
       color: var(--foot-highlight);
       font-weight: 700;
     }
+#view-auth{
+      --bg: #f5f4fe;
+      --card-bg: #ffffff;
+      --text-dark: #1b1834;
+      --text-muted: #5e5a7a;
+      --input-border: #e6e4f2;
+      --brand-orange: #f4841f;
+      --brand-red: #d9381e;
+      --error-bg: #fce8e6;
+      --error-text: #c5221f;
+      --success-bg: #e6f4ea;
+      --success-text: #137333;
+    }
+#view-auth,#view-auth *{ box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+#view-auth{ background-color: var(--bg); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 16px; }
+#view-auth .auth-card{ background: var(--card-bg); width: 100%; max-width: 400px; border-radius: 24px; padding: 32px 28px; box-shadow: 0 10px 30px rgba(27, 24, 52, 0.03); border: 1px solid #f0eef8; }
+#view-auth .brand-link{ text-decoration: none; display: inline-flex; align-items: center; gap: 10px; margin-bottom: 24px; cursor: pointer; }
+#view-auth .brand-logo{ width: 52px; height: auto; display: block; }
+#view-auth .brand-name{ font-size: 1.5rem; font-weight: 800; color: var(--brand-red); letter-spacing: -0.4px; }
+#view-auth h2{ font-size: 1.55rem; font-weight: 800; color: var(--text-dark); margin-bottom: 6px; }
+#view-auth .subtitle{ font-size: 0.9rem; color: var(--text-muted); margin-bottom: 24px; }
+#view-auth .form-group{ margin-bottom: 16px; }
+#view-auth .form-group-header{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+#view-auth label{ display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-dark); }
+#view-auth .forgot-link{ font-size: 0.8rem; font-weight: 700; color: var(--brand-orange); text-decoration: none; cursor: pointer; }
+#view-auth .forgot-link:hover{ text-decoration: underline; }
+#view-auth input{ width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--input-border); font-size: 0.95rem; outline: none; }
+#view-auth input:focus{ border-color: var(--brand-orange); }
+#view-auth .btn-submit{ width: 100%; padding: 14px; border: none; border-radius: 14px; background: linear-gradient(90deg, var(--brand-orange), var(--brand-red)); color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
+#view-auth .btn-submit:disabled{ opacity: 0.6; cursor: not-allowed; }
+#view-auth .status-alert{ margin-top: 16px; padding: 14px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; display: none; }
+#view-auth .status-alert.error{ display: block; background: var(--error-bg); color: var(--error-text); }
+#view-auth .status-alert.success{ display: block; background: var(--success-bg); color: var(--success-text); }
+#view-auth .toggle-footer{ margin-top: 24px; text-align: center; font-size: 0.9rem; color: var(--text-muted); }
+#view-auth .toggle-footer a{ color: var(--brand-red); font-weight: 700; text-decoration: none; }
+#view-auth .copyright-footer{ margin-top: 28px; text-align: center; font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+#view-dash{
+      --bg: #f4f5fa;
+      --card-bg: #ffffff;
+      --text-dark: #1b1834;
+      --text-muted: #726e8d;
+      --input-border: #e3e1ee;
+      --brand-orange: #f4841f;
+      --brand-red: #d9381e;
+      --brand-btn: #1b1834;
+      --brand-accent: #fcf4eb;
+      --error-bg: #fce8e6;
+      --error-text: #c5221f;
+      --success-bg: #e6f4ea;
+      --success-text: #137333;
+    }
+#view-dash,#view-dash *{ box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+#view-dash{ background-color: var(--bg); min-height: 100vh; padding-bottom: 90px; color: var(--text-dark); display: flex; justify-content: center; }
+#view-dash .app-viewport{ width: 100%; max-width: 480px; padding: 16px; position: relative; }
+#view-dash .top-bar{ display: flex; justify-content: space-between; align-items: center; padding: 12px 0 20px 0; }
+#view-dash .brand{ display: flex; align-items: center; gap: 10px; }
+#view-dash .brand-logo{ width: 48px; height: auto; }
+#view-dash .brand-name{ font-size: 1.4rem; font-weight: 800; color: var(--brand-red); letter-spacing: -0.5px; }
+#view-dash .btn-icon-logout{ background: #ffffff; border: 1px solid var(--input-border); padding: 8px 14px; border-radius: 12px; font-weight: 700; color: var(--brand-red); font-size: 0.8rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+#view-dash .wallet-card{
+      background: linear-gradient(135deg, #1b1834 0%, #2c2754 100%);
+      color: #ffffff;
+      border-radius: 24px;
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(27, 24, 52, 0.15);
+      margin-bottom: 18px;
+    }
+#view-dash .wallet-top{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+#view-dash .wallet-title-group{ display: flex; align-items: center; gap: 8px; }
+#view-dash .wallet-title{ font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.85; font-weight: 700; }
+#view-dash .eye-btn{
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 8px;
+      cursor: pointer;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 8px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      gap: 4px;
+    }
+#view-dash .eye-btn svg{ width: 16px; height: 16px; fill: currentColor; }
+#view-dash .user-tag{ font-size: 0.72rem; background: rgba(255,255,255,0.12); padding: 4px 10px; border-radius: 20px; word-break: break-all; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#view-dash .wallet-amount{ font-size: 2.2rem; font-weight: 800; margin-bottom: 16px; letter-spacing: -0.5px; }
+#view-dash .wallet-actions{ display: flex; gap: 10px; position: relative; z-index: 2; }
+#view-dash .btn-topup{ background: var(--brand-orange); color: #ffffff; border: none; padding: 12px 18px; border-radius: 14px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(244, 132, 31, 0.3); }
+#view-dash .btn-topup svg{ width: 16px; height: 16px; fill: currentColor; }
+#view-dash .btn-resolve{ background: rgba(255, 255, 255, 0.12); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); padding: 12px 14px; border-radius: 14px; font-weight: 600; font-size: 0.82rem; cursor: pointer; backdrop-filter: blur(5px); display: flex; align-items: center; gap: 6px; }
+#view-dash .reseller-banner{ background: linear-gradient(135deg, #f4841f 0%, #d9381e 100%); color: #ffffff; border-radius: 20px; padding: 18px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+#view-dash .reseller-banner-text h4{ font-size: 1rem; font-weight: 800; margin-bottom: 2px; }
+#view-dash .reseller-banner-text p{ font-size: 0.78rem; opacity: 0.9; }
+#view-dash .btn-upgrade-now{ background: #ffffff; color: var(--brand-red); border: none; padding: 10px 16px; border-radius: 12px; font-weight: 800; font-size: 0.8rem; cursor: pointer; }
+#view-dash .section-head{ font-size: 1.05rem; font-weight: 800; color: var(--text-dark); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+#view-dash .vtu-grid{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
+#view-dash .vtu-item{ background: var(--card-bg); border-radius: 18px; padding: 16px 8px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; border: 1px solid rgba(226, 224, 238, 0.6); box-shadow: 0 4px 12px rgba(27, 24, 52, 0.02); }
+#view-dash .vtu-icon{ width: 44px; height: 44px; border-radius: 14px; background: var(--brand-accent); display: flex; align-items: center; justify-content: center; color: var(--brand-orange); }
+#view-dash .vtu-icon svg{ width: 22px; height: 22px; fill: currentColor; }
+#view-dash .vtu-label{ font-size: 0.75rem; font-weight: 700; color: var(--text-dark); text-align: center; }
+#view-dash .service-screen{ background: var(--card-bg); border-radius: 24px; padding: 22px; border: 1px solid var(--input-border); box-shadow: 0 10px 30px rgba(27, 24, 52, 0.03); }
+#view-dash .form-group{ margin-bottom: 16px; }
+#view-dash .form-group label{ display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; }
+#view-dash .provider-grid{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: #f7f7f9; padding: 8px; border-radius: 14px; }
+#view-dash .provider-btn{ background: #ffffff; border: 2px solid transparent; border-radius: 10px; padding: 10px 2px; text-align: center; font-weight: 700; font-size: 0.75rem; color: var(--text-muted); cursor: pointer; }
+#view-dash .provider-btn.selected{ border-color: var(--brand-orange); color: var(--text-dark); box-shadow: 0 2px 8px rgba(244, 132, 31, 0.15); }
+#view-dash select,#view-dash input{ width: 100%; padding: 14px; border-radius: 14px; border: 1.5px solid var(--input-border); font-size: 0.9rem; color: var(--text-dark); outline: none; background: #ffffff; }
+#view-dash .btn-action{ width: 100%; padding: 15px; border: none; border-radius: 14px; background: var(--brand-btn); color: #ffffff; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
+#view-dash .btn-secondary{ background: #6c5c53; margin-top: 8px; }
+#view-dash .btn-back{ width: 100%; padding: 12px; background: #f0eff6; border: none; border-radius: 14px; color: var(--text-dark); font-weight: 700; font-size: 0.85rem; cursor: pointer; margin-top: 14px; }
+#view-dash .ref-box{ background: var(--card-bg); border-radius: 20px; padding: 20px; border: 1px solid var(--input-border); margin-bottom: 18px; }
+#view-dash .ref-link-field{ display: flex; gap: 8px; margin-top: 8px; }
+#view-dash .ref-link-field input{ font-size: 0.8rem; background: #f7f7f9; }
+#view-dash .btn-copy{ background: var(--brand-orange); color: #ffffff; border: none; padding: 0 16px; border-radius: 12px; font-weight: 700; font-size: 0.8rem; cursor: pointer; white-space: nowrap; }
+#view-dash .ref-actions-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+#view-dash .btn-ref-act{ padding: 12px; border-radius: 12px; border: none; font-weight: 700; font-size: 0.8rem; cursor: pointer; text-align: center; }
+#view-dash .btn-ref-act.main{ background: var(--brand-orange); color: #ffffff; }
+#view-dash .btn-ref-act.bank{ background: #f0eff6; color: var(--text-dark); }
+#view-dash .tx-list{ display: flex; flex-direction: column; gap: 10px; }
+#view-dash .tx-item{ background: var(--card-bg); border-radius: 16px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(226, 224, 238, 0.6); cursor: pointer; transition: transform 0.15s ease; }
+#view-dash .tx-item:active{ transform: scale(0.98); }
+#view-dash .tx-left{ display: flex; align-items: center; gap: 12px; }
+#view-dash .tx-icon{ width: 40px; height: 40px; border-radius: 12px; background: #f4f5fa; display: flex; align-items: center; justify-content: center; color: var(--brand-orange); }
+#view-dash .tx-icon svg{ width: 20px; height: 20px; fill: currentColor; }
+#view-dash .tx-title{ font-weight: 700; font-size: 0.88rem; color: var(--text-dark); }
+#view-dash .tx-date{ font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+#view-dash .tx-right{ text-align: right; }
+#view-dash .tx-amount{ font-weight: 800; font-size: 0.9rem; }
+#view-dash .tx-amount.debit{ color: var(--brand-red); }
+#view-dash .tx-amount.credit{ color: var(--success-text); }
+#view-dash .tx-badge{ display: inline-block; font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; margin-top: 2px; }
+#view-dash .tx-badge.success{ background: var(--success-bg); color: var(--success-text); }
+#view-dash .tx-badge.failed{ background: var(--error-bg); color: var(--error-text); }
+#view-dash .modal-overlay{ position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(27, 24, 52, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: flex-end; z-index: 1000; }
+#view-dash .modal-sheet{ background: var(--card-bg); width: 100%; max-width: 480px; border-radius: 28px 28px 0 0; padding: 24px; animation: slideUp 0.25s ease-out; }
+@keyframes slideUp{ from { transform: translateY(100%); } to { transform: translateY(0); } }
+#view-dash .modal-header{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+#view-dash .modal-title{ font-size: 1.1rem; font-weight: 800; }
+#view-dash .btn-close{ background: #f0eff6; border: none; width: 32px; height: 32px; border-radius: 50%; font-weight: 800; cursor: pointer; }
+#view-dash .receipt-box{ background: #f9f9fc; border: 1px solid var(--input-border); border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 16px; }
+#view-dash .receipt-header-icon{ width: 56px; height: 56px; border-radius: 50%; background: var(--success-bg); color: var(--success-text); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; }
+#view-dash .receipt-header-icon svg{ width: 28px; height: 28px; fill: currentColor; }
+#view-dash .receipt-amount{ font-size: 2rem; font-weight: 800; color: var(--text-dark); margin: 6px 0; }
+#view-dash .receipt-details-list{ border-top: 1px dashed var(--input-border); margin-top: 16px; padding-top: 14px; text-align: left; }
+#view-dash .receipt-row{ display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.85rem; }
+#view-dash .receipt-label{ color: var(--text-muted); font-weight: 600; }
+#view-dash .receipt-val{ font-weight: 700; color: var(--text-dark); word-break: break-all; }
+#view-dash .status-alert{ margin-top: 14px; padding: 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; display: none; }
+#view-dash .status-alert.error{ display: block; background: var(--error-bg); color: var(--error-text); }
+#view-dash .status-alert.success{ display: block; background: var(--success-bg); color: var(--success-text); }
+#view-dash .bottom-nav{
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      border-top: 1px solid var(--input-border);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 10px 0 12px 0;
+      z-index: 900;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+    }
+#view-dash .nav-btn{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      line-height: 1;
+    }
+#view-dash .nav-btn.active{ color: var(--brand-orange); }
+#view-dash .nav-icon{ width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+#view-dash .nav-icon svg{ width: 100%; height: 100%; fill: currentColor; }
+
+html{scroll-behavior:smooth}
+body{margin:0}
+.view[hidden]{display:none!important}
+#view-auth .auth-wrap{display:flex;flex-direction:column;align-items:center;width:100%}
+.svg-defs{position:absolute;width:0;height:0;overflow:hidden}
+
+  #view-dash .tx-badge.pending{background:#fff4e0;color:#b26a00}
+#view-dash .vtu-item[onclick*="'airtime'"],#view-dash .vtu-item[onclick*="'cable'"],#view-dash .vtu-item[onclick*="'electricity'"],#view-dash .vtu-item[onclick*="'exam'"]{opacity:.5}
   </style>
 </head>
 <body>
 
-  <!-- Navigation Header with Hamburger Button -->
+<div class="view" id="v-landing" hidden><div id="view-landing">
+<!-- Navigation Header with Hamburger Button -->
   <nav>
     <div class="nav-wrap">
-      <a href="index.html" class="brand">
+      <a href="#home" class="brand">
         <svg viewBox="0 0 500 280" fill="none" xmlns="http://www.w3.org/2000/svg" class="brand-logo">
           <defs>
             <linearGradient id="oyoGradIndex" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -297,23 +463,19 @@
 
       <!-- Slide-down Menu Dropdown -->
       <div class="mobile-dropdown" id="navDropdown">
-        <a href="index.html" class="nav-link-item">
+        <a href="#home" class="nav-link-item">
           <svg class="icon" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
           Home
         </a>
-        <a href="#services" class="nav-link-item" onclick="toggleMenu()">
+        <a href="#services" class="nav-link-item">
           <svg class="icon" viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
           Services
         </a>
-        <a href="quickbuy.html" class="nav-link-item">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
-          Quick Buy
-        </a>
-        <a href="login.html" class="nav-link-item">
+        <a href="#login" class="nav-link-item">
           <svg class="icon" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5v3H3v4h7v3zm9-14H5c-1.1 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
           Login
         </a>
-        <a href="signup.html" class="nav-link-item" style="color: var(--brand-red);">
+        <a href="#signup" class="nav-link-item" style="color: var(--brand-red);">
           <svg class="icon" viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
           Create Account
         </a>
@@ -332,21 +494,17 @@
     
     <!-- Hero Action Buttons -->
     <div class="hero-cta">
-      <a href="signup.html" class="btn btn-getstarted">
+      <a href="#signup" class="btn btn-getstarted">
         <svg class="icon" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
         Get Started
       </a>
 
-      <a href="login.html" class="btn btn-login">
+      <a href="#login" class="btn btn-login">
         <svg class="icon" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5v3H3v4h7v3zm9-14H5c-1.1 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
         Login
       </a>
 
-      <a href="quickbuy.html" class="btn btn-quick">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
-        Quick Buy (No Login Required)
-      </a>
-    </div>
+      </div>
   </section>
 
   <!-- Trust Indicators -->
@@ -429,7 +587,7 @@
     <div class="reseller-cta">
       <h2>Start Your VTU Business Today and Start Earning</h2>
       <p>Join over 50,000 smart entrepreneurs leveraging OyoData to resell cheap data, airtime, and bill payments with zero technical experience required.</p>
-      <a href="signup.html" class="btn-cta-main">
+      <a href="#signup" class="btn-cta-main">
         Get Started Now
         <svg class="icon" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
       </a>
@@ -469,12 +627,12 @@
 
       <div class="foot-sec-title">Services</div>
       <ul class="foot-list">
-        <li><a href="quickbuy.html">Buy Data</a></li>
-        <li><a href="quickbuy.html">Buy Airtime</a></li>
-        <li><a href="login.html">Cable TV</a></li>
-        <li><a href="login.html">Electricity Bills</a></li>
-        <li><a href="login.html">Result Checker</a></li>
-        <li><a href="login.html">Bulk SMS</a></li>
+        <li><a href="#login">Buy Data</a></li>
+        <li><a href="#login">Buy Airtime</a></li>
+        <li><a href="#login">Cable TV</a></li>
+        <li><a href="#login">Electricity Bills</a></li>
+        <li><a href="#login">Result Checker</a></li>
+        <li><a href="#login">Bulk SMS</a></li>
       </ul>
 
       <div class="foot-sec-title">Company</div>
@@ -497,12 +655,1220 @@
       </div>
     </div>
   </footer>
+</div></div>
 
-  <script>
-    function toggleMenu() {
-      const dropdown = document.getElementById('navDropdown');
-      dropdown.classList.toggle('open');
+<div class="view" id="v-auth" hidden><div id="view-auth">
+<div class="auth-wrap" id="card-login">
+<div class="auth-card">
+    <a href="#home" class="brand-link" title="Go to Home Page">
+      <svg viewBox="0 0 500 280" fill="none" xmlns="http://www.w3.org/2000/svg" class="brand-logo">
+        <defs>
+          <linearGradient id="oyoGradLogin" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#FFB000"/>
+            <stop offset="50%" stop-color="#FF5500"/>
+            <stop offset="100%" stop-color="#E03000"/>
+          </linearGradient>
+        </defs>
+        <rect x="70" y="85" width="70" height="16" rx="8" fill="url(#oyoGradLogin)"/>
+        <rect x="40" y="115" width="80" height="16" rx="8" fill="url(#oyoGradLogin)"/>
+        <rect x="58" y="145" width="70" height="16" rx="8" fill="url(#oyoGradLogin)"/>
+        <path d="M 230 40 L 320 40 C 390 40 440 85 440 155 C 440 225 390 270 320 270 L 230 270 Z" fill="#0A1922"/>
+        <path d="M 285 95 L 315 95 C 355 95 380 120 380 155 C 380 190 355 215 315 215 L 285 215 Z" fill="#FFFFFF"/>
+        <circle cx="210" cy="155" r="115" fill="url(#oyoGradLogin)"/>
+        <circle cx="210" cy="155" r="70" fill="#FFFFFF"/>
+        <rect x="180" y="105" width="60" height="100" rx="12" fill="url(#oyoGradLogin)"/>
+        <rect x="186" y="113" width="48" height="74" rx="4" fill="#FFFFFF"/>
+        <circle cx="210" cy="196" r="4" fill="#FFFFFF"/>
+        <path d="M 214 122 L 200 150 H 211 L 206 178 L 220 150 H 209 Z" fill="url(#oyoGradLogin)"/>
+      </svg>
+      <span class="brand-name">OyoData</span>
+    </a>
+
+    <h2>Welcome back</h2>
+    <p class="subtitle">Log in to manage your wallet and orders.</p>
+
+    <form id="loginForm" onsubmit="loginUser(event)">
+      <div class="form-group">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" placeholder="yourname@gmail.com" required />
+      </div>
+
+      <div class="form-group">
+        <div class="form-group-header">
+          <label for="loginPassword">Password</label>
+          <a href="#" class="forgot-link" onclick="handleForgotPassword(event)">Forgot Password?</a>
+        </div>
+        <input type="password" id="loginPassword" placeholder="••••••••••••" required />
+      </div>
+
+      <button type="submit" class="btn-submit" id="loginBtn">Log In</button>
+      <div class="status-alert" id="loginStatus"></div>
+    </form>
+
+    <div class="toggle-footer">
+      New here? <a href="#signup">Create an account</a>
+    </div>
+  </div>
+
+  <div class="copyright-footer">
+    Copyright © OyoData 2026
+  </div>
+</div>
+<div class="auth-wrap" id="card-signup" style="display:none">
+<div class="auth-card">
+    <a href="#home" class="brand-link" title="Go to Home Page">
+      <svg viewBox="0 0 500 280" fill="none" xmlns="http://www.w3.org/2000/svg" class="brand-logo">
+        <defs>
+          <linearGradient id="oyoGradSignup" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#FFB000"/>
+            <stop offset="50%" stop-color="#FF5500"/>
+            <stop offset="100%" stop-color="#E03000"/>
+          </linearGradient>
+        </defs>
+        <rect x="70" y="85" width="70" height="16" rx="8" fill="url(#oyoGradSignup)"/>
+        <rect x="40" y="115" width="80" height="16" rx="8" fill="url(#oyoGradSignup)"/>
+        <rect x="58" y="145" width="70" height="16" rx="8" fill="url(#oyoGradSignup)"/>
+        <path d="M 230 40 L 320 40 C 390 40 440 85 440 155 C 440 225 390 270 320 270 L 230 270 Z" fill="#0A1922"/>
+        <path d="M 285 95 L 315 95 C 355 95 380 120 380 155 C 380 190 355 215 315 215 L 285 215 Z" fill="#FFFFFF"/>
+        <circle cx="210" cy="155" r="115" fill="url(#oyoGradSignup)"/>
+        <circle cx="210" cy="155" r="70" fill="#FFFFFF"/>
+        <rect x="180" y="105" width="60" height="100" rx="12" fill="url(#oyoGradSignup)"/>
+        <rect x="186" y="113" width="48" height="74" rx="4" fill="#FFFFFF"/>
+        <circle cx="210" cy="196" r="4" fill="#FFFFFF"/>
+        <path d="M 214 122 L 200 150 H 211 L 206 178 L 220 150 H 209 Z" fill="url(#oyoGradSignup)"/>
+      </svg>
+      <span class="brand-name">OyoData</span>
+    </a>
+
+    <h2>Create Account</h2>
+    <p class="subtitle">Sign up to buy data, airtime, and pay bills.</p>
+
+    <form id="signupForm" onsubmit="signupUser(event)">
+      <div class="form-group">
+        <label for="signupEmail">Email</label>
+        <input type="email" id="signupEmail" placeholder="yourname@gmail.com" required />
+      </div>
+
+      <div class="form-group">
+        <label for="signupPassword">Password</label>
+        <input type="password" id="signupPassword" placeholder="At least 6 characters" minlength="6" required />
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" placeholder="Re-enter your password" minlength="6" required />
+      </div>
+
+      <button type="submit" class="btn-submit" id="signupBtn">Create Account</button>
+      <div class="status-alert" id="signupStatus"></div>
+    </form>
+
+    <div class="toggle-footer">
+      Already registered? <a href="#login">Log In</a>
+    </div>
+  </div>
+
+  <div class="copyright-footer">
+    Copyright © OyoData 2026
+  </div>
+</div>
+</div></div>
+
+<div class="view" id="v-dash" hidden><div id="view-dash">
+<div class="app-viewport">
+    <div class="top-bar">
+      <div class="brand">
+        <svg viewBox="0 0 500 280" fill="none" xmlns="http://www.w3.org/2000/svg" class="brand-logo">
+          <defs>
+            <linearGradient id="oyoGradDash" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#FFB000"/>
+              <stop offset="50%" stop-color="#FF5500"/>
+              <stop offset="100%" stop-color="#E03000"/>
+            </linearGradient>
+          </defs>
+          <rect x="70" y="85" width="70" height="16" rx="8" fill="url(#oyoGradDash)"/>
+          <rect x="40" y="115" width="80" height="16" rx="8" fill="url(#oyoGradDash)"/>
+          <rect x="58" y="145" width="70" height="16" rx="8" fill="url(#oyoGradDash)"/>
+          <path d="M 230 40 L 320 40 C 390 40 440 85 440 155 C 440 225 390 270 320 270 L 230 270 Z" fill="#0A1922"/>
+          <path d="M 285 95 L 315 95 C 355 95 380 120 380 155 C 380 190 355 215 315 215 L 285 215 Z" fill="#FFFFFF"/>
+          <circle cx="210" cy="155" r="115" fill="url(#oyoGradDash)"/>
+          <circle cx="210" cy="155" r="70" fill="#FFFFFF"/>
+          <rect x="180" y="105" width="60" height="100" rx="12" fill="url(#oyoGradDash)"/>
+          <rect x="186" y="113" width="48" height="74" rx="4" fill="#FFFFFF"/>
+          <circle cx="210" cy="196" r="4" fill="#FFFFFF"/>
+          <path d="M 214 122 L 200 150 H 211 L 206 178 L 220 150 H 209 Z" fill="url(#oyoGradDash)"/>
+        </svg>
+        <span class="brand-name">OyoData</span>
+      </div>
+      <button class="btn-icon-logout" onclick="logout()">Log Out</button>
+    </div>
+
+    <!-- MAIN HOME VIEW -->
+    <div id="viewHome">
+      <div class="wallet-card">
+        <div class="wallet-top">
+          <div class="wallet-title-group">
+            <span class="wallet-title">MAIN WALLET</span>
+            <button class="eye-btn" onclick="toggleBalanceVisibility()" title="Toggle Balance Visibility">
+              <svg id="eyeIcon" viewBox="0 0 24 24"></svg>
+              <span id="eyeText">Hide</span>
+            </button>
+          </div>
+          <span class="user-tag" id="userEmail">Loading...</span>
+        </div>
+
+        <div class="wallet-amount" id="walletBalance">₦0.00</div>
+
+        <div class="wallet-actions">
+          <button class="btn-topup" onclick="openModal('modalTopup')">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            Top Up Wallet
+          </button>
+          <button class="btn-resolve" onclick="openModal('modalSolve')">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            Resolve Ref ID
+          </button>
+        </div>
+      </div>
+
+      <div class="reseller-banner" id="resellerBanner">
+        <div class="reseller-banner-text">
+          <h4>Upgrade to Reseller Tier</h4>
+          <p>Pay ₦2,000 once to unlock 5% OFF all VTU plans forever!</p>
+        </div>
+        <button class="btn-upgrade-now" onclick="upgradeToReseller()">Upgrade ₦2k</button>
+      </div>
+
+      <div class="section-head">
+        <span>Quick Services</span>
+      </div>
+
+      <div class="vtu-grid">
+        <div class="vtu-item" onclick="openService('data')">
+          <div class="vtu-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></div>
+          <span class="vtu-label">Data</span>
+        </div>
+        <div class="vtu-item" onclick="openService('airtime')">
+          <div class="vtu-icon"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></div>
+          <span class="vtu-label">Airtime</span>
+        </div>
+        <div class="vtu-item" onclick="openService('cable')">
+          <div class="vtu-icon"><svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg></div>
+          <span class="vtu-label">Cable TV</span>
+        </div>
+        <div class="vtu-item" onclick="openService('electricity')">
+          <div class="vtu-icon"><svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg></div>
+          <span class="vtu-label">Electric</span>
+        </div>
+        <div class="vtu-item" onclick="openService('exam')">
+          <div class="vtu-icon"><svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-0.75L9 9V4zm9 16H6V4h1v9l3-2.25L13 13V4h5v16z"/></svg></div>
+          <span class="vtu-label">Exam PIN</span>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <span>Recent Transactions</span>
+        <a href="#" onclick="switchTab('history'); return false;" style="font-size: 0.8rem; color: var(--brand-orange); text-decoration: none; font-weight: 700;">View All</a>
+      </div>
+
+      <div id="recentTxList" class="tx-list"></div>
+    </div>
+
+    <!-- REFERRAL DASHBOARD VIEW -->
+    <div id="viewReferral" style="display: none;">
+      <div class="section-head">
+        <span>Referral & Earnings</span>
+      </div>
+
+      <div class="ref-box" style="background: linear-gradient(135deg, #1b1834, #2c2754); color:#fff;">
+        <div style="font-size: 0.75rem; text-transform: uppercase; opacity: 0.8;">Referral Earnings Wallet</div>
+        <div style="font-size: 2rem; font-weight: 800; margin: 4px 0 12px 0;" id="refWalletBalance">₦0.00</div>
+        
+        <div class="ref-actions-grid">
+          <button class="btn-ref-act main" onclick="transferReferralBonus()">Transfer to Wallet</button>
+          <button class="btn-ref-act bank" onclick="openModal('modalWithdraw')">Withdraw to Bank</button>
+        </div>
+      </div>
+
+      <div class="ref-box">
+        <label style="font-size: 0.8rem; font-weight: 700;">Your Referral Link</label>
+        <div class="ref-link-field">
+          <input type="text" id="refLinkInput" readonly value="https://ugbolagade-ship-it.github.io/OyoData/#signup" />
+          <button class="btn-copy" onclick="copyReferralLink()">Copy Link</button>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Get <strong>₦1,000 instantly</strong> when your referred user upgrades to a Reseller!</p>
+      </div>
+
+      <div class="section-head">
+        <span>Referred Users Status</span>
+      </div>
+
+      <div class="tx-list" id="referredUsersList"></div>
+    </div>
+
+    <!-- SERVICES TAB VIEW -->
+    <div id="viewServices" style="display: none;">
+      <div class="section-head">
+        <span>All VTU Services</span>
+      </div>
+      <div class="vtu-grid" style="grid-template-columns: repeat(2, 1fr); gap: 14px;">
+        <div class="vtu-item" onclick="openService('data')" style="padding: 20px;">
+          <div class="vtu-icon" style="width: 48px; height: 48px;"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></div>
+          <span class="vtu-label" style="font-size: 0.85rem;">Data Bundles</span>
+        </div>
+        <div class="vtu-item" onclick="openService('airtime')" style="padding: 20px;">
+          <div class="vtu-icon" style="width: 48px; height: 48px;"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></div>
+          <span class="vtu-label" style="font-size: 0.85rem;">Airtime VTU</span>
+        </div>
+        <div class="vtu-item" onclick="openService('cable')" style="padding: 20px;">
+          <div class="vtu-icon" style="width: 48px; height: 48px;"><svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg></div>
+          <span class="vtu-label" style="font-size: 0.85rem;">Cable TV Sub</span>
+        </div>
+        <div class="vtu-item" onclick="openService('electricity')" style="padding: 20px;">
+          <div class="vtu-icon" style="width: 48px; height: 48px;"><svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg></div>
+          <span class="vtu-label" style="font-size: 0.85rem;">Electricity Token</span>
+        </div>
+        <div class="vtu-item" onclick="openService('exam')" style="padding: 20px;">
+          <div class="vtu-icon" style="width: 48px; height: 48px;"><svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-0.75L9 9V4zm9 16H6V4h1v9l3-2.25L13 13V4h5v16z"/></svg></div>
+          <span class="vtu-label" style="font-size: 0.85rem;">Exam Result PINs</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRANSACTION HISTORY VIEW -->
+    <div id="viewHistory" style="display: none;">
+      <div class="section-head">
+        <span>Transaction History</span>
+      </div>
+      <div id="fullTxList" class="tx-list"></div>
+    </div>
+
+    <!-- SERVICE FORMS SCREEN -->
+    <div id="viewService" class="service-screen" style="display: none;">
+      <!-- DATA FORM -->
+      <form id="formBuyData" class="vtu-form" style="display: none;">
+        <div class="form-group">
+          <label>Choose Network</label>
+          <div class="provider-grid">
+            <div class="provider-btn selected" onclick="selectNetwork('MTN', this)">MTN</div>
+            <div class="provider-btn" onclick="selectNetwork('GLO', this)">GLO</div>
+            <div class="provider-btn" onclick="selectNetwork('AIRTEL', this)">Airtel</div>
+            <div class="provider-btn" onclick="selectNetwork('9MOBILE', this)">9mobile</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Data Type</label>
+          <select id="dataTypeSelect" onchange="loadDataPlans()">
+            <option value="sme">SME Data</option>
+            <option value="cg">Corporate Gifting (CG)</option>
+            <option value="awoof">Awoof Data</option>
+            <option value="gifting">Direct Gifting</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Select Plan</label>
+          <select id="dataPlanSelect" required></select>
+        </div>
+
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" id="dataPhone" placeholder="08012345678" maxlength="11" required />
+        </div>
+
+        <button type="submit" class="btn-action">Purchase Data</button>
+      </form>
+
+      <!-- AIRTIME FORM -->
+      <form id="formAirtime" class="vtu-form" style="display: none;">
+        <div class="form-group">
+          <label>Network</label>
+          <div class="provider-grid">
+            <div class="provider-btn selected" onclick="highlightSelected(this)">MTN</div>
+            <div class="provider-btn" onclick="highlightSelected(this)">GLO</div>
+            <div class="provider-btn" onclick="highlightSelected(this)">Airtel</div>
+            <div class="provider-btn" onclick="highlightSelected(this)">9mobile</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" placeholder="08012345678" maxlength="11" required />
+        </div>
+        <div class="form-group">
+          <label>Amount (₦)</label>
+          <input type="number" placeholder="min ₦100" min="100" required />
+        </div>
+        <button type="submit" class="btn-action">Buy Airtime</button>
+      </form>
+
+      <!-- CABLE FORM -->
+      <form id="formCable" class="vtu-form" style="display: none;">
+        <div class="form-group">
+          <label>Cable Provider</label>
+          <div class="provider-grid">
+            <div class="provider-btn selected" onclick="selectCable('dstv', 1, this)">DStv</div>
+            <div class="provider-btn" onclick="selectCable('gotv', 2, this)">GOtv</div>
+            <div class="provider-btn" onclick="selectCable('startimes', 3, this)">StarTimes</div>
+            <div class="provider-btn" onclick="selectCable('showmax', 4, this)">Showmax</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Package</label>
+          <select id="cablePackageSelect" required></select>
+        </div>
+        <div class="form-group">
+          <label>Smartcard / IUC Number</label>
+          <input type="text" id="smartcardNo" placeholder="Enter Smartcard Number" required />
+        </div>
+        <button type="button" class="btn-action btn-secondary" onclick="verifyIUC()">Verify IUC Number</button>
+        <button type="submit" class="btn-action">Subscribe Now</button>
+      </form>
+
+      <!-- ELECTRICITY FORM -->
+      <form id="formElectricity" class="vtu-form" style="display: none;">
+        <div class="form-group">
+          <label>Disco Provider</label>
+          <select required>
+            <option value="1">Eko Electricity (EKEDC)</option>
+            <option value="2">Ikeja Electricity (IKEDC)</option>
+            <option value="5">Abuja Electricity (AEDC)</option>
+            <option value="6">Ibadan Electricity (IBEDC)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Meter Type</label>
+          <select required>
+            <option value="1">Prepaid</option>
+            <option value="2">Postpaid</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Meter Number</label>
+          <input type="text" placeholder="Enter Meter Number" required />
+        </div>
+        <div class="form-group">
+          <label>Amount (₦)</label>
+          <input type="number" placeholder="1000" min="1000" required />
+        </div>
+        <button type="submit" class="btn-action">Pay Bill</button>
+      </form>
+
+      <!-- EXAM PIN FORM -->
+      <form id="formExam" class="vtu-form" style="display: none;">
+        <div class="form-group">
+          <label>Exam Body</label>
+          <select id="examTypeSelect" required>
+            <option value="waec">WAEC Result Checker</option>
+            <option value="neco">NECO Result Checker</option>
+            <option value="nabteb">NABTEB Result Checker</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Quantity</label>
+          <input type="number" id="examQuantity" value="1" min="1" max="5" required />
+        </div>
+        <div class="form-group">
+          <label>Recipient Phone Number</label>
+          <input type="tel" id="examPhone" placeholder="08012345678" maxlength="11" required />
+        </div>
+        <button type="submit" class="btn-action">Generate Result PIN</button>
+      </form>
+
+      <div id="statusAlert" class="status-alert"></div>
+      <button class="btn-back" onclick="switchTab('home')">← Back to Home</button>
+    </div>
+  </div>
+
+  <!-- MODAL: BANK WITHDRAWAL -->
+  <div id="modalWithdraw" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">Withdraw to Bank</span>
+        <button class="btn-close" onclick="closeModal('modalWithdraw')">✕</button>
+      </div>
+      <div class="form-group">
+        <label>Bank Name</label>
+        <select id="wdBank" required>
+          <option value="">Select Bank</option>
+          <option>Opay</option>
+          <option>Palmpay</option>
+          <option>Kuda Bank</option>
+          <option>Moniepoint</option>
+          <option>First Bank</option>
+          <option>GTBank</option>
+          <option>Access Bank</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Account Number</label>
+        <input type="tel" id="wdAccount" placeholder="0123456789" maxlength="10" required />
+      </div>
+      <div class="form-group">
+        <label>Amount (₦)</label>
+        <input type="number" id="wdAmount" placeholder="Min ₦1,000" min="1000" required />
+      </div>
+      <button class="btn-action" onclick="submitBankWithdrawal()">Withdraw Funds</button>
+    </div>
+  </div>
+
+  <!-- MODAL: DIRECT TOP UP -->
+  <div id="modalTopup" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">Top Up Wallet</span>
+        <button class="btn-close" onclick="closeModal('modalTopup')">✕</button>
+      </div>
+
+      <div style="background: #f7f7f9; border-radius: 16px; padding: 16px; margin-bottom: 12px;">
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">Enter amount to add to your wallet. Proceed via Card, Bank Transfer, or USSD.</p>
+        
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Amount (₦)</label>
+          <input type="number" id="topupAmountInput" placeholder="Enter amount (min ₦100)" min="100" required />
+        </div>
+        <button class="btn-action" style="background: linear-gradient(135deg, var(--brand-orange), var(--brand-red)); padding: 14px;" onclick="payWithKorapayCheckout()">Proceed to Checkout</button>
+      </div>
+
+      <div id="topupAlert" class="status-alert"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: TRANSACTION RECEIPT -->
+  <div id="modalReceipt" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">Transaction Receipt</span>
+        <button class="btn-close" onclick="closeModal('modalReceipt')">✕</button>
+      </div>
+
+      <div class="receipt-box">
+        <div class="receipt-header-icon" id="receiptStatusIcon">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        </div>
+        <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;" id="receiptTitle">Transaction Title</div>
+        <div class="receipt-amount" id="receiptAmount">₦0.00</div>
+        <span class="tx-badge success" id="receiptBadge">SUCCESS</span>
+
+        <div class="receipt-details-list">
+          <div class="receipt-row">
+            <span class="receipt-label">Reference ID</span>
+            <span class="receipt-val" id="receiptRef">N/A</span>
+          </div>
+          <div class="receipt-row">
+            <span class="receipt-label">Date & Time</span>
+            <span class="receipt-val" id="receiptDate">N/A</span>
+          </div>
+          <div class="receipt-row">
+            <span class="receipt-label">Payment Method</span>
+            <span class="receipt-val" id="receiptType">Wallet</span>
+          </div>
+          <div class="receipt-row">
+            <span class="receipt-label">Account Email</span>
+            <span class="receipt-val" id="receiptUserEmail">N/A</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-action" style="background: var(--brand-orange);" onclick="copyReceiptDetails()">Copy Reference ID</button>
+      <button class="btn-back" style="margin-top: 8px;" onclick="closeModal('modalReceipt')">Close Receipt</button>
+    </div>
+  </div>
+
+  <!-- MODAL: TRANSACTION SOLVER -->
+  <div id="modalSolve" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">Resolve Ref ID</span>
+        <button class="btn-close" onclick="closeModal('modalSolve')">✕</button>
+      </div>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">Closed your tab early during payment? Paste your Reference ID below to credit your wallet instantly:</p>
+
+      <div class="form-group">
+        <label>Reference ID</label>
+        <input type="text" id="solveRefId" placeholder="e.g. KORA_1712456789 or S31779243" required />
+      </div>
+
+      <button class="btn-action" onclick="resolveTransaction()">Verify & Credit Payment</button>
+      <div id="solverStatus" class="status-alert"></div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <div class="bottom-nav">
+    <button id="navHome" class="nav-btn active" onclick="switchTab('home')">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></div>
+      <span>Home</span>
+    </button>
+    <button id="navServices" class="nav-btn" onclick="switchTab('services')">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg></div>
+      <span>Services</span>
+    </button>
+    <button id="navReferral" class="nav-btn" onclick="switchTab('referral')">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+      <span>Referral</span>
+    </button>
+    <button id="navHistory" class="nav-btn" onclick="switchTab('history')">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg></div>
+      <span>History</span>
+    </button>
+  </div>
+</div></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+const BACKEND_URL = "https://datahub-qmzg.onrender.com";
+const KORAPAY_PUBLIC_KEY = "pk_live_qMvFy8kc7XSFtzWAsSYrSGgCwSgPcchuttv2zNAL";
+const firebaseConfig = {
+  apiKey: "AIzaSyDgj3g2-VwCf4oWnETazpxxPvl2vpyl3Mo",
+  authDomain: "datahub-1e310.firebaseapp.com",
+  projectId: "datahub-1e310",
+  storageBucket: "datahub-1e310.firebasestorage.app",
+  messagingSenderId: "560867367131",
+  appId: "1:560867367131:web:70933fcb051cb71fe914fe",
+  measurementId: "G-08C9CELVBK"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+{
+  const r = new URLSearchParams(location.search).get("ref");
+  if (r) localStorage.setItem("oyo_ref", r.slice(0, 12));
+}
+
+
+
+    let userEmailAddress = "";
+    let actualBalance = 0;
+    let refBalance = 0;
+    let isReseller = false;
+    let isBalanceHidden = localStorage.getItem('dh_hide_balance') === 'true';
+    let transactionHistory = [];
+    let loadedPlansMap = {};
+
+    // SECURE BACKEND CALLS: every request carries the user's Firebase login token
+    async function api(path, body = {}) {
+      const user = auth.currentUser;
+      if (!user) throw new Error('Not logged in');
+      const token = await user.getIdToken();
+      const res = await fetch(`${BACKEND_URL}${path}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(body)
+      });
+      return res.json();
     }
-  </script>
+
+    function statusClass(s) { return s === 'SUCCESS' ? 'success' : (s === 'PENDING' ? 'pending' : 'failed'); }
+
+    function applyProfile(p) {
+      if (!p) return;
+      actualBalance = p.balance; refBalance = p.ref_balance; isReseller = p.is_reseller;
+      transactionHistory = p.transactions || [];
+      window.updateBalanceDisplay(); window.renderTransactions(); window.checkResellerStatus();
+      const rl = document.getElementById('referredUsersList');
+      if (rl) {
+        const list = p.referred_users || [];
+        rl.innerHTML = list.length
+          ? list.map(u => `<div class="tx-item" style="cursor:default"><div><div class="tx-title">${u.email}</div><div class="tx-date">${u.date}</div></div><span class="tx-badge ${u.status === 'Reseller' ? 'success' : 'pending'}">${u.status}</span></div>`).join('')
+          : `<p style="font-size:0.8rem; color:var(--text-muted); text-align:center; padding:20px;">No referrals yet.</p>`;
+      }
+    }
+
+    async function syncUserProfile() {
+      try {
+        const data = await api('/api/get-user-profile', { referredBy: localStorage.getItem('oyo_ref') || undefined });
+        if (data.status && data.profile) applyProfile(data.profile);
+      } catch (err) { console.error('Database sync error:', err); }
+    }
+
+    let selectedNetwork = 'MTN';
+    let selectedCableCompany = 'dstv';
+    let selectedCableCompanyCode = 1;
+
+    const SVG_EYE_OPEN = `<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3 z"/>`;
+    const SVG_EYE_CLOSED = `<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.17c0-1.66-1.34-3-3-3l-.17.02z"/>`;
+
+    window.updateBalanceDisplay = function() {
+      const displayElem = document.getElementById('walletBalance');
+      const refElem = document.getElementById('refWalletBalance');
+      const eyeIconElem = document.getElementById('eyeIcon');
+      const eyeTextElem = document.getElementById('eyeText');
+
+      if (refElem) refElem.textContent = `₦${refBalance.toLocaleString('en-NG', {minimumFractionDigits: 2})}`;
+
+      if (isBalanceHidden) {
+        displayElem.textContent = '••••••••';
+        eyeIconElem.innerHTML = SVG_EYE_CLOSED;
+        if (eyeTextElem) eyeTextElem.textContent = 'Show';
+      } else {
+        displayElem.textContent = `₦${parseFloat(actualBalance).toLocaleString('en-NG', {minimumFractionDigits: 2})}`;
+        eyeIconElem.innerHTML = SVG_EYE_OPEN;
+        if (eyeTextElem) eyeTextElem.textContent = 'Hide';
+      }
+    };
+
+    window.toggleBalanceVisibility = function() {
+      isBalanceHidden = !isBalanceHidden;
+      localStorage.setItem('dh_hide_balance', isBalanceHidden);
+      window.updateBalanceDisplay();
+    };
+
+    window.checkResellerStatus = function() {
+      if (isReseller) {
+        const banner = document.getElementById('resellerBanner');
+        if (banner) banner.style.display = 'none';
+      }
+    };
+
+    // TOP-UP WITH KORAPAY: the server confirms every payment, the browser never edits the balance
+    window.payWithKorapayCheckout = function() {
+      const amount = Number(document.getElementById('topupAmountInput').value);
+      const alertBox = document.getElementById('topupAlert');
+
+      if (!amount || amount < 100) {
+        alertBox.style.color = '';
+        alertBox.className = "status-alert error";
+        alertBox.textContent = "Please enter a valid amount (Minimum ₦100).";
+        return;
+      }
+
+      alertBox.className = "status-alert";
+      alertBox.style.display = "block";
+      alertBox.style.color = "#FFB000";
+      alertBox.textContent = "Opening Korapay Checkout...";
+
+      const localTxRef = `oyo_${auth.currentUser.uid}_${Date.now()}`;
+
+      window.Korapay.initialize({
+        key: KORAPAY_PUBLIC_KEY,
+        reference: localTxRef,
+        amount: amount,
+        currency: "NGN",
+        customer: { name: userEmailAddress.split('@')[0], email: userEmailAddress },
+        narration: "OyoData Wallet Top Up",
+        onSuccess: async function () {
+          alertBox.style.display = "block";
+          alertBox.style.color = "#FFB000";
+          alertBox.textContent = "Verifying payment with Korapay server...";
+          try {
+            const resData = await api('/api/verify-korapay-payment', { reference: localTxRef });
+            if (resData.status && resData.profile) {
+              applyProfile(resData.profile);
+              window.closeModal('modalTopup');
+              alert(resData.message || 'Wallet topped up successfully.');
+            } else {
+              throw new Error(resData.message || 'not credited');
+            }
+          } catch (err) {
+            alertBox.style.color = '';
+            alertBox.className = "status-alert error";
+            alertBox.textContent = `Payment received but not credited yet. Wait a minute, then use Resolve Ref ID with: ${localTxRef}`;
+          }
+        },
+        onClose: function () {
+          if (!alertBox.classList.contains('error')) alertBox.style.display = "none";
+        }
+      });
+    };
+
+    // VERIFY AN UNCREDITED PAYMENT (server checks it with Korapay)
+    window.resolveTransaction = async function() {
+      const ref = document.getElementById('solveRefId').value.trim();
+      const status = document.getElementById('solverStatus');
+      status.style.display = 'block';
+      if (!ref) {
+        status.className = 'status-alert error';
+        status.textContent = 'Please enter a valid Reference ID.';
+        return;
+      }
+      status.className = 'status-alert';
+      status.textContent = 'Verifying payment with Korapay...';
+      try {
+        const resData = await api('/api/verify-korapay-payment', { reference: ref });
+        if (resData.status) {
+          status.className = 'status-alert success';
+          status.textContent = resData.message;
+          applyProfile(resData.profile);
+        } else {
+          status.className = 'status-alert error';
+          status.textContent = resData.message || 'Payment verification failed.';
+        }
+      } catch (err) {
+        status.className = 'status-alert error';
+        status.textContent = 'Server error during verification. Please try again.';
+      }
+    };
+
+    window.copyReferralLink = function() {
+      const copyText = document.getElementById("refLinkInput");
+      copyText.select();
+      navigator.clipboard.writeText(copyText.value);
+      alert("Referral link copied to clipboard!");
+    };
+
+    window.upgradeToReseller = async function() {
+      if (actualBalance < 2000) {
+        alert('Insufficient wallet balance. Please top up at least ₦2,000.');
+        openModal('modalTopup');
+        return;
+      }
+      if (!confirm('Upgrade to Reseller for ₦2,000 to enjoy 5% OFF all VTU plans forever?')) return;
+      try {
+        const r = await api('/api/upgrade-reseller');
+        if (r.status && r.profile) { applyProfile(r.profile); alert('Congratulations! Account upgraded to Reseller.'); }
+        else alert(r.message || 'Upgrade failed.');
+      } catch (e) { alert('Network error. Please try again.'); }
+    };
+
+    window.transferReferralBonus = async function() {
+      if (refBalance <= 0) { alert('No referral balance available to transfer.'); return; }
+      try {
+        const r = await api('/api/transfer-referral');
+        if (r.status && r.profile) { applyProfile(r.profile); alert(`Transferred ₦${Number(r.amount).toLocaleString('en-NG')} to Main Wallet!`); }
+        else alert(r.message || 'Transfer failed.');
+      } catch (e) { alert('Network error. Please try again.'); }
+    };
+
+    window.submitBankWithdrawal = async function() {
+      const bank = document.getElementById('wdBank').value;
+      const account = document.getElementById('wdAccount').value.trim();
+      const amount = Number(document.getElementById('wdAmount').value);
+      if (!bank || !/^\d{10}$/.test(account) || !amount || amount < 1000) {
+        alert('Choose a bank, enter a 10-digit account number and an amount of at least ₦1,000.');
+        return;
+      }
+      try {
+        const r = await api('/api/withdraw', { bank, account, amount });
+        if (r.status && r.profile) { applyProfile(r.profile); closeModal('modalWithdraw'); alert(r.message); }
+        else alert(r.message || 'Withdrawal failed.');
+      } catch (e) { alert('Network error. Please try again.'); }
+    };
+
+    window.switchTab = function(tab) {
+      document.getElementById('viewHome').style.display = 'none';
+      document.getElementById('viewServices').style.display = 'none';
+      document.getElementById('viewReferral').style.display = 'none';
+      document.getElementById('viewHistory').style.display = 'none';
+      document.getElementById('viewService').style.display = 'none';
+
+      document.querySelectorAll('.bottom-nav .nav-btn').forEach(b => b.classList.remove('active'));
+
+      if (tab === 'home') {
+        document.getElementById('viewHome').style.display = 'block';
+        document.getElementById('navHome').classList.add('active');
+      } else if (tab === 'services') {
+        document.getElementById('viewServices').style.display = 'block';
+        document.getElementById('navServices').classList.add('active');
+      } else if (tab === 'referral') {
+        document.getElementById('viewReferral').style.display = 'block';
+        document.getElementById('navReferral').classList.add('active');
+      } else if (tab === 'history') {
+        document.getElementById('viewHistory').style.display = 'block';
+        document.getElementById('navHistory').classList.add('active');
+        window.renderTransactions();
+      }
+    };
+
+    window.openService = function(type) {
+      if (type !== 'data') { alert('This service is coming soon.'); return; }
+      document.getElementById('viewHome').style.display = 'none';
+      document.getElementById('viewServices').style.display = 'none';
+      document.getElementById('viewReferral').style.display = 'none';
+      document.getElementById('viewHistory').style.display = 'none';
+      document.getElementById('viewService').style.display = 'block';
+      document.querySelectorAll('.vtu-form').forEach(f => f.style.display = 'none');
+      document.getElementById('statusAlert').className = 'status-alert';
+
+      if (type === 'data') { document.getElementById('formBuyData').style.display = 'block'; window.loadDataPlans(); }
+      else if (type === 'airtime') { document.getElementById('formAirtime').style.display = 'block'; }
+      else if (type === 'cable') { document.getElementById('formCable').style.display = 'block'; window.loadCablePackages(); }
+      else if (type === 'electricity') { document.getElementById('formElectricity').style.display = 'block'; }
+      else if (type === 'exam') { document.getElementById('formExam').style.display = 'block'; }
+    };
+
+    window.openModal = function(id) { document.getElementById(id).style.display = 'flex'; };
+    window.closeModal = function(id) { document.getElementById(id).style.display = 'none'; };
+
+    window.highlightSelected = function(el) {
+      el.parentElement.querySelectorAll('.provider-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+    };
+
+    window.selectNetwork = function(net, el) {
+      selectedNetwork = net;
+      window.highlightSelected(el);
+      window.loadDataPlans();
+    };
+
+    window.selectCable = function(company, code, el) {
+      selectedCableCompany = company;
+      selectedCableCompanyCode = code;
+      window.highlightSelected(el);
+      window.loadCablePackages();
+    };
+
+    // LOAD DATA PLANS WITH PRODUCT TYPE LOGIC & PRICE MAPPING
+    window.loadDataPlans = async function() {
+      const select = document.getElementById('dataPlanSelect');
+      const dataType = document.getElementById('dataTypeSelect').value;
+      
+      let formattedProductType = `${selectedNetwork.toLowerCase()}_${dataType}`;
+      if (selectedNetwork === 'AIRTEL') formattedProductType = 'airtel_cg';
+      if (selectedNetwork === 'GLO') formattedProductType = 'glo_cg';
+      if (selectedNetwork === '9MOBILE') formattedProductType = '9mobile_sme';
+
+      window.currentProductType = formattedProductType;
+      select.innerHTML = '<option value="">Loading plans...</option>';
+      loadedPlansMap = {};
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${formattedProductType}&is_reseller=${isReseller}`);
+        const data = await response.json();
+
+        select.innerHTML = '<option value="">Select Plan</option>';
+        
+        let plansList = [];
+        if (Array.isArray(data)) {
+          plansList = data;
+        } else if (data && Array.isArray(data.plans)) {
+          plansList = data.plans;
+        }
+
+        if (plansList.length === 0) {
+          select.innerHTML = '<option value="">No plans available</option>';
+          return;
+        }
+
+        plansList.forEach(p => {
+          const planId = p.plan_id || p.id;
+          loadedPlansMap[planId] = p;
+
+          const opt = document.createElement('option');
+          opt.value = planId;
+          const rawValidity = p.validity || p.plan_validity || p.day || '';
+          const validityText = rawValidity ? ` (${rawValidity})` : '';
+          const cleanName = (p.name || p.plan_name || '').replace(/\(SME\)|\(CG\)|\(GIFTING\)/gi, '').trim();
+
+          opt.textContent = `${cleanName}${validityText} => ₦${Number(p.price).toLocaleString('en-NG')}`;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        console.error("Fetch plans error:", err);
+        select.innerHTML = '<option value="">Error loading plans</option>';
+      }
+    };
+
+    window.loadCablePackages = async function() {
+      const select = document.getElementById('cablePackageSelect');
+      select.innerHTML = '<option value="">Loading packages...</option>';
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${selectedCableCompany}&is_reseller=${isReseller}`);
+        const data = await response.json();
+
+        select.innerHTML = '<option value="">Select Package</option>';
+        let packages = Array.isArray(data) ? data : (data.plans || []);
+
+        packages.forEach(p => {
+          const planId = p.plan_id || p.id;
+          loadedPlansMap[planId] = p;
+
+          const opt = document.createElement('option');
+          opt.value = planId;
+          const rawValidity = p.validity || p.plan_validity || '';
+          const validityText = rawValidity ? ` (${rawValidity})` : '';
+
+          opt.textContent = `${p.name || p.plan_name}${validityText} => ₦${Number(p.price).toLocaleString('en-NG')}`;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        select.innerHTML = '<option value="">Error loading packages</option>';
+      }
+    };
+
+    window.verifyIUC = async function() {
+      const status = document.getElementById('statusAlert');
+      const smartcard = document.getElementById('smartcardNo').value.trim();
+
+      if (!smartcard) {
+        status.style.display = 'block';
+        status.className = 'status-alert error';
+        status.textContent = 'Please enter a Smartcard/IUC number.';
+        return;
+      }
+
+      status.style.display = 'block';
+      status.className = 'status-alert';
+      status.textContent = 'Verifying Smartcard...';
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/verify-tv`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ company: selectedCableCompanyCode, iucno: smartcard })
+        });
+        const resData = await response.json();
+
+        if (resData.customer_name || resData.status === 'success') {
+          status.className = 'status-alert success';
+          status.textContent = `Verified: ${resData.customer_name || 'Valid Smartcard'}`;
+        } else {
+          status.className = 'status-alert error';
+          status.textContent = 'Smartcard verification failed.';
+        }
+      } catch (err) {
+        status.className = 'status-alert error';
+        status.textContent = 'Error connecting to verification server.';
+      }
+    };
+
+    window.renderTransactions = function() {
+      const recentContainer = document.getElementById('recentTxList');
+      const fullContainer = document.getElementById('fullTxList');
+
+      if (!recentContainer || !fullContainer) return;
+
+      if (transactionHistory.length === 0) {
+        const emptyHtml = `<p style="font-size:0.8rem; color:var(--text-muted); text-align:center; padding:20px;">No transaction history found.</p>`;
+        recentContainer.innerHTML = emptyHtml;
+        fullContainer.innerHTML = emptyHtml;
+        return;
+      }
+
+      const svgData = `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>`;
+
+      const renderTxItem = (tx, index) => `
+        <div class="tx-item" onclick="viewReceipt(${index})">
+          <div class="tx-left">
+            <div class="tx-icon">${svgData}</div>
+            <div>
+              <div class="tx-title">${tx.title}</div>
+              <div class="tx-date">Ref: ${tx.ref} • ${tx.date}</div>
+            </div>
+          </div>
+          <div class="tx-right">
+            <div class="tx-amount ${tx.type === 'Transfer' ? 'credit' : 'debit'}">${tx.type === 'Transfer' ? '+' : '-'}₦${Number(tx.amount).toLocaleString('en-NG')}</div>
+            <span class="tx-badge ${statusClass(tx.status)}">${tx.status}</span>
+          </div>
+        </div>
+      `;
+
+      fullContainer.innerHTML = transactionHistory.map((tx, idx) => renderTxItem(tx, idx)).join('');
+      recentContainer.innerHTML = transactionHistory.slice(0, 3).map((tx, idx) => renderTxItem(tx, idx)).join('');
+    };
+
+    window.showDirectReceipt = function(tx) {
+      document.getElementById('receiptTitle').textContent = tx.title;
+      document.getElementById('receiptAmount').textContent = `${tx.type === 'Transfer' ? '+' : '-'}₦${Number(tx.amount).toLocaleString('en-NG')}`;
+      document.getElementById('receiptRef').textContent = tx.ref;
+      document.getElementById('receiptDate').textContent = tx.date;
+      document.getElementById('receiptType').textContent = tx.type;
+      document.getElementById('receiptUserEmail').textContent = userEmailAddress;
+
+      const badge = document.getElementById('receiptBadge');
+      badge.textContent = tx.status;
+      badge.className = `tx-badge ${statusClass(tx.status)}`;
+
+      openModal('modalReceipt');
+    };
+
+    window.viewReceipt = function(index) {
+      const tx = transactionHistory[index];
+      if (tx) window.showDirectReceipt(tx);
+    };
+
+    window.copyReceiptDetails = function() {
+      const refId = document.getElementById('receiptRef').textContent;
+      navigator.clipboard.writeText(refId);
+      alert(`Reference ID (${refId}) copied to clipboard!`);
+    };
+
+    // DATA PURCHASE: the server looks up the real price and takes the money
+    document.getElementById('formBuyData').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = document.getElementById('statusAlert');
+      const planId = document.getElementById('dataPlanSelect').value;
+      const phone = document.getElementById('dataPhone').value.trim();
+      const selectedPlan = loadedPlansMap[planId];
+      const btn = e.target.querySelector('button[type="submit"]');
+
+      if (!selectedPlan) { alert("Please select a valid plan."); return; }
+      if (!/^0\d{10}$/.test(phone)) { alert("Enter a valid 11-digit phone number."); return; }
+      if (actualBalance < selectedPlan.price) {
+        alert(`Insufficient balance (₦${actualBalance.toLocaleString()}). You need ₦${selectedPlan.price.toLocaleString()} for this plan.`);
+        openModal('modalTopup');
+        return;
+      }
+
+      status.style.display = 'block';
+      status.className = 'status-alert';
+      status.textContent = 'Processing transaction...';
+      btn.disabled = true;
+
+      const networkMap = { MTN: 1, GLO: 2, AIRTEL: 3, "9MOBILE": 4 };
+      try {
+        const resData = await api('/api/purchase-data', {
+          product_type: window.currentProductType,
+          network: networkMap[selectedNetwork],
+          dataplan: planId,
+          mobileno: phone
+        });
+        if (resData.profile) applyProfile(resData.profile);
+
+        if (resData.status === 'success') {
+          status.className = 'status-alert success';
+          status.textContent = resData.message || 'Data purchase successful!';
+          window.showDirectReceipt(resData.transaction);
+        } else if (resData.status === 'pending') {
+          status.className = 'status-alert';
+          status.textContent = resData.message;
+        } else {
+          status.className = 'status-alert error';
+          status.textContent = resData.message || 'Transaction failed.';
+        }
+      } catch (err) {
+        status.className = 'status-alert error';
+        status.textContent = 'Network error during transaction.';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // ================= ROUTER + AUTH =================
+let authReady = false, currentUser = null, authBusy = false;
+const VIEWS = { home:'v-landing', services:'v-landing', login:'v-auth', signup:'v-auth', dashboard:'v-dash' };
+const TITLES = { home:'OyoData — Best SME Data & VTU Platform in Nigeria', services:'OyoData — Best SME Data & VTU Platform in Nigeria', login:'OyoData — Login', signup:'OyoData — Create Account', dashboard:'OyoData — Dashboard' };
+
+function route() {
+  if (!authReady) return;
+  let r = (location.hash || '#home').slice(1).split('?')[0];
+  if (!VIEWS[r]) r = 'home';
+  if (r === 'dashboard' && !currentUser) { location.hash = '#login'; return; }
+  if ((r === 'login' || r === 'signup') && currentUser && !authBusy) { location.hash = '#dashboard'; return; }
+
+  document.querySelectorAll('.view').forEach(v => v.hidden = v.id !== VIEWS[r]);
+  document.getElementById('card-login').style.display = r === 'signup' ? 'none' : 'block';
+  document.getElementById('card-signup').style.display = r === 'signup' ? 'block' : 'none';
+  document.getElementById('navDropdown').classList.remove('open');
+  document.title = TITLES[r];
+
+  if (r === 'services') document.getElementById('services').scrollIntoView();
+  else window.scrollTo(0, 0);
+  if (r === 'dashboard') window.switchTab('home');
+}
+window.addEventListener('hashchange', route);
+
+window.toggleMenu = function () {
+  document.getElementById('navDropdown').classList.toggle('open');
+};
+
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user;
+  authReady = true;
+  if (user) {
+    userEmailAddress = user.email;
+    document.getElementById('userEmail').textContent = user.email;
+    document.getElementById('refLinkInput').value = `https://ugbolagade-ship-it.github.io/OyoData/?ref=${user.uid.slice(0, 6)}#signup`;
+    route();
+    await syncUserProfile(user.email);
+  } else {
+    userEmailAddress = ''; actualBalance = 0; refBalance = 0; isReseller = false; transactionHistory = [];
+    route();
+  }
+});
+
+window.logout = async function () {
+  await signOut(auth);
+  location.hash = '#login';
+};
+
+window.loginUser = async function (e) {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const status = document.getElementById('loginStatus');
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  btn.disabled = true; btn.textContent = 'Logging in...';
+  status.className = 'status-alert'; authBusy = true;
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    status.className = 'status-alert success';
+    status.textContent = 'Login successful! Redirecting...';
+    setTimeout(() => {
+      authBusy = false; btn.disabled = false; btn.textContent = 'Log In'; status.className = 'status-alert';
+      location.hash = '#dashboard'; route();
+    }, 800);
+  } catch (error) {
+    authBusy = false;
+    status.className = 'status-alert error';
+    status.textContent = error.message.replace('Firebase: ', '');
+    btn.disabled = false; btn.textContent = 'Log In';
+  }
+};
+
+window.handleForgotPassword = async function (e) {
+  e.preventDefault();
+  const status = document.getElementById('loginStatus');
+  const email = document.getElementById('loginEmail').value.trim();
+  if (!email) {
+    status.className = 'status-alert error';
+    status.textContent = 'Please enter your email address in the box above first.';
+    return;
+  }
+  status.className = 'status-alert';
+  try {
+    await sendPasswordResetEmail(auth, email);
+    status.className = 'status-alert success';
+    status.textContent = `Password reset link sent to ${email}. Check your inbox or spam folder.`;
+  } catch (error) {
+    status.className = 'status-alert error';
+    status.textContent = error.message.replace('Firebase: ', '');
+  }
+};
+
+window.signupUser = async function (e) {
+  e.preventDefault();
+  const btn = document.getElementById('signupBtn');
+  const status = document.getElementById('signupStatus');
+  const email = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  status.className = 'status-alert';
+  if (password !== confirmPassword) {
+    status.className = 'status-alert error';
+    status.textContent = 'Passwords do not match. Please check and try again.';
+    return;
+  }
+  btn.disabled = true; btn.textContent = 'Creating Account...'; authBusy = true;
+  try {
+    await createUserWithEmailAndPassword(auth, email, password);
+    status.className = 'status-alert success';
+    status.textContent = 'Account created successfully! Redirecting...';
+    setTimeout(() => {
+      authBusy = false; btn.disabled = false; btn.textContent = 'Create Account'; status.className = 'status-alert';
+      location.hash = '#dashboard'; route();
+    }, 800);
+  } catch (error) {
+    authBusy = false;
+    status.className = 'status-alert error';
+    status.textContent = error.message.replace('Firebase: ', '');
+    btn.disabled = false; btn.textContent = 'Create Account';
+  }
+};
+
+// Forms in the dashboard without a backend handler: stop the page from reloading
+['formAirtime', 'formCable', 'formElectricity', 'formExam'].forEach(id => {
+  document.getElementById(id).addEventListener('submit', (e) => {
+    e.preventDefault();
+    const status = document.getElementById('statusAlert');
+    status.style.display = 'block';
+    status.className = 'status-alert error';
+    status.textContent = 'This service is not connected yet. Please use Data or Exam PIN for now.';
+  });
+});
+
+</script>
 </body>
 </html>
