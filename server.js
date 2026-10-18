@@ -625,10 +625,11 @@ app.post('/api/admin/fund-wallet', adminOnly, wrap(async (req, res) => {
   const bal = await fdb.runTransaction(async t => {
     const { ref, u } = await getUserTx(t, doc.id, 'error');
     u.balance = action_type === 'credit' ? u.balance + val : Math.max(0, u.balance - val);
-    addTx(u, { type: 'Admin Adjustment', title: `Admin ${action_type === 'credit' ? 'Credit' : 'Debit'}`, amount: String(val), status: 'SUCCESS' });
+    addTx(u, { type: 'Admin Adjustment', dir: action_type, title: `Admin ${action_type === 'credit' ? 'Credit' : 'Debit'}`, amount: String(val), status: 'SUCCESS' });
     t.set(ref, u);
     return u.balance;
   });
+  walletCache.t = 0;
   res.json({ status: 'success', message: `Balance ${action_type}ed by ₦${val.toLocaleString('en-NG')}. New balance: ₦${bal.toLocaleString('en-NG')}` });
 }));
 
@@ -669,10 +670,10 @@ app.post('/api/admin/withdrawal-done', adminOnly, wrap(async (req, res) => {
 }));
 
 // ---------- Admin panel routes (admin.html) ----------
-// Wallet totals: use Firestore's sum if its index exists, otherwise add the balances up directly. Cached for 5 minutes.
+// Wallet totals: use Firestore's sum if its index exists, otherwise add the balances up directly. Cached for 15 seconds.
 let walletCache = { t: 0, v: null };
 async function walletTotals() {
-  if (walletCache.v && Date.now() - walletCache.t < 5 * 60 * 1000) return walletCache.v;
+  if (walletCache.v && Date.now() - walletCache.t < 15 * 1000) return walletCache.v;
   let v;
   try {
     const d = (await usersCol.aggregate({ wallets: AggregateField.sum('balance'), refs: AggregateField.sum('ref_balance') }).get()).data();
