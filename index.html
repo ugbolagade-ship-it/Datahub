@@ -423,8 +423,17 @@ body{margin:0}
 .svg-defs{position:absolute;width:0;height:0;overflow:hidden}
 
   #view-dash .tx-badge.pending{background:#fff4e0;color:#b26a00}
-#view-dash .vtu-item[onclick*="'airtime'"],#view-dash .vtu-item[onclick*="'cable'"],#view-dash .vtu-item[onclick*="'electricity'"],#view-dash .vtu-item[onclick*="'exam'"]{opacity:.5}
-  </style>
+#view-dash .vtu-item[onclick*="'airtime'"]{opacity:.5}
+  #view-dash{overflow-x:hidden}
+#view-dash > *{min-width:0;max-width:100%}
+#view-dash .tx-item{gap:10px}
+#view-dash .tx-left{min-width:0;flex:1}
+#view-dash .tx-left > div:last-child{min-width:0}
+#view-dash .tx-title,#view-dash .tx-date{overflow-wrap:anywhere;word-break:break-word}
+#view-dash .tx-right{flex-shrink:0;max-width:42%}
+#view-dash .tx-amount{white-space:nowrap}
+#view-dash .receipt-val.pre{white-space:pre-wrap;text-align:right;overflow-wrap:anywhere}
+</style>
 </head>
 <body>
 
@@ -960,8 +969,8 @@ body{margin:0}
         <div class="form-group">
           <label>Data Type</label>
           <select id="dataTypeSelect" onchange="loadDataPlans()">
-            <option value="sme">SME Data</option>
             <option value="cg">Corporate Gifting (CG)</option>
+            <option value="sme">SME Data</option>
             <option value="awoof">Awoof Data</option>
             <option value="gifting">Direct Gifting</option>
           </select>
@@ -1029,28 +1038,37 @@ body{margin:0}
       <form id="formElectricity" class="vtu-form" style="display: none;">
         <div class="form-group">
           <label>Disco Provider</label>
-          <select required>
+          <select id="elecDisco" required>
             <option value="1">Eko Electricity (EKEDC)</option>
             <option value="2">Ikeja Electricity (IKEDC)</option>
+            <option value="3">PortHarcourt Electricity (PHEDC)</option>
+            <option value="4">Kaduna Electricity (KAEDC)</option>
             <option value="5">Abuja Electricity (AEDC)</option>
             <option value="6">Ibadan Electricity (IBEDC)</option>
+            <option value="7">Kano Electricity (KEDC)</option>
+            <option value="8">Jos Electricity (JEDC)</option>
+            <option value="9">Enugu Electricity (EEDC)</option>
+            <option value="10">Benin Electricity (BEDC)</option>
+            <option value="11">Aba Electricity (ABA)</option>
+            <option value="12">Yola Electricity (YEDC)</option>
           </select>
         </div>
         <div class="form-group">
           <label>Meter Type</label>
-          <select required>
+          <select id="elecType" required>
             <option value="1">Prepaid</option>
             <option value="2">Postpaid</option>
           </select>
         </div>
         <div class="form-group">
           <label>Meter Number</label>
-          <input type="text" placeholder="Enter Meter Number" required />
+          <input type="text" id="elecMeter" inputmode="numeric" placeholder="Enter Meter Number" required />
         </div>
         <div class="form-group">
           <label>Amount (₦)</label>
-          <input type="number" placeholder="1000" min="1000" required />
+          <input type="number" id="elecAmount" placeholder="1000" min="1000" max="200000" required />
         </div>
+        <button type="button" class="btn-action btn-secondary" onclick="verifyMeter()">Verify Meter Number</button>
         <button type="submit" class="btn-action">Pay Bill</button>
       </form>
 
@@ -1058,20 +1076,17 @@ body{margin:0}
       <form id="formExam" class="vtu-form" style="display: none;">
         <div class="form-group">
           <label>Exam Body</label>
-          <select id="examTypeSelect" required>
-            <option value="waec">WAEC Result Checker</option>
-            <option value="neco">NECO Result Checker</option>
-            <option value="nabteb">NABTEB Result Checker</option>
+          <select id="examTypeSelect" onchange="loadExamPrice()" required>
+            <option value="1">WAEC Result Checker</option>
+            <option value="2">NECO Result Checker</option>
+            <option value="3">NABTEB Result Checker</option>
           </select>
         </div>
         <div class="form-group">
           <label>Quantity</label>
-          <input type="number" id="examQuantity" value="1" min="1" max="5" required />
+          <input type="number" id="examQuantity" value="1" min="1" max="10" required />
         </div>
-        <div class="form-group">
-          <label>Recipient Phone Number</label>
-          <input type="tel" id="examPhone" placeholder="08012345678" maxlength="11" required />
-        </div>
+        <div id="examPriceNote" style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;"></div>
         <button type="submit" class="btn-action">Generate Result PIN</button>
       </form>
 
@@ -1154,6 +1169,10 @@ body{margin:0}
           <div class="receipt-row">
             <span class="receipt-label">Reference ID</span>
             <span class="receipt-val" id="receiptRef">N/A</span>
+          </div>
+          <div class="receipt-row" id="receiptDetailRow" style="display:none;">
+            <span class="receipt-label">Details</span>
+            <span class="receipt-val pre" id="receiptDetail"></span>
           </div>
           <div class="receipt-row">
             <span class="receipt-label">Date & Time</span>
@@ -1472,7 +1491,7 @@ const auth = getAuth(app);
     };
 
     window.openService = function(type) {
-      if (type !== 'data') { alert('This service is coming soon.'); return; }
+      if (type === 'airtime') { alert('Airtime is coming soon.'); return; }
       document.getElementById('viewHome').style.display = 'none';
       document.getElementById('viewServices').style.display = 'none';
       document.getElementById('viewReferral').style.display = 'none';
@@ -1485,7 +1504,7 @@ const auth = getAuth(app);
       else if (type === 'airtime') { document.getElementById('formAirtime').style.display = 'block'; }
       else if (type === 'cable') { document.getElementById('formCable').style.display = 'block'; window.loadCablePackages(); }
       else if (type === 'electricity') { document.getElementById('formElectricity').style.display = 'block'; }
-      else if (type === 'exam') { document.getElementById('formExam').style.display = 'block'; }
+      else if (type === 'exam') { document.getElementById('formExam').style.display = 'block'; window.loadExamPrice(); }
     };
 
     window.openModal = function(id) { document.getElementById(id).style.display = 'flex'; };
@@ -1562,6 +1581,7 @@ const auth = getAuth(app);
 
     window.loadCablePackages = async function() {
       const select = document.getElementById('cablePackageSelect');
+      loadedPlansMap = {};
       select.innerHTML = '<option value="">Loading packages...</option>';
 
       try {
@@ -1591,32 +1611,18 @@ const auth = getAuth(app);
     window.verifyIUC = async function() {
       const status = document.getElementById('statusAlert');
       const smartcard = document.getElementById('smartcardNo').value.trim();
-
-      if (!smartcard) {
-        status.style.display = 'block';
-        status.className = 'status-alert error';
-        status.textContent = 'Please enter a Smartcard/IUC number.';
-        return;
-      }
-
       status.style.display = 'block';
+      if (!smartcard) { status.className = 'status-alert error'; status.textContent = 'Please enter a Smartcard/IUC number.'; return; }
       status.className = 'status-alert';
       status.textContent = 'Verifying Smartcard...';
-
       try {
-        const response = await fetch(`${BACKEND_URL}/api/verify-tv`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ company: selectedCableCompanyCode, iucno: smartcard })
-        });
-        const resData = await response.json();
-
-        if (resData.customer_name || resData.status === 'success') {
+        const r = await api('/api/verify-tv', { company: selectedCableCompanyCode, iucno: smartcard });
+        if (r.status === 'success') {
           status.className = 'status-alert success';
-          status.textContent = `Verified: ${resData.customer_name || 'Valid Smartcard'}`;
+          status.textContent = `Verified: ${r.customer_name || 'Valid Smartcard'}${r.current_package ? ' — ' + r.current_package : ''}`;
         } else {
           status.className = 'status-alert error';
-          status.textContent = 'Smartcard verification failed.';
+          status.textContent = r.message || 'Smartcard verification failed.';
         }
       } catch (err) {
         status.className = 'status-alert error';
@@ -1645,7 +1651,7 @@ const auth = getAuth(app);
             <div class="tx-icon">${svgData}</div>
             <div>
               <div class="tx-title">${tx.title}</div>
-              <div class="tx-date">Ref: ${tx.ref} • ${tx.date}</div>
+              <div class="tx-date">${tx.date} • Ref …${String(tx.ref).slice(-8)}</div>
             </div>
           </div>
           <div class="tx-right">
@@ -1663,6 +1669,8 @@ const auth = getAuth(app);
       document.getElementById('receiptTitle').textContent = tx.title;
       document.getElementById('receiptAmount').textContent = `${tx.type === 'Transfer' ? '+' : '-'}₦${Number(tx.amount).toLocaleString('en-NG')}`;
       document.getElementById('receiptRef').textContent = tx.ref;
+      document.getElementById('receiptDetail').textContent = tx.detail || '';
+      document.getElementById('receiptDetailRow').style.display = tx.detail ? 'flex' : 'none';
       document.getElementById('receiptDate').textContent = tx.date;
       document.getElementById('receiptType').textContent = tx.type;
       document.getElementById('receiptUserEmail').textContent = userEmailAddress;
@@ -1734,6 +1742,116 @@ const auth = getAuth(app);
       } finally {
         btn.disabled = false;
       }
+    });
+
+    // ===== CABLE TV, ELECTRICITY, EXAM PINS (the server prices, charges and delivers) =====
+    async function submitPurchase(form, path, body) {
+      const status = document.getElementById('statusAlert');
+      const btn = form.querySelector('button[type="submit"]');
+      status.style.display = 'block';
+      status.className = 'status-alert';
+      status.textContent = 'Processing transaction...';
+      btn.disabled = true;
+      try {
+        const r = await api(path, body);
+        if (r.profile) applyProfile(r.profile);
+        if (r.status === 'success') {
+          status.className = 'status-alert success';
+          status.textContent = r.message || 'Successful!';
+          if (r.transaction) window.showDirectReceipt(r.transaction);
+        } else if (r.status === 'pending') {
+          status.className = 'status-alert';
+          status.textContent = r.message;
+        } else {
+          status.className = 'status-alert error';
+          status.textContent = r.message || 'Transaction failed.';
+        }
+      } catch (err) {
+        status.className = 'status-alert error';
+        status.textContent = 'Network error during transaction.';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    document.getElementById('formCable').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const pkg = document.getElementById('cablePackageSelect').value;
+      const iuc = document.getElementById('smartcardNo').value.trim();
+      const plan = loadedPlansMap[pkg];
+      if (!plan || !iuc) { alert('Please choose a package and enter the smartcard number.'); return; }
+      if (actualBalance < plan.price) {
+        alert(`Insufficient balance (₦${actualBalance.toLocaleString()}). You need ₦${Number(plan.price).toLocaleString()}.`);
+        openModal('modalTopup');
+        return;
+      }
+      submitPurchase(e.target, '/api/pay-tv', { company: selectedCableCompanyCode, package: pkg, iucno: iuc });
+    });
+
+    function meterBody() {
+      return {
+        company: Number(document.getElementById('elecDisco').value),
+        metertype: Number(document.getElementById('elecType').value),
+        meterno: document.getElementById('elecMeter').value.trim(),
+        amount: Number(document.getElementById('elecAmount').value)
+      };
+    }
+
+    window.verifyMeter = async function() {
+      const status = document.getElementById('statusAlert');
+      const body = meterBody();
+      status.style.display = 'block';
+      if (!body.meterno || !(body.amount >= 1000)) {
+        status.className = 'status-alert error';
+        status.textContent = 'Enter the meter number and an amount of at least ₦1,000.';
+        return;
+      }
+      status.className = 'status-alert';
+      status.textContent = 'Verifying meter...';
+      try {
+        const r = await api('/api/verify-electricity', body);
+        if (r.status === 'success') {
+          status.className = 'status-alert success';
+          status.textContent = `Verified: ${r.customer_name || 'Valid meter'}${r.customer_address ? ' — ' + r.customer_address : ''}`;
+        } else {
+          status.className = 'status-alert error';
+          status.textContent = r.message || 'Meter verification failed.';
+        }
+      } catch (err) {
+        status.className = 'status-alert error';
+        status.textContent = 'Error connecting to verification server.';
+      }
+    };
+
+    document.getElementById('formElectricity').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const body = meterBody();
+      if (actualBalance < body.amount) {
+        alert(`Insufficient balance (₦${actualBalance.toLocaleString()}). You need ₦${body.amount.toLocaleString()}.`);
+        openModal('modalTopup');
+        return;
+      }
+      submitPurchase(e.target, '/api/pay-electricity', body);
+    });
+
+    window.loadExamPrice = async function() {
+      const note = document.getElementById('examPriceNote');
+      const type = ['waec', 'neco', 'nabteb'][Number(document.getElementById('examTypeSelect').value) - 1];
+      note.textContent = 'Checking price...';
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${type}&is_reseller=${isReseller}`);
+        const data = await res.json();
+        const p = data.plans && data.plans[0];
+        note.textContent = p ? `Price: ₦${Number(p.price).toLocaleString('en-NG')} per PIN` : 'Price unavailable right now.';
+      } catch (err) { note.textContent = 'Price unavailable right now.'; }
+    };
+
+    document.getElementById('formExam').addEventListener('submit', (e) => {
+      e.preventDefault();
+      submitPurchase(e.target, '/api/buy-exam-pin', {
+        exam_board: Number(document.getElementById('examTypeSelect').value),
+        no_of_pins: Number(document.getElementById('examQuantity').value)
+      });
     });
 
     // ================= ROUTER + AUTH =================
@@ -1859,7 +1977,7 @@ window.signupUser = async function (e) {
 };
 
 // Forms in the dashboard without a backend handler: stop the page from reloading
-['formAirtime', 'formCable', 'formElectricity', 'formExam'].forEach(id => {
+['formAirtime'].forEach(id => {
   document.getElementById(id).addEventListener('submit', (e) => {
     e.preventDefault();
     const status = document.getElementById('statusAlert');
