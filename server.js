@@ -569,6 +569,22 @@ app.post('/api/admin/withdrawal-done', adminOnly, wrap(async (req, res) => {
 }));
 
 // ---------- Admin panel routes (admin.html) ----------
+// Wallet totals: use Firestore's sum if its index exists, otherwise add the balances up directly. Cached for 5 minutes.
+let walletCache = { t: 0, v: null };
+async function walletTotals() {
+  if (walletCache.v && Date.now() - walletCache.t < 5 * 60 * 1000) return walletCache.v;
+  let v;
+  try {
+    const d = (await usersCol.aggregate({ wallets: AggregateField.sum('balance'), refs: AggregateField.sum('ref_balance') }).get()).data();
+    v = { wallets: d.wallets || 0, refs: d.refs || 0 };
+  } catch (e) {
+    v = { wallets: 0, refs: 0 };
+    (await usersCol.select('balance', 'ref_balance').get()).forEach(doc => { const u = doc.data(); v.wallets += u.balance || 0; v.refs += u.ref_balance || 0; });
+  }
+  walletCache = { t: Date.now(), v };
+  return v;
+}
+
 app.get('/api/admin/stats', adminOnly, wrap(async (req, res) => {
   const warnings = [];
   const safe = async (label, fn) => {
@@ -581,7 +597,7 @@ app.get('/api/admin/stats', adminOnly, wrap(async (req, res) => {
     safe('resellers count', () => count(usersCol.where('is_reseller', '==', true))),
     safe('pending orders', () => count(ordersCol.where('status', '==', 'PENDING'))),
     safe('pending withdrawals', () => count(withdrawalsCol.where('status', '==', 'PENDING'))),
-    safe('wallet totals', async () => (await usersCol.aggregate({ wallets: AggregateField.sum('balance'), refs: AggregateField.sum('ref_balance') }).get()).data()),
+    safe('wallet totals', walletTotals),
     safe('announcement', async () => { const a = await fdb.doc('meta/announcement').get(); return a.exists ? a.data().message || '' : ''; })
   ]);
   res.json({
