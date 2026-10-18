@@ -613,6 +613,11 @@ html,body{background:#fbf7f1}
   #view-dash .reseller-banner{flex-direction:row;align-items:center;gap:10px}
   #view-dash .btn-upgrade-now{width:auto;padding:9px 13px}
 }
+
+/* reseller badge (shown instead of the upgrade offer) */
+#view-dash .reseller-banner.is-reseller{background:radial-gradient(220px 120px at 100% 0%,rgba(255,163,56,.45),transparent 70%),linear-gradient(135deg,#241f3d,#14111f);box-shadow:0 16px 30px -18px rgba(20,17,31,.7)}
+#view-dash .reseller-banner.is-reseller h4{color:#ffc56b}
+#view-dash .reseller-banner.is-reseller p{color:rgba(255,255,255,.78)}
 </style>
 </head>
 <body>
@@ -1638,9 +1643,22 @@ const auth = getAuth(app);
     };
 
     window.checkResellerStatus = function() {
+      const banner = document.getElementById('resellerBanner');
+      if (!banner) return;
+      const title = banner.querySelector('h4');
+      const note = banner.querySelector('p');
+      const btn = banner.querySelector('.btn-upgrade-now');
+      banner.style.display = '';
       if (isReseller) {
-        const banner = document.getElementById('resellerBanner');
-        if (banner) banner.style.display = 'none';
+        banner.classList.add('is-reseller');
+        title.textContent = '★ You are a Reseller';
+        note.textContent = 'You get 5% OFF data plans and exam PINs. Thank you for growing with OyoData!';
+        btn.style.display = 'none';
+      } else {
+        banner.classList.remove('is-reseller');
+        title.textContent = 'Upgrade to Reseller Tier';
+        note.textContent = 'Pay ₦2,000 once to unlock 5% OFF all VTU plans forever!';
+        btn.style.display = '';
       }
     };
 
