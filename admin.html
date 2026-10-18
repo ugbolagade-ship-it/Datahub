@@ -251,13 +251,15 @@ function setDot(id, n) { const d = $(id); d.textContent = n; d.classList.toggle(
 async function loadOverview() {
   const s = await call('/api/admin/stats');
   setDot('dotOrders', s.pending_orders); setDot('dotWd', s.pending_withdrawals);
-  $('statGrid').innerHTML = `
-    <div class="stat"><small>Users</small><b>${s.total_users}</b></div>
-    <div class="stat"><small>Resellers</small><b>${s.resellers}</b></div>
-    <div class="stat"><small>User wallets</small><b>${money(s.total_wallets)}</b></div>
-    <div class="stat"><small>Referral wallets</small><b>${money(s.total_referral)}</b></div>
-    <div class="stat click" onclick="go('orders')"><small>Pending orders</small><b>${s.pending_orders}</b></div>
-    <div class="stat click" onclick="go('withdrawals')"><small>Pending withdrawals</small><b>${s.pending_withdrawals}</b></div>
+  const n = v => (v == null ? '—' : v), m = v => (v == null ? '—' : money(v));
+  const warn = (s.warnings && s.warnings.length) ? `<div class="card" style="grid-column:1/-1;border-color:var(--red)"><h2 style="color:var(--red)">Some numbers could not load</h2><p class="hint" style="margin-top:0">${s.warnings.map(esc).join('<br>')}</p></div>` : '';
+  $('statGrid').innerHTML = warn + `
+    <div class="stat"><small>Users</small><b>${n(s.total_users)}</b></div>
+    <div class="stat"><small>Resellers</small><b>${n(s.resellers)}</b></div>
+    <div class="stat"><small>User wallets</small><b>${m(s.total_wallets)}</b></div>
+    <div class="stat"><small>Referral wallets</small><b>${m(s.total_referral)}</b></div>
+    <div class="stat click" onclick="go('orders')"><small>Pending orders</small><b>${n(s.pending_orders)}</b></div>
+    <div class="stat click" onclick="go('withdrawals')"><small>Pending withdrawals</small><b>${n(s.pending_withdrawals)}</b></div>
     <div class="stat" style="grid-column:1/-1"><small>EasyAccess wallet (your supplier balance)</small><b id="easyBal">Checking…</b></div>`;
   call('/api/wallet-balance').then(r => { $('easyBal').textContent = /^[\d.,]+$/.test(String(r.balance)) ? money(r.balance) : esc(r.balance); })
     .catch(() => { $('easyBal').textContent = 'Unavailable'; });
