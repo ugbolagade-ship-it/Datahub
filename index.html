@@ -433,6 +433,7 @@ body{margin:0}
 #view-dash .tx-right{flex-shrink:0;max-width:42%}
 #view-dash .tx-amount{white-space:nowrap}
 #view-dash .receipt-val.pre{white-space:pre-wrap;text-align:right;overflow-wrap:anywhere}
+#view-dash .announce-bar{background:#fff4e0;border:1px solid #f5d9a8;color:#7a4a00;border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:.84rem;font-weight:600;line-height:1.4;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -814,6 +815,9 @@ body{margin:0}
 
     <!-- MAIN HOME VIEW -->
     <div id="viewHome">
+      <div id="announceBar" class="announce-bar" style="display:none;">
+        <span id="announceText"></span>
+      </div>
       <div class="wallet-card">
         <div class="wallet-top">
           <div class="wallet-title-group">
@@ -1299,6 +1303,9 @@ const auth = getAuth(app);
       try {
         const data = await api('/api/get-user-profile', { referredBy: localStorage.getItem('oyo_ref') || undefined });
         if (data.status && data.profile) applyProfile(data.profile);
+        const msg = (data.announcement || '').trim();
+        const bar = document.getElementById('announceBar');
+        if (bar) { document.getElementById('announceText').textContent = msg; bar.style.display = msg ? 'block' : 'none'; }
       } catch (err) { console.error('Database sync error:', err); }
     }
 
