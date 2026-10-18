@@ -561,6 +561,12 @@ body{margin:0}
 #view-dash .nav-btn.active .nav-icon svg{fill:var(--ember1)}
 #view-dash{padding-bottom:120px}
 #view-dash .announce-bar{background:linear-gradient(120deg,#fff3e2,#ffe7d0);border-color:#ffd2a6;border-radius:16px}
+#view-dash .provider-btn.net-mtn,#view-dash .provider-btn.net-glo,#view-dash .provider-btn.net-airtel,#view-dash .provider-btn.net-n9,#view-quick .provider-btn.net-mtn,#view-quick .provider-btn.net-glo,#view-quick .provider-btn.net-airtel,#view-quick .provider-btn.net-n9{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:66px;padding:8px 4px;font-size:.72rem}
+.net-logo{height:28px;max-width:100%;width:auto;object-fit:contain;display:block}
+#view-dash .provider-btn.net-mtn,#view-quick .provider-btn.net-mtn{box-shadow:inset 0 -4px 0 #ffcc00}
+#view-dash .provider-btn.net-glo,#view-quick .provider-btn.net-glo{box-shadow:inset 0 -4px 0 #4db848}
+#view-dash .provider-btn.net-airtel,#view-quick .provider-btn.net-airtel{box-shadow:inset 0 -4px 0 #e4002b}
+#view-dash .provider-btn.net-n9,#view-quick .provider-btn.net-n9{box-shadow:inset 0 -4px 0 #8cc63f}
 </style>
 </head>
 <body>
@@ -1098,10 +1104,10 @@ body{margin:0}
         <div class="form-group">
           <label>Choose Network</label>
           <div class="provider-grid">
-            <div class="provider-btn selected" onclick="selectNetwork('MTN', this)">MTN</div>
-            <div class="provider-btn" onclick="selectNetwork('GLO', this)">GLO</div>
-            <div class="provider-btn" onclick="selectNetwork('AIRTEL', this)">Airtel</div>
-            <div class="provider-btn" onclick="selectNetwork('9MOBILE', this)">9mobile</div>
+            <div class="provider-btn net-mtn selected" onclick="selectNetwork('MTN', this)"><img class="net-logo" src="logos/mtn.png" alt="" onerror="this.style.display='none'"><span>MTN</span></div>
+            <div class="provider-btn net-glo" onclick="selectNetwork('GLO', this)"><img class="net-logo" src="logos/glo.png" alt="" onerror="this.style.display='none'"><span>GLO</span></div>
+            <div class="provider-btn net-airtel" onclick="selectNetwork('AIRTEL', this)"><img class="net-logo" src="logos/airtel.png" alt="" onerror="this.style.display='none'"><span>Airtel</span></div>
+            <div class="provider-btn net-n9" onclick="selectNetwork('9MOBILE', this)"><img class="net-logo" src="logos/9mobile.png" alt="" onerror="this.style.display='none'"><span>9mobile</span></div>
           </div>
         </div>
 
@@ -1133,10 +1139,10 @@ body{margin:0}
         <div class="form-group">
           <label>Network</label>
           <div class="provider-grid">
-            <div class="provider-btn selected" onclick="highlightSelected(this)">MTN</div>
-            <div class="provider-btn" onclick="highlightSelected(this)">GLO</div>
-            <div class="provider-btn" onclick="highlightSelected(this)">Airtel</div>
-            <div class="provider-btn" onclick="highlightSelected(this)">9mobile</div>
+            <div class="provider-btn net-mtn selected" onclick="highlightSelected(this)"><img class="net-logo" src="logos/mtn.png" alt="" onerror="this.style.display='none'"><span>MTN</span></div>
+            <div class="provider-btn net-glo" onclick="highlightSelected(this)"><img class="net-logo" src="logos/glo.png" alt="" onerror="this.style.display='none'"><span>GLO</span></div>
+            <div class="provider-btn net-airtel" onclick="highlightSelected(this)"><img class="net-logo" src="logos/airtel.png" alt="" onerror="this.style.display='none'"><span>Airtel</span></div>
+            <div class="provider-btn net-n9" onclick="highlightSelected(this)"><img class="net-logo" src="logos/9mobile.png" alt="" onerror="this.style.display='none'"><span>9mobile</span></div>
           </div>
         </div>
         <div class="form-group">
@@ -1409,10 +1415,10 @@ body{margin:0}
       <div class="form-group">
         <label>Network</label>
         <div class="provider-grid" id="quickNets">
-          <div class="provider-btn selected" onclick="selectQuickNet('MTN', this)">MTN</div>
-          <div class="provider-btn" onclick="selectQuickNet('GLO', this)">GLO</div>
-          <div class="provider-btn" onclick="selectQuickNet('AIRTEL', this)">Airtel</div>
-          <div class="provider-btn" onclick="selectQuickNet('9MOBILE', this)">9mobile</div>
+          <div class="provider-btn net-mtn selected" onclick="selectQuickNet('MTN', this)"><img class="net-logo" src="logos/mtn.png" alt="" onerror="this.style.display='none'"><span>MTN</span></div>
+          <div class="provider-btn net-glo" onclick="selectQuickNet('GLO', this)"><img class="net-logo" src="logos/glo.png" alt="" onerror="this.style.display='none'"><span>GLO</span></div>
+          <div class="provider-btn net-airtel" onclick="selectQuickNet('AIRTEL', this)"><img class="net-logo" src="logos/airtel.png" alt="" onerror="this.style.display='none'"><span>Airtel</span></div>
+          <div class="provider-btn net-n9" onclick="selectQuickNet('9MOBILE', this)"><img class="net-logo" src="logos/9mobile.png" alt="" onerror="this.style.display='none'"><span>9mobile</span></div>
         </div>
       </div>
       <div class="form-group">
@@ -1739,9 +1745,16 @@ const auth = getAuth(app);
       el.classList.add('selected');
     };
 
+    const NET_PREFIX = { MTN: 'mtn', GLO: 'glo', AIRTEL: 'airtel', '9MOBILE': '9mobile' };
+    const NET_TYPES = { MTN: ['cg', 'sme', 'awoof', 'gifting'], GLO: ['cg', 'awoof', 'gifting'], AIRTEL: ['cg', 'awoof', 'gifting'], '9MOBILE': ['sme', 'gifting'] };
+    const NET_TYPE_LABELS = { cg: 'Corporate Gifting (CG)', sme: 'SME Data', awoof: 'Awoof Data', gifting: 'Direct Gifting' };
+
     window.selectNetwork = function(net, el) {
       selectedNetwork = net;
       window.highlightSelected(el);
+      const sel = document.getElementById('dataTypeSelect');
+      sel.innerHTML = '';
+      NET_TYPES[net].forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = NET_TYPE_LABELS[t]; sel.appendChild(o); });
       window.loadDataPlans();
     };
 
@@ -1757,10 +1770,7 @@ const auth = getAuth(app);
       const select = document.getElementById('dataPlanSelect');
       const dataType = document.getElementById('dataTypeSelect').value;
       
-      let formattedProductType = `${selectedNetwork.toLowerCase()}_${dataType}`;
-      if (selectedNetwork === 'AIRTEL') formattedProductType = 'airtel_cg';
-      if (selectedNetwork === 'GLO') formattedProductType = 'glo_cg';
-      if (selectedNetwork === '9MOBILE') formattedProductType = '9mobile_sme';
+      const formattedProductType = `${NET_PREFIX[selectedNetwork]}_${dataType}`;
 
       window.currentProductType = formattedProductType;
       select.innerHTML = '<option value="">Loading plans...</option>';
