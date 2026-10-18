@@ -350,7 +350,7 @@ async function loadOrders(mode) {
   $('orderList').innerHTML = r.orders.length ? r.orders.map(o => `
     <div class="item">
       <div class="top">
-        <div><div class="t">${esc(o.title)}</div><div class="s">${esc(o.email)}<br>${esc(o.date)} • ${esc(o.type)} • ${esc(o.ref)}</div></div>
+        <div><div class="t">${esc(o.title)}</div><div class="s">${esc(o.guest ? 'Guest ' + (o.mobile || '') + ' • ' + (o.email || '') : o.email)}<br>${esc(o.date)} • ${esc(o.type)} • ${esc(o.ref)}${o.note ? '<br><b style="color:var(--red)">' + esc(o.note) + '</b>' : ''}</div></div>
         <div style="text-align:right"><div class="amt">${money(o.amount)}</div>${badge(o.status)}</div>
       </div>
       ${o.status === 'PENDING' ? `<div class="actions">
