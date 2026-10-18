@@ -603,6 +603,16 @@ html,body{background:#fbf7f1}
   #view-dash .reseller-banner{flex-direction:column;align-items:stretch;gap:14px}
   #view-dash .btn-upgrade-now{width:100%;text-align:center;padding:13px 16px}
 }
+
+/* compact reseller banner */
+#view-dash .reseller-banner{flex-direction:row;align-items:center;gap:10px;padding:12px 14px;border-radius:18px;margin-bottom:16px}
+#view-dash .reseller-banner-text h4{font-size:.92rem;margin-bottom:2px}
+#view-dash .reseller-banner-text p{font-size:.72rem;line-height:1.35}
+#view-dash .btn-upgrade-now{width:auto;padding:9px 13px;font-size:.78rem;border-radius:12px;line-height:1.2}
+@media (max-width:480px){
+  #view-dash .reseller-banner{flex-direction:row;align-items:center;gap:10px}
+  #view-dash .btn-upgrade-now{width:auto;padding:9px 13px}
+}
 </style>
 </head>
 <body>
@@ -1862,9 +1872,9 @@ const auth = getAuth(app);
           opt.value = planId;
           const rawValidity = p.validity || p.plan_validity || p.day || '';
           const validityText = rawValidity ? ` (${rawValidity})` : '';
-          const cleanName = (p.name || p.plan_name || '').replace(/\(SME\)|\(CG\)|\(GIFTING\)/gi, '').trim();
+          const cleanName = (p.name || p.plan_name || '').replace(/\(SME\)|\(CG\)|\(GIFTING\)|\(AWOOF\)/gi, '').trim();
 
-          opt.textContent = `${cleanName}${validityText} => ₦${Number(p.price).toLocaleString('en-NG')}`;
+          opt.textContent = `${cleanName} — ₦${Number(p.price).toLocaleString('en-NG')}${validityText}`;
           select.appendChild(opt);
         });
       } catch (err) {
@@ -1894,7 +1904,7 @@ const auth = getAuth(app);
           const rawValidity = p.validity || p.plan_validity || '';
           const validityText = rawValidity ? ` (${rawValidity})` : '';
 
-          opt.textContent = `${p.name || p.plan_name}${validityText} => ₦${Number(p.price).toLocaleString('en-NG')}`;
+          opt.textContent = `${p.name || p.plan_name} — ₦${Number(p.price).toLocaleString('en-NG')}${validityText}`;
           select.appendChild(opt);
         });
       } catch (err) {
@@ -2248,7 +2258,7 @@ const auth = getAuth(app);
         plans.forEach(p => {
           quickPlans[p.plan_id] = p;
           const o = document.createElement('option'); o.value = p.plan_id;
-          o.textContent = `${p.name} (${p.validity}) — ₦${Number(p.price).toLocaleString('en-NG')}`;
+          o.textContent = `${String(p.name).replace(/\(SME\)|\(CG\)|\(GIFTING\)|\(AWOOF\)/gi, '').trim()} — ₦${Number(p.price).toLocaleString('en-NG')} (${p.validity})`;
           sel.appendChild(o);
         });
       } catch (e) { sel.innerHTML = '<option value="">Could not load plans</option>'; }
