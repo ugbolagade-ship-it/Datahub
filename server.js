@@ -570,17 +570,24 @@ app.post('/api/admin/withdrawal-done', adminOnly, wrap(async (req, res) => {
 
 // ---------- Admin panel routes (admin.html) ----------
 app.get('/api/admin/stats', adminOnly, wrap(async (req, res) => {
+  const warnings = [];
+  const safe = async (label, fn) => {
+    try { return await fn(); }
+    catch (e) { console.error(`Admin stats "${label}" failed:`, e); warnings.push(`${label}: ${e.message}`); return null; }
+  };
   const count = async q => (await q.count().get()).data().count;
-  const [total, resellers, pendingOrders, pendingWithdrawals] = await Promise.all([
-    count(usersCol),
-    count(usersCol.where('is_reseller', '==', true)),
-    count(ordersCol.where('status', '==', 'PENDING')),
-    count(withdrawalsCol.where('status', '==', 'PENDING'))
+  const [total, resellers, pendingOrders, pendingWithdrawals, agg, announcement] = await Promise.all([
+    safe('users count', () => count(usersCol)),
+    safe('resellers count', () => count(usersCol.where('is_reseller', '==', true))),
+    safe('pending orders', () => count(ordersCol.where('status', '==', 'PENDING'))),
+    safe('pending withdrawals', () => count(withdrawalsCol.where('status', '==', 'PENDING'))),
+    safe('wallet totals', async () => (await usersCol.aggregate({ wallets: AggregateField.sum('balance'), refs: AggregateField.sum('ref_balance') }).get()).data()),
+    safe('announcement', async () => { const a = await fdb.doc('meta/announcement').get(); return a.exists ? a.data().message || '' : ''; })
   ]);
-  const agg = (await usersCol.aggregate({ wallets: AggregateField.sum('balance'), refs: AggregateField.sum('ref_balance') }).get()).data();
-  let announcement = '';
-  try { const a = await fdb.doc('meta/announcement').get(); announcement = a.exists ? a.data().message || '' : ''; } catch (e) {}
-  res.json({ status: 'success', total_users: total, resellers, pending_orders: pendingOrders, pending_withdrawals: pendingWithdrawals, total_wallets: agg.wallets || 0, total_referral: agg.refs || 0, announcement });
+  res.json({
+    status: 'success', total_users: total, resellers, pending_orders: pendingOrders, pending_withdrawals: pendingWithdrawals,
+    total_wallets: agg ? agg.wallets || 0 : null, total_referral: agg ? agg.refs || 0 : null, announcement: announcement || '', warnings
+  });
 }));
 
 app.get('/api/admin/users', adminOnly, wrap(async (req, res) => {
