@@ -1084,7 +1084,7 @@ body{margin:0}
         </div>
         <div class="form-group">
           <label>Quantity</label>
-          <input type="number" id="examQuantity" value="1" min="1" max="10" required />
+          <input type="number" id="examQuantity" value="1" min="1" max="10" oninput="updateExamTotal()" required />
         </div>
         <div id="examPriceNote" style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;"></div>
         <button type="submit" class="btn-action">Generate Result PIN</button>
@@ -1834,24 +1834,45 @@ const auth = getAuth(app);
       submitPurchase(e.target, '/api/pay-electricity', body);
     });
 
+    window.examUnitPrice = 0;
+
+    window.updateExamTotal = function() {
+      const note = document.getElementById('examPriceNote');
+      if (!window.examUnitPrice) return;
+      const qty = Math.min(10, Math.max(1, parseInt(document.getElementById('examQuantity').value, 10) || 1));
+      const total = window.examUnitPrice * qty;
+      note.innerHTML = `Price: ₦${window.examUnitPrice.toLocaleString('en-NG')} per PIN × ${qty} = <b style="color:var(--text-dark);">Total ₦${total.toLocaleString('en-NG')}</b>`;
+    };
+
     window.loadExamPrice = async function() {
       const note = document.getElementById('examPriceNote');
       const type = ['waec', 'neco', 'nabteb'][Number(document.getElementById('examTypeSelect').value) - 1];
+      window.examUnitPrice = 0;
       note.textContent = 'Checking price...';
       try {
         const res = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${type}&is_reseller=${isReseller}`);
         const data = await res.json();
         const p = data.plans && data.plans[0];
-        note.textContent = p ? `Price: ₦${Number(p.price).toLocaleString('en-NG')} per PIN` : 'Price unavailable right now.';
+        if (p) { window.examUnitPrice = Number(p.price); window.updateExamTotal(); }
+        else note.textContent = 'Price unavailable right now.';
       } catch (err) { note.textContent = 'Price unavailable right now.'; }
     };
 
     document.getElementById('formExam').addEventListener('submit', (e) => {
       e.preventDefault();
-      submitPurchase(e.target, '/api/buy-exam-pin', {
-        exam_board: Number(document.getElementById('examTypeSelect').value),
-        no_of_pins: Number(document.getElementById('examQuantity').value)
-      });
+      const sel = document.getElementById('examTypeSelect');
+      const board = Number(sel.value);
+      const qty = Math.min(10, Math.max(1, parseInt(document.getElementById('examQuantity').value, 10) || 1));
+      const total = window.examUnitPrice * qty;
+      if (!window.examUnitPrice) { alert('Price is not available yet. Please wait a moment and try again.'); return; }
+      if (actualBalance < total) {
+        alert(`Insufficient balance (₦${actualBalance.toLocaleString()}). You need ₦${total.toLocaleString()} for ${qty} PIN${qty > 1 ? 's' : ''}.`);
+        openModal('modalTopup');
+        return;
+      }
+      const name = ['WAEC', 'NECO', 'NABTEB'][board - 1];
+      if (!confirm(`Buy ${qty} ${name} PIN${qty > 1 ? 's' : ''} for ₦${total.toLocaleString('en-NG')}?`)) return;
+      submitPurchase(e.target, '/api/buy-exam-pin', { exam_board: board, no_of_pins: qty });
     });
 
     // ================= ROUTER + AUTH =================
