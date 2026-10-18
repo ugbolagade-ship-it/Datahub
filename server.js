@@ -252,8 +252,9 @@ app.post('/api/purchase-data', requireAuth, wrap(async (req, res) => {
       const { u } = await finishTx(uid, txRef, 'PENDING');
       return res.status(202).json({ status: 'pending', message: 'Your order is processing. Check History shortly.', profile: u });
     }
+    console.error('EasyAccess data purchase failed:', JSON.stringify(d).slice(0, 500));
     const { u } = await finishTx(uid, txRef, 'FAILED', cost);
-    return res.status(400).json({ status: 'failed', message: d.message || 'Provider purchase failed. You were not charged.', profile: u });
+    return res.status(400).json({ status: 'failed', message: `${d.true_response || d.message || 'Provider purchase failed.'} You were not charged.`, profile: u });
   } catch (e) {
     // Unknown result (timeout etc.): stays PENDING and is not refunded automatically
     const u = (await usersCol.doc(uid).get()).data();
