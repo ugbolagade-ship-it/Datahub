@@ -1576,6 +1576,9 @@ const auth = getAuth(app);
       return res.json();
     }
 
+    // money coming in: top-ups, referral transfers and admin credits (older admin entries have no direction saved)
+    function isCredit(tx) { return tx.dir ? tx.dir === 'credit' : (tx.type === 'Transfer' || /^Admin Credit/.test(tx.title || '')); }
+
     function statusClass(s) { return s === 'SUCCESS' ? 'success' : (s === 'PENDING' ? 'pending' : 'failed'); }
 
     function applyProfile(p) {
@@ -1959,7 +1962,7 @@ const auth = getAuth(app);
             </div>
           </div>
           <div class="tx-right">
-            <div class="tx-amount ${tx.type === 'Transfer' ? 'credit' : 'debit'}">${tx.type === 'Transfer' ? '+' : '-'}₦${Number(tx.amount).toLocaleString('en-NG')}</div>
+            <div class="tx-amount ${isCredit(tx) ? 'credit' : 'debit'}">${isCredit(tx) ? '+' : '-'}₦${Number(tx.amount).toLocaleString('en-NG')}</div>
             <span class="tx-badge ${statusClass(tx.status)}">${tx.status}</span>
           </div>
         </div>
@@ -1971,7 +1974,7 @@ const auth = getAuth(app);
 
     window.showDirectReceipt = function(tx) {
       document.getElementById('receiptTitle').textContent = tx.title;
-      document.getElementById('receiptAmount').textContent = `${tx.type === 'Transfer' ? '+' : '-'}₦${Number(tx.amount).toLocaleString('en-NG')}`;
+      document.getElementById('receiptAmount').textContent = `${isCredit(tx) ? '+' : '-'}₦${Number(tx.amount).toLocaleString('en-NG')}`;
       document.getElementById('receiptRef').textContent = tx.ref;
       document.getElementById('receiptDetail').textContent = tx.detail || '';
       document.getElementById('receiptDetailRow').style.display = tx.detail ? 'flex' : 'none';
