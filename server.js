@@ -386,6 +386,104 @@ app.post('/api/buy-exam-pin', requireAuth, wrap(async (req, res) => {
   });
 }));
 
+// ---------- Quick Buy (no account) ----------
+// 1) /init saves the order and returns a reference + price  2) customer pays with Korapay
+// 3) /complete (or the Korapay webhook) confirms the payment and delivers the data, exactly once
+const intentsCol = fdb.collection('quickbuys');
+const NETWORK_PRODUCTS = {
+  1: ['mtn_sme', 'mtn_cg', 'mtn_awoof', 'mtn_gifting'],
+  2: ['glo_cg', 'glo_awoof', 'glo_gifting'],
+  3: ['airtel_cg', 'airtel_awoof', 'airtel_gifting'],
+  4: ['9mobile_sme', '9mobile_gifting']
+};
+const QB_REF = /^qb_[a-f0-9]{12}_\d+$/;
+const initHits = {};
+function limitInit(ip) {
+  const now = Date.now();
+  const hits = (initHits[ip] || []).filter(t => now - t < 10 * 60 * 1000);
+  if (hits.length >= 20) throw new HttpError(429, 'Too many attempts. Please wait a few minutes and try again.');
+  hits.push(now); initHits[ip] = hits;
+}
+
+function quickView(state) {
+  if (state === 'SUCCESS') return { status: 'success', message: 'Data delivered successfully!' };
+  if (state === 'FAILED') return { status: 'failed', message: 'Delivery failed. Your payment will be refunded. Keep your reference and contact support.' };
+  return { status: 'pending', message: 'Your order is being processed. This page will update shortly.' };
+}
+async function quickSummary(reference) {
+  const snap = await intentsCol.doc(reference).get();
+  if (!snap.exists) throw new HttpError(404, 'Order not found.');
+  const it = snap.data();
+  return { ...quickView(it.state), state: it.state, reference, plan: it.plan_name, mobileno: it.mobileno, amount: it.price, date: it.date };
+}
+
+async function deliverQuickBuy(reference, paid) {
+  const claim = await fdb.runTransaction(async t => {
+    const iref = intentsCol.doc(reference);
+    const is = await t.get(iref);
+    if (!is.exists) return { err: 'Unknown reference.' };
+    const it = is.data();
+    if (it.state !== 'AWAITING') return { already: true };
+    if (!(paid >= it.price)) return { err: `Payment of ₦${paid} is less than the price of ₦${it.price}.` };
+    t.update(iref, { state: 'DELIVERING', paid });
+    t.set(ordersCol.doc(reference), { ref: reference, uid: null, guest: true, email: it.email, mobile: it.mobileno, type: 'Quick Buy', title: `Quick Buy — ${it.plan_name} — ${it.mobileno}`, amount: it.price, status: 'PENDING', date: today(), ts: Date.now() });
+    return { it };
+  });
+  if (claim.err) return { ok: false, message: claim.err };
+  if (claim.already) return { ok: true };
+  const it = claim.it;
+  let state = 'PENDING';
+  try {
+    const d = await providerPost('purchase-data', { network: it.network, dataplan: Number(it.dataplan), mobileno: it.mobileno, client_reference: reference });
+    if (isOk(d)) state = 'SUCCESS'; else if (isFailed(d)) state = 'FAILED';
+  } catch (e) { state = 'PENDING'; }
+  const note = state === 'FAILED' ? 'Provider failed. Refund the customer on Korapay, then tap Refund customer here.'
+    : state === 'PENDING' ? 'Provider result unknown. Check EasyAccess, then mark delivered or refund.' : '';
+  await intentsCol.doc(reference).update({ state });
+  await ordersCol.doc(reference).set({ status: state === 'SUCCESS' ? 'SUCCESS' : 'PENDING', note }, { merge: true });
+  return { ok: true };
+}
+
+app.post('/api/quick-buy/init', wrap(async (req, res) => {
+  limitInit(req.ip);
+  const network = Number(req.body.network);
+  const pt = String(req.body.product_type || '').toLowerCase();
+  const dataplan = String(req.body.dataplan || '');
+  const mobileno = String(req.body.mobileno || '');
+  const email = String(req.body.email || '').trim().toLowerCase();
+  if (!NETWORK_PRODUCTS[network] || !NETWORK_PRODUCTS[network].includes(pt)) throw new HttpError(400, 'Choose a valid network and data type.');
+  if (!/^0\d{10}$/.test(mobileno)) throw new HttpError(400, 'Enter a valid 11-digit phone number.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120) throw new HttpError(400, 'Enter a valid email address.');
+  let plan;
+  try { plan = (await fetchPlans(pt)).find(p => planIdOf(p) === dataplan); } catch (e) { /* handled below */ }
+  if (!plan) throw new HttpError(400, 'Plan not found. Please reload and try again.');
+  const price = calculateSellingPrice(rawPrice(plan), false, false);
+  const reference = `qb_${crypto.randomBytes(6).toString('hex')}_${Date.now()}`;
+  const planName = String(plan.name || plan.plan_name || 'Data').slice(0, 60);
+  await intentsCol.doc(reference).set({ reference, network, product_type: pt, dataplan, plan_name: planName, mobileno, email, price, state: 'AWAITING', date: today(), ts: Date.now() });
+  res.json({ status: true, reference, amount: price, plan_name: planName });
+}));
+
+app.post('/api/quick-buy/complete', wrap(async (req, res) => {
+  const reference = String(req.body.reference || '');
+  if (!QB_REF.test(reference)) throw new HttpError(400, 'Invalid reference.');
+  let d;
+  try {
+    const r = await axios.get(`${KORAPAY_BASE_URL}/charges/${encodeURIComponent(reference)}`, { headers: { Authorization: `Bearer ${KORAPAY_SECRET_KEY}` } });
+    d = r.data && r.data.status && r.data.data;
+  } catch (e) { throw new HttpError(400, 'Could not confirm your payment yet. If you were charged, your data is delivered automatically.'); }
+  if (!d || d.status !== 'success' || (d.currency || 'NGN') !== 'NGN') throw new HttpError(400, 'Payment was not completed.');
+  const out = await deliverQuickBuy(reference, Number(d.amount));
+  if (!out.ok) throw new HttpError(400, out.message);
+  res.json(await quickSummary(reference));
+}));
+
+app.get('/api/quick-buy/status', wrap(async (req, res) => {
+  const reference = String(req.query.reference || '');
+  if (!QB_REF.test(reference)) throw new HttpError(400, 'Invalid reference.');
+  res.json(await quickSummary(reference));
+}));
+
 // ---------- Top-ups (Korapay) ----------
 // Top-up references look like oyo_<firebase uid>_<time>, so each payment belongs to one user.
 async function creditByReference(reference, amount) {
@@ -437,7 +535,9 @@ app.post('/api/korapay-webhook', wrap(async (req, res) => {
   if (sig.length !== calc.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(calc))) return res.sendStatus(401);
   const d = body.data || {};
   if (body.event === 'charge.success' && d.status === 'success' && (d.currency || 'NGN') === 'NGN') {
-    await creditByReference(d.reference, Number(d.amount)); // an error here returns 500 so Korapay retries
+    // an error here returns 500 so Korapay retries
+    if (QB_REF.test(String(d.reference))) await deliverQuickBuy(d.reference, Number(d.amount));
+    else await creditByReference(d.reference, Number(d.amount));
   }
   res.sendStatus(200);
 }));
@@ -634,18 +734,25 @@ app.get('/api/admin/orders', adminOnly, wrap(async (req, res) => {
 // Pending order: success = it was delivered, false = refund the customer's wallet
 app.post('/api/admin/resolve-order', adminOnly, wrap(async (req, res) => {
   const ok = Boolean(req.body.success);
-  await fdb.runTransaction(async t => {
+  const out = await fdb.runTransaction(async t => {
     const os = await t.get(ordersCol.doc(String(req.body.ref || 'none')));
     if (!os.exists || os.data().status !== 'PENDING') throw new HttpError(404, 'Pending order not found.', 'error');
     const o = os.data();
+    if (o.guest) { // Quick Buy customer: no wallet, so a refund is done on Korapay
+      t.update(os.ref, { status: ok ? 'SUCCESS' : 'FAILED', note: '' });
+      t.update(intentsCol.doc(o.ref), { state: ok ? 'SUCCESS' : 'FAILED' });
+      return { guest: true };
+    }
     const { ref, u } = await getUserTx(t, o.uid, 'error');
     const x = u.transactions.find(y => y.ref === o.ref);
     if (x) x.status = ok ? 'SUCCESS' : 'FAILED';
     if (!ok) u.balance += Number(o.amount);
     t.set(ref, u);
     t.update(os.ref, { status: ok ? 'SUCCESS' : 'FAILED' });
+    return { guest: false };
   });
-  res.json({ status: 'success', message: ok ? 'Order marked as delivered.' : 'Order failed and the customer was refunded.' });
+  const msg = ok ? 'Order marked as delivered.' : (out.guest ? 'Marked failed. Make sure you refunded the customer from your Korapay dashboard.' : 'Order failed and the customer was refunded.');
+  res.json({ status: 'success', message: msg });
 }));
 
 app.get('/api/admin/settings', adminOnly, (req, res) => res.json({ status: 'success', settings }));
