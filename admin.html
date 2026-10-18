@@ -295,7 +295,7 @@ function renderUser(u) {
   const tx = u.transactions.length ? u.transactions.map(t => `
     <div class="item" style="margin-bottom:8px"><div class="top">
       <div><div class="t">${esc(t.title)}</div><div class="s">${esc(t.date)} • …${esc(String(t.ref).slice(-8))}</div></div>
-      <div style="text-align:right"><div class="amt">${t.type === 'Transfer' ? '+' : '-'}${money(t.amount)}</div>${badge(t.status)}</div>
+      <div style="text-align:right"><div class="amt">${(t.dir ? t.dir === 'credit' : (t.type === 'Transfer' || /^Admin Credit/.test(t.title || ''))) ? '+' : '-'}${money(t.amount)}</div>${badge(t.status)}</div>
     </div></div>`).join('') : '<p class="empty">No transactions yet.</p>';
   $('sheetBody').innerHTML = `
     <div class="bar"><h2>${esc(u.email)}</h2><button class="btn btn-sm btn-ghost" onclick="closeSheet()">Close</button></div>
