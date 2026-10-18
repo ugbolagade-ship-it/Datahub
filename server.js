@@ -93,7 +93,7 @@ async function getUserTx(t, uid, status = false) {
 function calculateSellingPrice(basePrice, isReseller = false, isCable = false) {
   const original = parseFloat(basePrice);
   if (isNaN(original)) return basePrice;
-  if (isCable) return Math.ceil(original / 100) * 100;
+  if (isCable) return Math.ceil(original / 100) * 100; // round up to the next ₦100
   const resellerDiscount = isReseller ? 5 : 0;
   const finalPrice = original * (1 + PROFIT_MARGIN) * (1 - resellerDiscount / 100);
   return Math.ceil(finalPrice * 1.015); // 1.5% checkout fee
@@ -187,11 +187,11 @@ app.get('/api/get-plans', wrap(async (req, res) => {
 }));
 
 // ---------- Buy data (price is decided HERE, never by the browser) ----------
-async function finishTx(uid, txRef, status, refund = 0) {
+async function finishTx(uid, txRef, status, refund = 0, detail = '') {
   return fdb.runTransaction(async t => {
     const { ref, u } = await getUserTx(t, uid);
     const x = u.transactions.find(y => y.ref === txRef);
-    if (x) x.status = status;
+    if (x) { x.status = status; if (detail) x.detail = detail; }
     if (refund) u.balance += refund;
     t.set(ref, u);
     return { u, x };
@@ -245,6 +245,130 @@ app.post('/api/purchase-data', requireAuth, wrap(async (req, res) => {
     const u = (await usersCol.doc(uid).get()).data();
     return res.status(202).json({ status: 'pending', message: 'Your order is processing. If data is not delivered in 15 minutes, contact support with your reference.', profile: u });
   }
+}));
+
+// ---------- Cable TV, Electricity, Exam PINs ----------
+const CABLE_TYPES = ['dstv', 'gotv', 'startimes', 'showmax']; // company 1-4
+const EXAM_TYPES = ['waec', 'neco', 'nabteb', 'nbais'];       // exam_board 1-4
+
+async function providerPost(endpoint, payload, timeout = 30000) {
+  const r = await axios.post(`${EASY_ACCESS_BASE}/${endpoint}`, payload, { headers: getEasyAccessHeaders(), timeout, validateStatus: () => true });
+  return r.data || {};
+}
+const isOk = d => [200, 201].includes(Number(d.code)) || ['success', 'successful'].includes(String(d.status || '').toLowerCase());
+const isFailed = d => [400, 401].includes(Number(d.code)) || String(d.status || '').toLowerCase() === 'failed';
+
+async function verifyWithProvider(endpoint, payload, fallbackMsg) {
+  let d;
+  try { d = await providerPost(endpoint, payload, 20000); }
+  catch (e) { throw new HttpError(502, 'Verification service is unavailable. Please try again.', 'failed'); }
+  if (!isOk(d)) throw new HttpError(400, d.message || fallbackMsg, 'failed');
+  return d;
+}
+
+async function isResellerUser(uid) {
+  const s = await usersCol.doc(uid).get();
+  if (!s.exists) throw new HttpError(404, 'Account not found. Please reload the page.', 'failed');
+  return !!s.data().is_reseller;
+}
+
+// Takes the money first, calls EasyAccess, then confirms or refunds (same rules as data)
+async function purchaseFlow(res, uid, o) {
+  const txRef = await fdb.runTransaction(async t => {
+    const { ref, u } = await getUserTx(t, uid, 'failed');
+    if (u.balance < o.cost) throw new HttpError(400, 'Insufficient wallet balance.', 'failed');
+    u.balance -= o.cost;
+    const tx = addTx(u, { type: o.type, title: o.title, amount: String(o.cost), ref: `${o.type.toLowerCase()}_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`, status: 'PENDING' });
+    t.set(ref, u);
+    return tx.ref;
+  });
+  try {
+    const d = await providerPost(o.endpoint, o.payload);
+    if (isOk(d)) {
+      const { u, x } = await finishTx(uid, txRef, 'SUCCESS', 0, o.detail ? o.detail(d) : '');
+      return res.json({ status: 'success', message: d.message || 'Successful!', profile: u, transaction: x });
+    }
+    if (!isFailed(d)) {
+      const { u } = await finishTx(uid, txRef, 'PENDING');
+      return res.status(202).json({ status: 'pending', message: 'Your order is processing. Check History shortly.', profile: u });
+    }
+    const { u } = await finishTx(uid, txRef, 'FAILED', o.cost);
+    return res.status(400).json({ status: 'failed', message: d.true_response || d.message || 'Provider failed. You were not charged.', profile: u });
+  } catch (e) {
+    const u = (await usersCol.doc(uid).get()).data();
+    return res.status(202).json({ status: 'pending', message: 'Your order is processing. If it is not delivered in 15 minutes, contact support with your reference.', profile: u });
+  }
+}
+
+app.post('/api/verify-tv', requireAuth, wrap(async (req, res) => {
+  const company = Number(req.body.company);
+  const iucno = String(req.body.iucno || '').trim();
+  if (![1, 2, 3, 4].includes(company) || !/^\d{6,20}$/.test(iucno)) throw new HttpError(400, 'Enter a valid smartcard / IUC number.', 'failed');
+  const d = await verifyWithProvider('verify-tv', { company, iucno }, 'Smartcard verification failed.');
+  res.json({ status: 'success', customer_name: d.customer_name, current_package: d.current_package, customer_status: d.customer_status, due_date: d.due_date, renewal_amount: d.renewal_amount, current_balance: d.current_balance });
+}));
+
+app.post('/api/pay-tv', requireAuth, wrap(async (req, res) => {
+  const company = Number(req.body.company);
+  const pkg = String(req.body.package || '');
+  const iucno = String(req.body.iucno || '').trim();
+  if (![1, 2, 3, 4].includes(company) || !/^\d{6,20}$/.test(iucno) || !/^\d+$/.test(pkg)) throw new HttpError(400, 'Choose a package and enter a valid smartcard number.', 'failed');
+  let plan;
+  try { plan = (await fetchPlans(CABLE_TYPES[company - 1])).find(p => planIdOf(p) === pkg); } catch (e) { /* handled below */ }
+  if (!plan) throw new HttpError(400, 'Package not found. Please reload and try again.', 'failed');
+  await verifyWithProvider('verify-tv', { company, iucno }, 'Smartcard could not be verified.');
+  const base = rawPrice(plan);
+  const cost = calculateSellingPrice(base, await isResellerUser(req.user.uid), true);
+  await purchaseFlow(res, req.user.uid, {
+    cost, type: 'Cable', title: `${plan.name || plan.plan_name || 'Cable TV'} — ${iucno}`,
+    endpoint: 'pay-tv', payload: { company, package: Number(pkg), iucno, max_amount_payable: Math.ceil(base * 1.05) }
+  });
+}));
+
+function readMeter(body) {
+  const company = Number(body.company);
+  const metertype = Number(body.metertype);
+  const meterno = String(body.meterno || '').trim();
+  const amount = Number(body.amount);
+  if (!Number.isInteger(company) || company < 1 || company > 12) throw new HttpError(400, 'Choose a valid electricity provider.', 'failed');
+  if (![1, 2].includes(metertype)) throw new HttpError(400, 'Choose prepaid or postpaid.', 'failed');
+  if (!/^\d{6,20}$/.test(meterno)) throw new HttpError(400, 'Enter a valid meter number.', 'failed');
+  if (!Number.isInteger(amount) || amount < 1000 || amount > 200000) throw new HttpError(400, 'Amount must be between ₦1,000 and ₦200,000.', 'failed');
+  return { company, metertype, meterno, amount };
+}
+
+app.post('/api/verify-electricity', requireAuth, wrap(async (req, res) => {
+  const m = readMeter(req.body);
+  const d = await verifyWithProvider('verify-electricity', m, 'Meter verification failed.');
+  res.json({ status: 'success', customer_name: d.customer_name, customer_address: d.customer_address, customer_metertype: d.customer_metertype });
+}));
+
+app.post('/api/pay-electricity', requireAuth, wrap(async (req, res) => {
+  const m = readMeter(req.body);
+  await verifyWithProvider('verify-electricity', m, 'Meter could not be verified.');
+  await purchaseFlow(res, req.user.uid, {
+    cost: m.amount, type: 'Electricity', title: `Electricity — ${m.meterno}`,
+    endpoint: 'pay-electricity',
+    payload: { company: m.company, metertype: m.metertype, meterno: m.meterno, amount: String(m.amount), max_amount_payable: m.amount },
+    detail: d => (d.token ? `Token: ${d.token}` : '')
+  });
+}));
+
+app.post('/api/buy-exam-pin', requireAuth, wrap(async (req, res) => {
+  const board = Number(req.body.exam_board);
+  const pins = Number(req.body.no_of_pins);
+  if (![1, 2, 3].includes(board) || !Number.isInteger(pins) || pins < 1 || pins > 10) throw new HttpError(400, 'Choose an exam body and 1 to 10 pins.', 'failed');
+  let plan;
+  try { plan = (await fetchPlans(EXAM_TYPES[board - 1]))[0]; } catch (e) { /* handled below */ }
+  if (!plan) throw new HttpError(400, 'Exam pins are not available right now. Please try again later.', 'failed');
+  const base = rawPrice(plan);
+  const cost = calculateSellingPrice(base, await isResellerUser(req.user.uid), false) * pins;
+  const name = ['WAEC', 'NECO', 'NABTEB'][board - 1];
+  await purchaseFlow(res, req.user.uid, {
+    cost, type: 'Exam', title: `${name} Result PIN x${pins}`,
+    endpoint: 'exam-pins', payload: { exam_board: board, no_of_pins: pins, max_amount_payable: Math.ceil(base * pins * 1.05) },
+    detail: d => (Array.isArray(d.pins) ? d.pins.join('\n') : '')
+  });
 }));
 
 // ---------- Top-ups (Korapay) ----------
