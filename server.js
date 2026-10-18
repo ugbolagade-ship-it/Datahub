@@ -3,8 +3,6 @@ const axios = require('axios');
 const cors = require('cors');
 const crypto = require('crypto');
 const admin = require('firebase-admin');
-console.log('Env names:', JSON.stringify(Object.keys(process.env).filter(k => /KORA|ADMIN|EASY|FIREBASE/i.test(k))));
-
 
 // ---------- Required secrets (set these in Render > Environment, never in code) ----------
 function need(name) {
