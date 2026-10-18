@@ -1,342 +1,427 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>OyoData — Full Master Admin Panel</title>
-  <style>
-    :root {
-      --bg: #0f0d1a;
-      --card-bg: #1b1834;
-      --text-light: #ffffff;
-      --text-muted: #a09cb0;
-      --brand-orange: #f4841f;
-      --brand-red: #d9381e;
-      --input-border: #2e2a4a;
-      --success-bg: #133a20;
-      --success-text: #42c26c;
-      --error-bg: #3a1313;
-      --error-text: #e55353;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>OyoData Admin</title>
+<style>
+:root{
+  --bg:#f4f5fa; --card:#fff; --dark:#1e1b38; --text:#1e1b38; --muted:#7a7894;
+  --line:#e6e4f0; --orange:#f58220; --red:#d7381e; --green:#1a7f4b; --green-bg:#e6f6ee;
+  --amber:#b26a00; --amber-bg:#fff4e0; --red-bg:#fdeceb;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);overflow-x:hidden}
+body{min-height:100vh}
+button{cursor:pointer;border:0;font-weight:700}
+input,textarea,select{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:12px;font-size:1rem;background:#fff;color:var(--text);outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--orange)}
+label{display:block;font-size:.78rem;font-weight:700;color:var(--muted);margin:12px 0 6px}
+.hidden{display:none!important}
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg); color: var(--text-light); padding: 16px; display: flex; justify-content: center; min-height: 100vh; }
-    .admin-container { width: 100%; max-width: 520px; }
+/* login */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:28px 22px;width:100%;max-width:380px}
+.login-card h1{font-size:1.4rem;margin-bottom:4px}
+.login-card p{color:var(--muted);font-size:.85rem;margin-bottom:6px}
 
-    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--input-border); padding-bottom: 12px; }
-    .brand { display: flex; align-items: center; gap: 8px; }
-    .brand-logo { width: 42px; height: auto; }
-    .admin-title { font-size: 1.2rem; font-weight: 800; color: var(--brand-orange); }
-    .badge-admin { background: var(--brand-red); color: #fff; font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
+/* shell */
+header{background:var(--dark);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
+header h1{font-size:1.05rem}
+header h1 span{color:var(--orange)}
+.btn{padding:12px 16px;border-radius:12px;font-size:.9rem}
+.btn-primary{background:var(--orange);color:#fff}
+.btn-dark{background:var(--dark);color:#fff}
+.btn-ghost{background:#efeef7;color:var(--text)}
+.btn-ok{background:var(--green);color:#fff}
+.btn-bad{background:var(--red);color:#fff}
+.btn-sm{padding:9px 12px;font-size:.8rem}
+.btn[disabled]{opacity:.5}
+nav{display:flex;gap:8px;overflow-x:auto;padding:12px 12px 4px;position:sticky;top:50px;background:var(--bg);z-index:15}
+nav button{flex:0 0 auto;padding:10px 14px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--muted);font-size:.82rem}
+nav button.on{background:var(--orange);border-color:var(--orange);color:#fff}
+nav .dot{display:inline-block;min-width:18px;padding:1px 5px;margin-left:6px;border-radius:9px;background:var(--red);color:#fff;font-size:.7rem}
+main{padding:12px 12px 40px;max-width:720px;margin:0 auto}
+#busy{position:fixed;left:0;right:0;top:0;height:3px;background:var(--orange);z-index:50;transform-origin:left;animation:load 1.2s infinite}
+@keyframes load{0%{transform:scaleX(0)}60%{transform:scaleX(.8)}100%{transform:scaleX(1);opacity:.2}}
 
-    .auth-box { background: var(--card-bg); border-radius: 20px; padding: 20px; border: 1px solid var(--input-border); margin-bottom: 20px; }
-    
-    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
-    .stat-card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--input-border); }
-    .stat-val { font-size: 1.4rem; font-weight: 800; margin-top: 4px; color: var(--text-light); }
-    .stat-lbl { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
+.card h2{font-size:.95rem;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+.stat small{display:block;color:var(--muted);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.stat b{display:block;font-size:1.2rem;margin-top:4px;overflow-wrap:anywhere}
+.stat.click{cursor:pointer}
+.row{display:flex;gap:10px;align-items:center}
+.row > *{min-width:0}
+.item{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px}
+.item .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.item .t{font-weight:700;font-size:.9rem;overflow-wrap:anywhere}
+.item .s{color:var(--muted);font-size:.76rem;margin-top:3px;overflow-wrap:anywhere}
+.item .amt{font-weight:800;white-space:nowrap}
+.actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:.68rem;font-weight:800}
+.b-ok{background:var(--green-bg);color:var(--green)}
+.b-wait{background:var(--amber-bg);color:var(--amber)}
+.b-bad{background:var(--red-bg);color:var(--red)}
+.b-info{background:#ececf8;color:#4a4780}
+.seg{display:flex;background:#e9e8f3;border-radius:12px;padding:4px;margin-bottom:12px}
+.seg button{flex:1;padding:9px;border-radius:9px;background:transparent;color:var(--muted);font-size:.85rem}
+.seg button.on{background:#fff;color:var(--text)}
+.empty{text-align:center;color:var(--muted);font-size:.85rem;padding:26px 10px}
+.hint{color:var(--muted);font-size:.78rem;margin-top:8px;line-height:1.4}
 
-    .admin-card { background: var(--card-bg); border-radius: 20px; padding: 20px; border: 1px solid var(--input-border); margin-bottom: 20px; }
-    .card-title { font-size: 0.95rem; font-weight: 800; margin-bottom: 14px; color: var(--brand-orange); display: flex; align-items: center; gap: 8px; }
-    
-    .form-group { margin-bottom: 14px; }
-    .form-group label { display: block; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
-    input, select, textarea { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--input-border); background: #131124; color: #fff; font-size: 0.88rem; outline: none; }
-    input:focus, select:focus, textarea:focus { border-color: var(--brand-orange); }
-
-    .btn-submit { width: 100%; padding: 14px; border: none; border-radius: 12px; background: var(--brand-orange); color: #fff; font-weight: 800; font-size: 0.88rem; cursor: pointer; }
-    .btn-secondary { background: var(--brand-red); margin-top: 8px; }
-
-    .status-alert { margin-top: 10px; padding: 10px; border-radius: 10px; font-size: 0.8rem; font-weight: 600; display: none; }
-    .status-alert.error { display: block; background: var(--error-bg); color: var(--error-text); }
-    .status-alert.success { display: block; background: var(--success-bg); color: var(--success-text); }
-  </style>
+/* sheet */
+.overlay{position:fixed;inset:0;background:rgba(20,18,40,.5);z-index:40;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:720px;max-height:92vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:16px 14px 30px}
+.sheet .bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.sheet .bar h2{font-size:1rem;overflow-wrap:anywhere;padding-right:10px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--dark);color:#fff;padding:12px 18px;border-radius:12px;font-size:.85rem;z-index:60;max-width:90%;text-align:center}
+#toast.err{background:var(--red)}
+</style>
 </head>
 <body>
+<div id="busy" class="hidden"></div>
 
-  <div class="admin-container">
-    <div class="top-bar">
-      <div class="brand">
-        <svg viewBox="0 0 500 280" fill="none" xmlns="http://www.w3.org/2000/svg" class="brand-logo">
-          <defs>
-            <linearGradient id="oyoGradAdmin" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#FFB000"/>
-              <stop offset="50%" stop-color="#FF5500"/>
-              <stop offset="100%" stop-color="#E03000"/>
-            </linearGradient>
-          </defs>
-          <rect x="70" y="85" width="70" height="16" rx="8" fill="url(#oyoGradAdmin)"/>
-          <rect x="40" y="115" width="80" height="16" rx="8" fill="url(#oyoGradAdmin)"/>
-          <rect x="58" y="145" width="70" height="16" rx="8" fill="url(#oyoGradAdmin)"/>
-          <path d="M 230 40 L 320 40 C 390 40 440 85 440 155 C 440 225 390 270 320 270 L 230 270 Z" fill="#0A1922"/>
-          <path d="M 285 95 L 315 95 C 355 95 380 120 380 155 C 380 190 355 215 315 215 L 285 215 Z" fill="#FFFFFF"/>
-          <circle cx="210" cy="155" r="115" fill="url(#oyoGradAdmin)"/>
-          <circle cx="210" cy="155" r="70" fill="#FFFFFF"/>
-          <rect x="180" y="105" width="60" height="100" rx="12" fill="url(#oyoGradAdmin)"/>
-          <rect x="186" y="113" width="48" height="74" rx="4" fill="#FFFFFF"/>
-          <circle cx="210" cy="196" r="4" fill="#FFFFFF"/>
-          <path d="M 214 122 L 200 150 H 211 L 206 178 L 220 150 H 209 Z" fill="url(#oyoGradAdmin)"/>
-        </svg>
-        <div class="admin-title">OyoData Master Admin</div>
+<!-- LOGIN -->
+<div id="login">
+  <form class="login-card" id="loginForm">
+    <h1>OyoData <span style="color:var(--orange)">Admin</span></h1>
+    <p>Enter your admin key to continue.</p>
+    <label for="key">Admin key</label>
+    <input id="key" type="password" autocomplete="current-password" required />
+    <button class="btn btn-primary" style="width:100%;margin-top:16px" id="loginBtn" type="submit">Sign in</button>
+    <p class="hint" id="loginMsg"></p>
+  </form>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <header>
+    <h1>OyoData <span>Admin</span></h1>
+    <button class="btn btn-sm btn-ghost" onclick="logout()">Log out</button>
+  </header>
+  <nav id="tabs">
+    <button data-tab="overview" class="on">Overview</button>
+    <button data-tab="users">Users</button>
+    <button data-tab="orders">Orders <span class="dot hidden" id="dotOrders"></span></button>
+    <button data-tab="withdrawals">Withdrawals <span class="dot hidden" id="dotWd"></span></button>
+    <button data-tab="announce">Announcement</button>
+    <button data-tab="settings">Settings</button>
+  </nav>
+
+  <main>
+    <!-- OVERVIEW -->
+    <section id="tab-overview">
+      <div class="grid" id="statGrid"></div>
+      <div class="card" style="margin-top:12px">
+        <h2>Quick credit</h2>
+        <p class="hint" style="margin-top:0">Open a user from the Users tab to credit or debit their wallet, change reseller status, or see their history.</p>
+        <button class="btn btn-dark" style="margin-top:12px" onclick="go('users')">Find a user</button>
       </div>
-      <span class="badge-admin">Full Control</span>
+    </section>
+
+    <!-- USERS -->
+    <section id="tab-users" class="hidden">
+      <form class="row" id="searchForm" style="margin-bottom:12px">
+        <input id="search" type="search" placeholder="Search by email (starts with…)" />
+        <button class="btn btn-dark" type="submit">Search</button>
+      </form>
+      <div id="userList"></div>
+    </section>
+
+    <!-- ORDERS -->
+    <section id="tab-orders" class="hidden">
+      <div class="seg">
+        <button id="segPending" class="on" onclick="loadOrders('PENDING')">Pending</button>
+        <button id="segRecent" onclick="loadOrders('ALL')">Recent</button>
+      </div>
+      <div id="orderList"></div>
+    </section>
+
+    <!-- WITHDRAWALS -->
+    <section id="tab-withdrawals" class="hidden">
+      <p class="hint" style="margin:0 0 12px">Pay the person from your bank app first, then tap <b>Mark paid</b>. <b>Reject</b> returns the money to their referral wallet.</p>
+      <div id="wdList"></div>
+    </section>
+
+    <!-- ANNOUNCEMENT -->
+    <section id="tab-announce" class="hidden">
+      <div class="card">
+        <h2>Announcement</h2>
+        <label for="annText">Message shown to users</label>
+        <textarea id="annText" rows="5" maxlength="500" placeholder="e.g. Network maintenance tonight 11pm."></textarea>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="publishAnnouncement(false)">Publish</button>
+          <button class="btn btn-ghost" onclick="publishAnnouncement(true)">Clear</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="tab-settings" class="hidden">
+      <div class="card">
+        <h2>Data and exam PIN profit margin</h2>
+        <label for="margin">Margin (%)</label>
+        <input id="margin" type="number" min="0" max="100" step="0.1" />
+        <p class="hint" id="marginExample"></p>
+        <div class="actions"><button class="btn btn-primary" onclick="saveSettings()">Save margin</button></div>
+        <p class="hint">Applies right away to Data and Exam PIN prices. Cable TV rounds up to the next ₦100 and Electricity is charged at the amount entered, so this setting does not change them.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- USER SHEET -->
+<div id="sheet" class="overlay hidden" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet" id="sheetBody"></div>
+</div>
+<div id="toast" class="hidden"></div>
+
+<script>
+const BACKEND = 'https://datahub-qmzg.onrender.com';
+let KEY = sessionStorage.getItem('oyo_admin_key') || '';
+let busyCount = 0;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const money = n => '₦' + Number(n || 0).toLocaleString('en-NG');
+const when = ms => ms ? new Date(ms).toLocaleDateString('en-GB') : '';
+
+function toast(msg, isErr) {
+  const t = $('toast');
+  t.textContent = msg; t.className = isErr ? 'err' : ''; t.classList.remove('hidden');
+  clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.add('hidden'), 3500);
+}
+
+async function call(path, method = 'GET', body) {
+  busyCount++; $('busy').classList.remove('hidden');
+  try {
+    const res = await fetch(BACKEND + path, {
+      method,
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': KEY },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 401) { logout(); throw new Error('Wrong or expired admin key.'); }
+    if (!res.ok) throw new Error(data.message || 'Request failed.');
+    return data;
+  } finally {
+    if (--busyCount === 0) $('busy').classList.add('hidden');
+  }
+}
+
+/* ---------- login ---------- */
+$('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  KEY = $('key').value.trim();
+  const btn = $('loginBtn'); btn.disabled = true; btn.textContent = 'Checking…';
+  $('loginMsg').textContent = 'The server may take up to a minute to wake up.';
+  try {
+    await call('/api/admin/stats');
+    sessionStorage.setItem('oyo_admin_key', KEY);
+    $('login').classList.add('hidden'); $('app').classList.remove('hidden');
+    go('overview');
+  } catch (err) {
+    $('loginMsg').textContent = err.message;
+  } finally { btn.disabled = false; btn.textContent = 'Sign in'; }
+});
+
+function logout() {
+  KEY = ''; sessionStorage.removeItem('oyo_admin_key');
+  $('app').classList.add('hidden'); $('login').classList.remove('hidden');
+  $('key').value = ''; closeSheet();
+}
+
+/* ---------- tabs ---------- */
+const loaders = { overview: loadOverview, users: () => loadUsers(''), orders: () => loadOrders('PENDING'), withdrawals: loadWithdrawals, announce: loadAnnounce, settings: loadSettings };
+function go(tab) {
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  document.querySelectorAll('main section').forEach(s => s.classList.add('hidden'));
+  $('tab-' + tab).classList.remove('hidden');
+  window.scrollTo(0, 0);
+  loaders[tab]().catch(err => toast(err.message, true));
+}
+$('tabs').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) go(b.dataset.tab); });
+
+function setDot(id, n) { const d = $(id); d.textContent = n; d.classList.toggle('hidden', !n); }
+
+/* ---------- overview ---------- */
+async function loadOverview() {
+  const s = await call('/api/admin/stats');
+  setDot('dotOrders', s.pending_orders); setDot('dotWd', s.pending_withdrawals);
+  $('statGrid').innerHTML = `
+    <div class="stat"><small>Users</small><b>${s.total_users}</b></div>
+    <div class="stat"><small>Resellers</small><b>${s.resellers}</b></div>
+    <div class="stat"><small>User wallets</small><b>${money(s.total_wallets)}</b></div>
+    <div class="stat"><small>Referral wallets</small><b>${money(s.total_referral)}</b></div>
+    <div class="stat click" onclick="go('orders')"><small>Pending orders</small><b>${s.pending_orders}</b></div>
+    <div class="stat click" onclick="go('withdrawals')"><small>Pending withdrawals</small><b>${s.pending_withdrawals}</b></div>
+    <div class="stat" style="grid-column:1/-1"><small>EasyAccess wallet (your supplier balance)</small><b id="easyBal">Checking…</b></div>`;
+  call('/api/wallet-balance').then(r => { $('easyBal').textContent = /^[\d.,]+$/.test(String(r.balance)) ? money(r.balance) : esc(r.balance); })
+    .catch(() => { $('easyBal').textContent = 'Unavailable'; });
+}
+
+/* ---------- users ---------- */
+$('searchForm').addEventListener('submit', e => { e.preventDefault(); loadUsers($('search').value.trim()).catch(err => toast(err.message, true)); });
+
+async function loadUsers(q) {
+  $('userList').innerHTML = '<p class="empty">Loading…</p>';
+  const r = await call('/api/admin/users?search=' + encodeURIComponent(q));
+  $('userList').innerHTML = r.users.length ? r.users.map(u => `
+    <div class="item" onclick="openUser('${esc(u.email)}')" style="cursor:pointer">
+      <div class="top">
+        <div><div class="t">${esc(u.email)}</div>
+          <div class="s">${u.is_reseller ? '<span class="badge b-info">Reseller</span> ' : ''}Joined ${esc(when(u.created)) || 'n/a'}</div></div>
+        <div style="text-align:right"><div class="amt">${money(u.balance)}</div><div class="s">Ref ${money(u.ref_balance)}</div></div>
+      </div>
+    </div>`).join('') : '<p class="empty">No users found.</p>';
+}
+
+async function openUser(email) {
+  $('sheetBody').innerHTML = '<p class="empty">Loading…</p>'; $('sheet').classList.remove('hidden');
+  try {
+    const { user: u } = await call('/api/admin/user?email=' + encodeURIComponent(email));
+    renderUser(u);
+  } catch (err) { closeSheet(); toast(err.message, true); }
+}
+
+function badge(st) { return `<span class="badge ${st === 'SUCCESS' ? 'b-ok' : st === 'PENDING' ? 'b-wait' : 'b-bad'}">${esc(st)}</span>`; }
+
+function renderUser(u) {
+  const tx = u.transactions.length ? u.transactions.map(t => `
+    <div class="item" style="margin-bottom:8px"><div class="top">
+      <div><div class="t">${esc(t.title)}</div><div class="s">${esc(t.date)} • …${esc(String(t.ref).slice(-8))}</div></div>
+      <div style="text-align:right"><div class="amt">${t.type === 'Transfer' ? '+' : '-'}${money(t.amount)}</div>${badge(t.status)}</div>
+    </div></div>`).join('') : '<p class="empty">No transactions yet.</p>';
+  $('sheetBody').innerHTML = `
+    <div class="bar"><h2>${esc(u.email)}</h2><button class="btn btn-sm btn-ghost" onclick="closeSheet()">Close</button></div>
+    <div class="grid">
+      <div class="stat"><small>Wallet</small><b>${money(u.balance)}</b></div>
+      <div class="stat"><small>Referral wallet</small><b>${money(u.ref_balance)}</b></div>
     </div>
-
-    <!-- ADMIN LOGIN -->
-    <div id="adminAuthBox" class="auth-box">
-      <div class="form-group">
-        <label>Enter Secret Admin Key</label>
-        <input type="password" id="adminSecretKey" placeholder="Default: oyodata_admin_secure_99" />
+    <div class="card" style="margin-top:12px">
+      <h2>Wallet adjustment</h2>
+      <label for="adjAmt">Amount (₦)</label>
+      <input id="adjAmt" type="number" min="1" inputmode="numeric" placeholder="e.g. 500" />
+      <div class="actions">
+        <button class="btn btn-ok" onclick="adjust('${esc(u.email)}','credit')">Credit</button>
+        <button class="btn btn-bad" onclick="adjust('${esc(u.email)}','debit')">Debit</button>
       </div>
-      <button class="btn-submit" onclick="authenticateAdmin()">Unlock Master Controls</button>
-      <div id="authAlert" class="status-alert"></div>
     </div>
-
-    <!-- MAIN CONTROL CENTER -->
-    <div id="adminContent" style="display: none;">
-      
-      <!-- Metrics -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-lbl">Live Users</div>
-          <div class="stat-val" id="statUsers">...</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-lbl">Reseller Accounts</div>
-          <div class="stat-val" id="statResellers" style="color: var(--brand-orange);">...</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-lbl">Easy Access Balance</div>
-          <div class="stat-val" id="statProviderBal" style="font-size: 1.1rem;">Fetching...</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-lbl">System Status</div>
-          <div class="stat-val" style="color: var(--success-text); font-size: 1.1rem;">ACTIVE</div>
-        </div>
+    <div class="card">
+      <h2>Account</h2>
+      <div class="row" style="justify-content:space-between">
+        <div>${u.is_reseller ? '<span class="badge b-info">Reseller</span>' : '<span class="badge b-wait">Regular user</span>'}
+        <div class="s" style="color:var(--muted);font-size:.76rem;margin-top:6px">Referred users: ${u.referred_users.length}</div></div>
+        <button class="btn btn-sm btn-dark" onclick="toggleReseller('${esc(u.email)}',${!u.is_reseller})">${u.is_reseller ? 'Remove reseller' : 'Make reseller'}</button>
       </div>
-
-      <!-- 1. USER WALLET CONTROL -->
-      <div class="admin-card">
-        <div class="card-title">💳 Manage User Wallet Balance</div>
-        
-        <div class="form-group">
-          <label>Target User Email</label>
-          <input type="email" id="targetEmail" placeholder="user@gmail.com" required />
-        </div>
-
-        <div class="form-group">
-          <label>Action Type</label>
-          <select id="actionType">
-            <option value="credit">Credit User Wallet (+)</option>
-            <option value="debit">Debit User Wallet (-)</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Amount (₦)</label>
-          <input type="number" id="adjustAmount" placeholder="e.g. 5000" min="1" required />
-        </div>
-
-        <button class="btn-submit" onclick="processWalletAdjustment()">Execute Wallet Action</button>
-        <div id="walletAlert" class="status-alert"></div>
-      </div>
-
-      <!-- 2. RESELLER STATUS CONTROL -->
-      <div class="admin-card">
-        <div class="card-title">⭐ Upgrade / Downgrade Tiers</div>
-        
-        <div class="form-group">
-          <label>Target User Email</label>
-          <input type="email" id="tierTargetEmail" placeholder="user@gmail.com" required />
-        </div>
-
-        <div class="form-group">
-          <label>Account Tier</label>
-          <select id="tierStatus">
-            <option value="true">Upgrade to Reseller (5% Off Active)</option>
-            <option value="false">Downgrade to Standard User</option>
-          </select>
-        </div>
-
-        <button class="btn-submit btn-secondary" onclick="processTierChange()">Update Account Tier</button>
-        <div id="tierAlert" class="status-alert"></div>
-      </div>
-
-      <!-- 3. SYSTEM ANNOUNCEMENT BANNER -->
-      <div class="admin-card">
-        <div class="card-title">📢 Broadcast Dashboard Announcement</div>
-        
-        <div class="form-group">
-          <label>Announcement Message</label>
-          <textarea id="announceText" rows="3" placeholder="e.g. MTN SME Data is back online! Happy reselling."></textarea>
-        </div>
-
-        <button class="btn-submit" onclick="publishAnnouncement()">Publish Banner to All Users</button>
-        <div id="announceAlert" class="status-alert"></div>
-      </div>
-
     </div>
-  </div>
+    <h2 style="font-size:.95rem;margin:14px 2px 8px">Recent transactions</h2>${tx}`;
+}
 
-  <script>
-    const BACKEND_URL = "https://datahub-qmzg.onrender.com";
-    let activeAdminKey = "";
+function closeSheet() { $('sheet').classList.add('hidden'); }
 
-    async function authenticateAdmin() {
-      const keyInput = document.getElementById('adminSecretKey').value.trim();
-      const alertBox = document.getElementById('authAlert');
+async function adjust(email, action) {
+  const amount = Number($('adjAmt').value);
+  if (!(amount > 0)) return toast('Enter an amount greater than 0.', true);
+  if (!confirm(`${action === 'credit' ? 'Credit' : 'Debit'} ${money(amount)} ${action === 'credit' ? 'to' : 'from'} ${email}?`)) return;
+  try {
+    const r = await call('/api/admin/fund-wallet', 'POST', { user_email: email, action_type: action, amount });
+    toast(r.message); await openUser(email); loadUsers($('search').value.trim()).catch(() => {});
+  } catch (err) { toast(err.message, true); }
+}
 
-      if (!keyInput) {
-        alertBox.className = "status-alert error";
-        alertBox.textContent = "Please enter the Admin Secret Key.";
-        return;
-      }
+async function toggleReseller(email, flag) {
+  if (!confirm(`${flag ? 'Make' : 'Remove'} ${email} ${flag ? 'a reseller' : 'as reseller'}?`)) return;
+  try { const r = await call('/api/admin/toggle-reseller', 'POST', { user_email: email, is_reseller: flag }); toast(r.message); openUser(email); }
+  catch (err) { toast(err.message, true); }
+}
 
-      activeAdminKey = keyInput;
-      fetchLiveStats();
-    }
+/* ---------- orders ---------- */
+async function loadOrders(mode) {
+  $('segPending').classList.toggle('on', mode === 'PENDING');
+  $('segRecent').classList.toggle('on', mode !== 'PENDING');
+  $('orderList').innerHTML = '<p class="empty">Loading…</p>';
+  const r = await call('/api/admin/orders' + (mode === 'PENDING' ? '?status=PENDING' : ''));
+  $('orderList').innerHTML = r.orders.length ? r.orders.map(o => `
+    <div class="item">
+      <div class="top">
+        <div><div class="t">${esc(o.title)}</div><div class="s">${esc(o.email)}<br>${esc(o.date)} • ${esc(o.type)} • ${esc(o.ref)}</div></div>
+        <div style="text-align:right"><div class="amt">${money(o.amount)}</div>${badge(o.status)}</div>
+      </div>
+      ${o.status === 'PENDING' ? `<div class="actions">
+        <button class="btn btn-sm btn-ok" onclick="resolveOrder('${esc(o.ref)}',true)">Mark delivered</button>
+        <button class="btn btn-sm btn-bad" onclick="resolveOrder('${esc(o.ref)}',false)">Refund customer</button></div>` : ''}
+    </div>`).join('') : `<p class="empty">${mode === 'PENDING' ? 'No pending orders. 🎉' : 'No orders yet.'}</p>`;
+}
 
-    async function fetchLiveStats() {
-      const alertBox = document.getElementById('authAlert');
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/admin/stats`, {
-          headers: { 'x-admin-key': activeAdminKey }
-        });
-        const data = await res.json();
+async function resolveOrder(ref, ok) {
+  if (!confirm(ok ? 'Mark this order as delivered?' : 'Refund the customer and mark this order failed?')) return;
+  try { const r = await call('/api/admin/resolve-order', 'POST', { ref, success: ok }); toast(r.message); loadOrders('PENDING'); refreshDots(); }
+  catch (err) { toast(err.message, true); }
+}
 
-        if (data.status === 'success') {
-          document.getElementById('adminAuthBox').style.display = 'none';
-          document.getElementById('adminContent').style.display = 'block';
+/* ---------- withdrawals ---------- */
+async function loadWithdrawals() {
+  $('wdList').innerHTML = '<p class="empty">Loading…</p>';
+  const r = await call('/api/admin/withdrawals');
+  $('wdList').innerHTML = r.withdrawals.length ? r.withdrawals.map(w => `
+    <div class="item">
+      <div class="top">
+        <div><div class="t">${esc(w.bank)} • ${esc(w.account)}</div><div class="s">${esc(w.email)}<br>${esc(w.date)} • ${esc(w.ref)}</div></div>
+        <div class="amt">${money(w.amount)}</div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-sm btn-ghost" onclick="copyText('${esc(w.account)}')">Copy account</button>
+        <button class="btn btn-sm btn-ok" onclick="wdDone('${esc(w.ref)}',true)">Mark paid</button>
+        <button class="btn btn-sm btn-bad" onclick="wdDone('${esc(w.ref)}',false)">Reject</button>
+      </div>
+    </div>`).join('') : '<p class="empty">No pending withdrawals.</p>';
+}
 
-          document.getElementById('statUsers').textContent = data.total_users;
-          document.getElementById('statResellers').textContent = data.resellers;
+async function wdDone(ref, ok) {
+  if (!confirm(ok ? 'Confirm you have paid this person?' : 'Reject and return the money to their referral wallet?')) return;
+  try { const r = await call('/api/admin/withdrawal-done', 'POST', { ref, success: ok }); toast(r.message); loadWithdrawals(); refreshDots(); }
+  catch (err) { toast(err.message, true); }
+}
 
-          try {
-            const balRes = await fetch(`${BACKEND_URL}/api/wallet-balance`);
-            const balData = await balRes.json();
-            if (balData.balance) {
-              document.getElementById('statProviderBal').textContent = `₦${parseFloat(balData.balance).toLocaleString('en-NG')}`;
-            } else {
-              document.getElementById('statProviderBal').textContent = "Connected";
-            }
-          } catch (e) {
-            document.getElementById('statProviderBal').textContent = "Connected";
-          }
+function copyText(t) {
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('Copied.'), () => toast('Copy failed.', true));
+}
 
-        } else {
-          alertBox.className = "status-alert error";
-          alertBox.textContent = data.message || "Invalid Admin Key.";
-        }
-      } catch (err) {
-        alertBox.className = "status-alert error";
-        alertBox.textContent = "Network error connecting to backend server.";
-      }
-    }
+/* ---------- announcement ---------- */
+async function loadAnnounce() { const s = await call('/api/admin/stats'); $('annText').value = s.announcement || ''; }
+async function publishAnnouncement(clear) {
+  const message = clear ? '' : $('annText').value.trim();
+  if (!clear && !message) return toast('Type a message first.', true);
+  try { const r = await call('/api/admin/announcement', 'POST', { message }); if (clear) $('annText').value = ''; toast(clear ? 'Announcement cleared.' : r.message); }
+  catch (err) { toast(err.message, true); }
+}
 
-    async function processWalletAdjustment() {
-      const email = document.getElementById('targetEmail').value.trim();
-      const action = document.getElementById('actionType').value;
-      const amount = document.getElementById('adjustAmount').value;
-      const alertBox = document.getElementById('walletAlert');
+/* ---------- settings ---------- */
+function marginExample() {
+  const m = Number($('margin').value);
+  $('marginExample').textContent = Number.isFinite(m) ? `Example: a ₦1,000 plan from EasyAccess sells for about ${money(Math.ceil(1000 * (1 + m / 100) * 1.015))} (includes the 1.5% checkout fee).` : '';
+}
+$('margin').addEventListener('input', marginExample);
+async function loadSettings() { const r = await call('/api/admin/settings'); $('margin').value = r.settings.profit_margin_percent; marginExample(); }
+async function saveSettings() {
+  const m = Number($('margin').value);
+  if (!Number.isFinite(m) || m < 0 || m > 100) return toast('Enter a margin between 0 and 100.', true);
+  if (!confirm(`Set the Data/Exam margin to ${m}%? New prices apply immediately.`)) return;
+  try { const r = await call('/api/admin/settings', 'POST', { profit_margin_percent: m }); toast(r.message); }
+  catch (err) { toast(err.message, true); }
+}
 
-      if (!email || !amount) {
-        alertBox.className = "status-alert error";
-        alertBox.textContent = "Please complete all fields.";
-        return;
-      }
+async function refreshDots() { try { const s = await call('/api/admin/stats'); setDot('dotOrders', s.pending_orders); setDot('dotWd', s.pending_withdrawals); } catch (e) {} }
 
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/admin/fund-wallet`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-admin-key': activeAdminKey
-          },
-          body: JSON.stringify({ user_email: email, action_type: action, amount: amount })
-        });
-        const data = await res.json();
-
-        if (data.status === 'success') {
-          alertBox.className = "status-alert success";
-          alertBox.textContent = data.message;
-        } else {
-          alertBox.className = "status-alert error";
-          alertBox.textContent = data.message;
-        }
-      } catch (err) {
-        alertBox.className = "status-alert error";
-        alertBox.textContent = "Action failed.";
-      }
-    }
-
-    async function processTierChange() {
-      const email = document.getElementById('tierTargetEmail').value.trim();
-      const isReseller = document.getElementById('tierStatus').value === 'true';
-      const alertBox = document.getElementById('tierAlert');
-
-      if (!email) {
-        alertBox.className = "status-alert error";
-        alertBox.textContent = "Please enter user email.";
-        return;
-      }
-
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/admin/toggle-reseller`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-admin-key': activeAdminKey
-          },
-          body: JSON.stringify({ user_email: email, is_reseller: isReseller })
-        });
-        const data = await res.json();
-
-        if (data.status === 'success') {
-          alertBox.className = "status-alert success";
-          alertBox.textContent = data.message;
-        } else {
-          alertBox.className = "status-alert error";
-          alertBox.textContent = data.message;
-        }
-      } catch (err) {
-        alertBox.className = "status-alert error";
-        alertBox.textContent = "Tier change failed.";
-      }
-    }
-
-    async function publishAnnouncement() {
-      const msg = document.getElementById('announceText').value.trim();
-      const alertBox = document.getElementById('announceAlert');
-
-      if (!msg) {
-        alertBox.className = "status-alert error";
-        alertBox.textContent = "Please enter message text.";
-        return;
-      }
-
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/admin/announcement`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-admin-key': activeAdminKey
-          },
-          body: JSON.stringify({ message: msg })
-        });
-        const data = await res.json();
-
-        if (data.status === 'success') {
-          alertBox.className = "status-alert success";
-          alertBox.textContent = "Announcement broadcasted live!";
-        } else {
-          alertBox.className = "status-alert error";
-          alertBox.textContent = data.message;
-        }
-      } catch (err) {
-        alertBox.className = "status-alert error";
-        alertBox.textContent = "Failed to broadcast message.";
-      }
-    }
-  </script>
+/* ---------- auto sign-in if the key is remembered for this tab ---------- */
+if (KEY) {
+  call('/api/admin/stats').then(() => { $('login').classList.add('hidden'); $('app').classList.remove('hidden'); go('overview'); })
+    .catch(() => logout());
+}
+</script>
 </body>
 </html>
