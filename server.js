@@ -3,6 +3,7 @@ const axios = require('axios');
 const cors = require('cors');
 const crypto = require('crypto');
 const admin = require('firebase-admin');
+const { AggregateField } = require('firebase-admin/firestore');
 
 // ---------- Required secrets (set these in Render > Environment, never in code) ----------
 function need(name) {
@@ -17,6 +18,7 @@ const fdb = admin.firestore();
 const usersCol = fdb.collection('users');       // document id = Firebase uid
 const paymentsCol = fdb.collection('payments'); // document id = Korapay reference (stops double credit)
 const withdrawalsCol = fdb.collection('withdrawals');
+const ordersCol = fdb.collection('orders');      // one record per purchase / top-up, for the admin panel
 
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://ugbolagade-ship-it.github.io')
   .split(',').map(s => s.trim());
@@ -27,7 +29,12 @@ const RESELLER_FEE = 2000;
 const REFERRAL_BONUS = 1000;
 const MAX_TX_KEPT = 200;
 
+// Settings the admin can change from admin.html (stored in Firestore: meta/settings)
+const settings = { profit_margin_percent: PROFIT_MARGIN * 100 };
+fdb.doc('meta/settings').get().then(d => { if (d.exists) Object.assign(settings, d.data()); }).catch(e => console.error('Could not load settings:', e.message));
+
 const app = express();
+app.set('trust proxy', 1);
 app.use(cors({
   origin: (origin, cb) => cb(null, !origin || ALLOWED_ORIGINS.includes(origin)),
   methods: ['GET', 'POST', 'OPTIONS'],
@@ -70,9 +77,14 @@ async function requireAuth(req, res, next) {
   }
 }
 
+const adminFails = {};
 function adminOnly(req, res, next) {
-  const h = s => crypto.createHash('sha256').update(String(s || '')).digest();
+  const f = adminFails[req.ip] || { n: 0, t: Date.now() };
+  if (Date.now() - f.t > 15 * 60 * 1000) { f.n = 0; f.t = Date.now(); }
+  if (f.n >= 10) return res.status(429).json({ status: 'error', message: 'Too many wrong attempts. Try again in 15 minutes.' });
+  const h = x => crypto.createHash('sha256').update(String(x || '')).digest();
   if (!crypto.timingSafeEqual(h(req.headers['x-admin-key']), h(ADMIN_SECRET_KEY))) {
+    f.n++; adminFails[req.ip] = f;
     return res.status(401).json({ status: 'error', message: 'Unauthorized key.' });
   }
   next();
@@ -95,7 +107,7 @@ function calculateSellingPrice(basePrice, isReseller = false, isCable = false) {
   if (isNaN(original)) return basePrice;
   if (isCable) return Math.ceil(original / 100) * 100; // round up to the next ₦100
   const resellerDiscount = isReseller ? 5 : 0;
-  const finalPrice = original * (1 + PROFIT_MARGIN) * (1 - resellerDiscount / 100);
+  const finalPrice = original * (1 + settings.profit_margin_percent / 100) * (1 - resellerDiscount / 100);
   return Math.ceil(finalPrice * 1.015); // 1.5% checkout fee
 }
 const rawPrice = p => Number(p.price || p.plan_price || p.amount || p.package_amount || 0);
@@ -194,6 +206,7 @@ async function finishTx(uid, txRef, status, refund = 0, detail = '') {
     if (x) { x.status = status; if (detail) x.detail = detail; }
     if (refund) u.balance += refund;
     t.set(ref, u);
+    t.set(ordersCol.doc(txRef), { status }, { merge: true });
     return { u, x };
   });
 }
@@ -219,6 +232,7 @@ app.post('/api/purchase-data', requireAuth, wrap(async (req, res) => {
     u.balance -= price;
     const tx = addTx(u, { type: 'Data', title: `Data Purchase — ${mobileno}`, amount: String(price), ref: `ref_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`, status: 'PENDING' });
     t.set(ref, u);
+    t.set(ordersCol.doc(tx.ref), { ref: tx.ref, uid, email: u.email, type: 'Data', title: tx.title, amount: price, status: 'PENDING', date: today(), ts: Date.now() });
     return { cost: price, txRef: tx.ref };
   });
 
@@ -280,6 +294,7 @@ async function purchaseFlow(res, uid, o) {
     u.balance -= o.cost;
     const tx = addTx(u, { type: o.type, title: o.title, amount: String(o.cost), ref: `${o.type.toLowerCase()}_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`, status: 'PENDING' });
     t.set(ref, u);
+    t.set(ordersCol.doc(tx.ref), { ref: tx.ref, uid, email: u.email, type: o.type, title: o.title, amount: o.cost, status: 'PENDING', date: today(), ts: Date.now() });
     return tx.ref;
   });
   try {
@@ -388,6 +403,7 @@ async function creditByReference(reference, amount) {
     addTx(u, { type: 'Transfer', title: 'Korapay Wallet Top Up', amount: String(amount), ref: String(reference), status: 'SUCCESS' });
     t.set(uref, u);
     t.set(pref, { uid: m[1], amount, date: Date.now() });
+    t.set(ordersCol.doc(String(reference)), { ref: String(reference), uid: m[1], email: u.email, type: 'Top Up', title: 'Korapay Wallet Top Up', amount, status: 'SUCCESS', date: today(), ts: Date.now() });
     return { ok: true, user: u, amount };
   });
 }
@@ -494,12 +510,6 @@ async function findUserByEmail(email) {
   return q.docs[0];
 }
 
-app.get('/api/admin/stats', adminOnly, wrap(async (req, res) => {
-  const total = (await usersCol.count().get()).data().count;
-  const resellers = (await usersCol.where('is_reseller', '==', true).count().get()).data().count;
-  res.json({ status: 'success', total_users: total, resellers });
-}));
-
 app.get('/api/wallet-balance', adminOnly, wrap(async (req, res) => {
   try {
     const r = await axios.get(`${EASY_ACCESS_BASE}/wallet-balance`, { headers: getEasyAccessHeaders(), timeout: 10000 });
@@ -556,6 +566,74 @@ app.post('/api/admin/withdrawal-done', adminOnly, wrap(async (req, res) => {
     return ok ? 'SUCCESS' : 'FAILED';
   });
   res.json({ status: 'success', message: `Withdrawal marked ${status}.` });
+}));
+
+// ---------- Admin panel routes (admin.html) ----------
+app.get('/api/admin/stats', adminOnly, wrap(async (req, res) => {
+  const count = async q => (await q.count().get()).data().count;
+  const [total, resellers, pendingOrders, pendingWithdrawals] = await Promise.all([
+    count(usersCol),
+    count(usersCol.where('is_reseller', '==', true)),
+    count(ordersCol.where('status', '==', 'PENDING')),
+    count(withdrawalsCol.where('status', '==', 'PENDING'))
+  ]);
+  const agg = (await usersCol.aggregate({ wallets: AggregateField.sum('balance'), refs: AggregateField.sum('ref_balance') }).get()).data();
+  let announcement = '';
+  try { const a = await fdb.doc('meta/announcement').get(); announcement = a.exists ? a.data().message || '' : ''; } catch (e) {}
+  res.json({ status: 'success', total_users: total, resellers, pending_orders: pendingOrders, pending_withdrawals: pendingWithdrawals, total_wallets: agg.wallets || 0, total_referral: agg.refs || 0, announcement });
+}));
+
+app.get('/api/admin/users', adminOnly, wrap(async (req, res) => {
+  const q = String(req.query.search || '').trim().toLowerCase();
+  const query = q
+    ? usersCol.where('email', '>=', q).where('email', '<=', q + '\uf8ff').limit(50)
+    : usersCol.orderBy('created', 'desc').limit(50);
+  const snap = await query.get();
+  res.json({ status: 'success', users: snap.docs.map(d => { const u = d.data(); return { uid: d.id, email: u.email, balance: u.balance || 0, ref_balance: u.ref_balance || 0, is_reseller: !!u.is_reseller, created: u.created || null }; }) });
+}));
+
+app.get('/api/admin/user', adminOnly, wrap(async (req, res) => {
+  const doc = await findUserByEmail(req.query.email);
+  const u = doc.data();
+  res.json({ status: 'success', user: { uid: doc.id, email: u.email, balance: u.balance || 0, ref_balance: u.ref_balance || 0, is_reseller: !!u.is_reseller, created: u.created || null, referred_by: u.referred_by || null, referred_users: u.referred_users || [], transactions: (u.transactions || []).slice(0, 50) } });
+}));
+
+app.get('/api/admin/orders', adminOnly, wrap(async (req, res) => {
+  let rows;
+  if (req.query.status === 'PENDING') {
+    rows = (await ordersCol.where('status', '==', 'PENDING').get()).docs.map(d => d.data()).sort((a, b) => b.ts - a.ts);
+  } else {
+    rows = (await ordersCol.orderBy('ts', 'desc').limit(100).get()).docs.map(d => d.data());
+  }
+  res.json({ status: 'success', orders: rows });
+}));
+
+// Pending order: success = it was delivered, false = refund the customer's wallet
+app.post('/api/admin/resolve-order', adminOnly, wrap(async (req, res) => {
+  const ok = Boolean(req.body.success);
+  await fdb.runTransaction(async t => {
+    const os = await t.get(ordersCol.doc(String(req.body.ref || 'none')));
+    if (!os.exists || os.data().status !== 'PENDING') throw new HttpError(404, 'Pending order not found.', 'error');
+    const o = os.data();
+    const { ref, u } = await getUserTx(t, o.uid, 'error');
+    const x = u.transactions.find(y => y.ref === o.ref);
+    if (x) x.status = ok ? 'SUCCESS' : 'FAILED';
+    if (!ok) u.balance += Number(o.amount);
+    t.set(ref, u);
+    t.update(os.ref, { status: ok ? 'SUCCESS' : 'FAILED' });
+  });
+  res.json({ status: 'success', message: ok ? 'Order marked as delivered.' : 'Order failed and the customer was refunded.' });
+}));
+
+app.get('/api/admin/settings', adminOnly, (req, res) => res.json({ status: 'success', settings }));
+
+app.post('/api/admin/settings', adminOnly, wrap(async (req, res) => {
+  const m = Number(req.body.profit_margin_percent);
+  if (!Number.isFinite(m) || m < 0 || m > 100) throw new HttpError(400, 'Margin must be a number between 0 and 100.', 'error');
+  settings.profit_margin_percent = m;
+  await fdb.doc('meta/settings').set({ profit_margin_percent: m }, { merge: true });
+  Object.keys(planCache).forEach(k => delete planCache[k]);
+  res.json({ status: 'success', message: `Data/exam margin set to ${m}%.`, settings });
 }));
 
 process.on('unhandledRejection', e => console.error('Unhandled rejection:', e));
