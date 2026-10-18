@@ -22,7 +22,7 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://ugbolagade-ship
   .split(',').map(s => s.trim());
 const EASY_ACCESS_BASE = 'https://easyaccess.com.ng/api/live/v1';
 const KORAPAY_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
-const PROFIT_MARGIN = 0.09;
+const PROFIT_MARGIN = 0.09; // 9% profit margin
 const RESELLER_FEE = 2000;
 const REFERRAL_BONUS = 1000;
 const MAX_TX_KEPT = 200;
@@ -78,7 +78,6 @@ function adminOnly(req, res, next) {
   next();
 }
 
-// Read a user inside a transaction (they must have opened the dashboard once)
 async function getUserTx(t, uid, status = false) {
   const ref = usersCol.doc(uid);
   const s = await t.get(ref);
@@ -89,15 +88,18 @@ async function getUserTx(t, uid, status = false) {
   return { ref, u };
 }
 
-// ---------- Pricing ----------
+// ---------- Pricing & Margin Engine ----------
 function calculateSellingPrice(basePrice, isReseller = false, isCable = false) {
   const original = parseFloat(basePrice);
   if (isNaN(original)) return basePrice;
   if (isCable) return Math.ceil(original / 100) * 100;
+  
+  // Applies 9% profit margin, and if the user is a reseller, deducts an automatic 5% off
   const resellerDiscount = isReseller ? 5 : 0;
   const finalPrice = original * (1 + PROFIT_MARGIN) * (1 - resellerDiscount / 100);
-  return Math.ceil(finalPrice * 1.015); // 1.5% checkout fee
+  return Math.ceil(finalPrice * 1.015); // Includes 1.5% checkout fee buffer
 }
+
 const rawPrice = p => Number(p.price || p.plan_price || p.amount || p.package_amount || 0);
 const planIdOf = p => String(p.plan_id || p.id || p.package_id);
 
@@ -112,15 +114,24 @@ const planCache = {};
 async function fetchPlans(type) {
   const c = planCache[type];
   if (c && Date.now() - c.t < 60000) return c.list;
+  
   const response = await axios.get(`${EASY_ACCESS_BASE}/get-plans?product_type=${encodeURIComponent(type)}`, {
     headers: getEasyAccessHeaders(), timeout: 12000, validateStatus: () => true
   });
+  
   const raw = response.data;
   let list = [];
-  if (Array.isArray(raw)) list = raw;
-  else if (raw && typeof raw === 'object') {
+  if (Array.isArray(raw)) {
+    list = raw;
+  } else if (raw && typeof raw === 'object') {
+    // Handles multi-network format wrappers returned by EasyAccess (e.g., raw.MTN, raw.data, etc.)[span_2](start_span)[span_2](end_span)
     list = raw.plans || raw.data || raw.packages || [];
-    if (!Array.isArray(list)) { list = []; for (const k in raw) if (Array.isArray(raw[k])) { list = raw[k]; break; } }
+    if (!Array.isArray(list)) { 
+      list = []; 
+      for (const k in raw) {
+        if (Array.isArray(raw[k])) { list = raw[k]; break; }
+      } 
+    }
   }
   if (list.length) planCache[type] = { t: Date.now(), list };
   return list;
@@ -161,9 +172,9 @@ app.post('/api/get-user-profile', requireAuth, wrap(async (req, res) => {
   res.json({ status: true, profile: u, announcement });
 }));
 
-// ---------- Plans (public) ----------
+// ---------- Plans API (public / user facing) ----------
 app.get('/api/get-plans', wrap(async (req, res) => {
-  const type = String(req.query.product_type || 'mtn_sme').toLowerCase();
+  const type = String(req.query.product_type || 'mtn_cg').toLowerCase();
   const reseller = req.query.is_reseller === 'true';
   const isCable = ['dstv', 'gotv', 'startimes', 'showmax'].includes(type);
   try {
@@ -180,7 +191,7 @@ app.get('/api/get-plans', wrap(async (req, res) => {
   }
 }));
 
-// ---------- Buy data (price is decided HERE, never by the browser) ----------
+// ---------- Purchase Data ----------
 async function finishTx(uid, txRef, status, refund = 0) {
   return fdb.runTransaction(async t => {
     const { ref, u } = await getUserTx(t, uid);
@@ -205,7 +216,6 @@ app.post('/api/purchase-data', requireAuth, wrap(async (req, res) => {
   } catch (e) { /* handled below */ }
   if (!plan) throw new HttpError(400, 'Plan not found. Please reload and try again.', 'failed');
 
-  // Take the money first (inside a transaction) so quick double taps cannot spend it twice
   const { cost, txRef } = await fdb.runTransaction(async t => {
     const { ref, u } = await getUserTx(t, uid, 'failed');
     const price = calculateSellingPrice(rawPrice(plan), u.is_reseller, false);
@@ -220,9 +230,11 @@ app.post('/api/purchase-data', requireAuth, wrap(async (req, res) => {
     const r = await axios.post(`${EASY_ACCESS_BASE}/purchase-data`, {
       network: Number(network), dataplan: Number(dataplan), mobileno: String(mobileno), client_reference: txRef
     }, { headers: getEasyAccessHeaders(), timeout: 30000, validateStatus: () => true });
+    
     const d = r.data || {};
     const st = String(d.status || '').toLowerCase();
-    if (d.code === 200 || st === 'success') {
+    
+    if (d.code === 200 || st === 'success' || st === 'successful') {
       const { u, x } = await finishTx(uid, txRef, 'SUCCESS');
       return res.json({ status: 'success', message: d.message || 'Data purchase successful!', profile: u, transaction: x });
     }
@@ -233,14 +245,12 @@ app.post('/api/purchase-data', requireAuth, wrap(async (req, res) => {
     const { u } = await finishTx(uid, txRef, 'FAILED', cost);
     return res.status(400).json({ status: 'failed', message: d.message || 'Provider purchase failed. You were not charged.', profile: u });
   } catch (e) {
-    // Unknown result (timeout etc.): stays PENDING and is not refunded automatically
     const u = (await usersCol.doc(uid).get()).data();
     return res.status(202).json({ status: 'pending', message: 'Your order is processing. If data is not delivered in 15 minutes, contact support with your reference.', profile: u });
   }
 }));
 
-// ---------- Top-ups (Korapay) ----------
-// Top-up references look like oyo_<firebase uid>_<time>, so each payment belongs to one user.
+// ---------- Top-ups & Korapay Webhook Integration ----------
 async function creditByReference(reference, amount) {
   const m = /^oyo_([A-Za-z0-9]+)_\d+$/.exec(String(reference));
   if (!m) return { ok: false, message: 'Unrecognised reference.' };
@@ -280,8 +290,6 @@ app.post('/api/verify-korapay-payment', requireAuth, wrap(async (req, res) => {
   res.json({ status: true, message: out.already ? 'Payment already credited.' : `Success! ₦${out.amount.toLocaleString('en-NG')} added to your wallet.`, profile: out.user });
 }));
 
-// Korapay calls this itself, so wallets are credited even if the user closes the tab.
-// In the Korapay dashboard set the webhook URL to: https://<your-render-url>/api/korapay-webhook
 app.post('/api/korapay-webhook', wrap(async (req, res) => {
   const body = req.body || {};
   const sig = String(req.headers['x-korapay-signature'] || '');
@@ -289,12 +297,12 @@ app.post('/api/korapay-webhook', wrap(async (req, res) => {
   if (sig.length !== calc.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(calc))) return res.sendStatus(401);
   const d = body.data || {};
   if (body.event === 'charge.success' && d.status === 'success' && (d.currency || 'NGN') === 'NGN') {
-    await creditByReference(d.reference, Number(d.amount)); // an error here returns 500 so Korapay retries
+    await creditByReference(d.reference, Number(d.amount));
   }
   res.sendStatus(200);
 }));
 
-// ---------- Reseller upgrade, referrals, withdrawals ----------
+// ---------- Reseller Upgrade & Referrals ----------
 app.post('/api/upgrade-reseller', requireAuth, wrap(async (req, res) => {
   const u = await fdb.runTransaction(async t => {
     const { ref, u } = await getUserTx(t, req.user.uid);
@@ -355,7 +363,7 @@ app.post('/api/withdraw', requireAuth, wrap(async (req, res) => {
   res.json({ status: true, message: 'Withdrawal request received. It will be paid after review.', profile: u });
 }));
 
-// ---------- Admin ----------
+// ---------- Admin Routes ----------
 async function findUserByEmail(email) {
   const q = await usersCol.where('email', '==', String(email || '').toLowerCase()).limit(1).get();
   if (q.empty) throw new HttpError(404, 'Target email not registered on platform.', 'error');
@@ -407,7 +415,6 @@ app.get('/api/admin/withdrawals', adminOnly, wrap(async (req, res) => {
   res.json({ status: 'success', withdrawals: q.docs.map(d => d.data()) });
 }));
 
-// After you pay the person from your bank app, mark it done. success:false refunds their referral wallet.
 app.post('/api/admin/withdrawal-done', adminOnly, wrap(async (req, res) => {
   const ok = Boolean(req.body.success);
   const status = await fdb.runTransaction(async t => {
