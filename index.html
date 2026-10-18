@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>OyoData — Best SME Data &amp; VTU Platform in Nigeria</title>
   <script src="https://korablobstorage.blob.core.windows.net/modal-bucket/korapay-collections.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <meta name="theme-color" content="#14111f" />
   <style>
 #view-landing{
       --bg: #f4f5fa;
@@ -478,6 +482,85 @@ body{margin:0}
 #view-quick .footer-link a{ color: var(--brand-red); font-weight: 700; text-decoration: none; }
 #view-quick .quick-total{font-weight:800;margin:0 0 14px;font-size:.95rem;color:var(--text-dark)}
 #view-quick .qr-note{font-size:.72rem;color:var(--text-muted);margin-top:8px}
+
+/* ===== OYO THEME: "Ember & Ink" ===== */
+:root{--ink:#14111f;--ink2:#1f1b33;--paper:#fbf7f1;--ember1:#ffa338;--ember2:#ff5a1f;--ember3:#e0301e;--glass:rgba(255,255,255,.72)}
+#view-landing,#view-auth,#view-dash,#view-quick{--bg:#fbf7f1;--brand-orange:#ff7a1a;--brand-red:#e0301e;--brand-btn:#14111f;--text-dark:#14111f;--text-muted:#6f6a85;--input-border:#e8e2d8;--card-bg:#fff;
+  font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+#view-landing *,#view-auth *,#view-dash *,#view-quick *{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+#view-landing h1,#view-landing h2,#view-landing h3,#view-auth h2,#view-dash .wallet-amount,#view-dash .section-head,#view-dash .modal-title,#view-landing .stat-num,#view-landing .brand-name,#view-dash .brand-name,#view-auth .brand-name,#view-quick .brand-name,#view-landing .foot-brand-title{font-family:'Bricolage Grotesque','Plus Jakarta Sans',sans-serif;letter-spacing:-.02em}
+.view:not([hidden]) > div{animation:oyoIn .45s cubic-bezier(.2,.7,.2,1) both}
+@keyframes oyoIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.view:not([hidden]) > div{animation:none}}
+#view-auth,#view-quick{background:radial-gradient(520px 320px at 85% -5%,rgba(255,138,40,.28),transparent 70%),radial-gradient(420px 300px at -10% 100%,rgba(224,48,30,.14),transparent 70%),var(--paper)}
+#view-landing,#view-dash{background:var(--paper)}
+
+/* buttons + inputs everywhere */
+#view-auth .btn-submit,#view-dash .btn-action,#view-quick .btn-action,#view-landing .btn-getstarted,#view-landing .btn-cta-main{background:linear-gradient(135deg,var(--ember1),var(--ember2) 55%,var(--ember3));color:#fff;border:0;box-shadow:0 10px 24px -8px rgba(255,90,31,.55);transition:transform .15s,box-shadow .15s}
+#view-auth .btn-submit:active,#view-dash .btn-action:active,#view-quick .btn-action:active,#view-landing .btn:active{transform:scale(.97)}
+#view-auth input,#view-dash input,#view-dash select,#view-quick input,#view-quick select{background:#fff;border:1.5px solid var(--input-border);border-radius:14px;transition:border-color .15s,box-shadow .15s}
+#view-auth input:focus,#view-dash input:focus,#view-dash select:focus,#view-quick input:focus,#view-quick select:focus{border-color:var(--ember2);box-shadow:0 0 0 4px rgba(255,90,31,.12);outline:0}
+#view-auth .auth-card,#view-quick .quick-card{border-radius:28px;border:1px solid rgba(20,17,31,.06);box-shadow:0 30px 60px -30px rgba(20,17,31,.28);background:rgba(255,255,255,.88);backdrop-filter:blur(10px)}
+#view-auth h2{font-size:1.7rem;font-weight:800}
+#view-quick .provider-btn,#view-dash .provider-btn{border-radius:14px;border:1.5px solid var(--input-border);background:#fff;font-weight:700;transition:all .15s}
+#view-quick .provider-btn.selected,#view-dash .provider-btn.selected{background:var(--ink);color:#fff;border-color:var(--ink);box-shadow:0 8px 18px -8px rgba(20,17,31,.6)}
+#view-quick .tab-bar{background:rgba(20,17,31,.06);border-radius:16px}
+#view-quick .tab-btn.active{background:var(--ink);color:#fff}
+#view-quick .quick-total{background:#fff3e6;border-radius:12px;padding:10px 12px;color:var(--ember3)}
+
+/* landing */
+#view-landing nav{background:rgba(251,247,241,.82);backdrop-filter:blur(14px);border-bottom:1px solid rgba(20,17,31,.06)}
+#view-landing .brand-name{font-weight:800}
+#view-landing .hero{position:relative;background:radial-gradient(600px 360px at 90% 0%,rgba(255,138,40,.45),transparent 65%),radial-gradient(500px 340px at 0% 100%,rgba(224,48,30,.35),transparent 65%),var(--ink);color:#fff;border-radius:0 0 36px 36px;overflow:hidden}
+#view-landing .hero::after{content:"";position:absolute;right:-40px;top:70px;width:180px;height:92px;background:repeating-linear-gradient(0deg,var(--ember1) 0 14px,transparent 14px 28px);border-radius:12px;opacity:.16;transform:skewX(-18deg)}
+#view-landing .hero h1{color:#fff;font-weight:800;font-size:clamp(2.1rem,9vw,3.2rem);line-height:1.04}
+#view-landing .hero h1 span{background:linear-gradient(90deg,var(--ember1),var(--ember2));-webkit-background-clip:text;background-clip:text;color:transparent}
+#view-landing .hero p{color:rgba(255,255,255,.72)}
+#view-landing .hero-badge{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#ffd9b0;backdrop-filter:blur(6px)}
+#view-landing .btn-login,#view-landing .btn-quick{background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.28);color:#fff}
+#view-landing .trust-strip{background:transparent}
+#view-landing .stats-card{background:var(--glass);backdrop-filter:blur(12px);border:1px solid #fff;border-radius:24px;box-shadow:0 24px 50px -26px rgba(20,17,31,.35)}
+#view-landing .stat-num{background:linear-gradient(135deg,var(--ember2),var(--ember3));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
+#view-landing .sec-head h2{font-weight:800}
+#view-landing .sec-head .tag{background:#fff0e0;color:var(--ember3);border-radius:999px}
+#view-landing .serv-card{background:#fff;border:1px solid rgba(20,17,31,.06);border-radius:22px;box-shadow:0 14px 30px -22px rgba(20,17,31,.4);transition:transform .2s,box-shadow .2s}
+#view-landing .serv-card:hover{transform:translateY(-4px);box-shadow:0 22px 40px -22px rgba(255,90,31,.5)}
+#view-landing .serv-icon-box{background:linear-gradient(135deg,#ffe3c2,#ffc79a);border-radius:16px}
+#view-landing .reseller-cta{background:radial-gradient(420px 240px at 100% 0%,rgba(255,163,56,.5),transparent 70%),var(--ink);border-radius:28px;color:#fff}
+#view-landing .btn-cta-main{border-radius:14px}
+#view-landing footer{background:var(--ink);border-radius:32px 32px 0 0}
+
+/* dashboard */
+#view-dash .top-bar .brand-name{font-weight:800}
+#view-dash .btn-icon-logout{border-radius:12px;background:#fff;border:1px solid var(--input-border)}
+#view-dash .wallet-card{position:relative;overflow:hidden;background:radial-gradient(260px 200px at 100% 0%,rgba(255,138,40,.55),transparent 70%),radial-gradient(220px 180px at 0% 110%,rgba(224,48,30,.4),transparent 70%),linear-gradient(160deg,#241f3d,var(--ink));border-radius:28px;box-shadow:0 26px 50px -24px rgba(20,17,31,.7)}
+#view-dash .wallet-card::after{content:"";position:absolute;right:-30px;bottom:-30px;width:140px;height:140px;border-radius:50%;border:26px solid rgba(255,255,255,.05)}
+#view-dash .wallet-amount{font-weight:800;letter-spacing:-.03em}
+#view-dash .btn-topup{background:linear-gradient(135deg,var(--ember1),var(--ember2));color:#fff;border-radius:16px;box-shadow:0 10px 22px -8px rgba(255,90,31,.7)}
+#view-dash .btn-resolve{border-radius:16px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;backdrop-filter:blur(6px)}
+#view-dash .reseller-banner{border-radius:22px;background:linear-gradient(120deg,var(--ember2),var(--ember3));box-shadow:0 16px 30px -18px rgba(224,48,30,.7)}
+#view-dash .section-head{font-weight:800}
+#view-dash .vtu-item{background:#fff;border:1px solid rgba(20,17,31,.06);border-radius:22px;box-shadow:0 12px 24px -20px rgba(20,17,31,.5);transition:transform .15s}
+#view-dash .vtu-item:active{transform:scale(.95)}
+#view-dash .vtu-icon{border-radius:16px}
+#view-dash .vtu-grid > :nth-child(1) .vtu-icon{background:#fff0df}
+#view-dash .vtu-grid > :nth-child(2) .vtu-icon{background:#e5f1ff}
+#view-dash .vtu-grid > :nth-child(3) .vtu-icon{background:#f0e8ff}
+#view-dash .vtu-grid > :nth-child(4) .vtu-icon{background:#fff6d6}
+#view-dash .vtu-grid > :nth-child(5) .vtu-icon{background:#e3f7ec}
+#view-dash .vtu-grid > :nth-child(1) .vtu-icon svg{fill:#ff7a1a}
+#view-dash .vtu-grid > :nth-child(2) .vtu-icon svg{fill:#2f7de1}
+#view-dash .vtu-grid > :nth-child(3) .vtu-icon svg{fill:#7a4de0}
+#view-dash .vtu-grid > :nth-child(4) .vtu-icon svg{fill:#d89a00}
+#view-dash .vtu-grid > :nth-child(5) .vtu-icon svg{fill:#1a9a5b}
+#view-dash .tx-item{background:#fff;border:1px solid rgba(20,17,31,.06);border-radius:18px;box-shadow:0 10px 22px -20px rgba(20,17,31,.5)}
+#view-dash .modal-sheet{border-radius:28px 28px 0 0}
+#view-dash .bottom-nav{background:rgba(20,17,31,.92);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08);border-radius:26px;box-shadow:0 20px 40px -14px rgba(20,17,31,.6);bottom:max(14px,env(safe-area-inset-bottom));width:calc(100% - 28px)}
+#view-dash .nav-btn{color:rgba(255,255,255,.55)}
+#view-dash .nav-btn.active{color:var(--ember1)}
+#view-dash .nav-btn.active .nav-icon svg{fill:var(--ember1)}
+#view-dash{padding-bottom:120px}
+#view-dash .announce-bar{background:linear-gradient(120deg,#fff3e2,#ffe7d0);border-color:#ffd2a6;border-radius:16px}
 </style>
 </head>
 <body>
