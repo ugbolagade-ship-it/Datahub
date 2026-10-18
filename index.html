@@ -434,6 +434,50 @@ body{margin:0}
 #view-dash .tx-amount{white-space:nowrap}
 #view-dash .receipt-val.pre{white-space:pre-wrap;text-align:right;overflow-wrap:anywhere}
 #view-dash .announce-bar{background:#fff4e0;border:1px solid #f5d9a8;color:#7a4a00;border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:.84rem;font-weight:600;line-height:1.4;overflow-wrap:anywhere}
+#view-quick{
+      --bg: #f4f5fa;
+      --card-bg: #ffffff;
+      --text-dark: #1b1834;
+      --text-muted: #726e8d;
+      --input-border: #e3e1ee;
+      --brand-orange: #f4841f;
+      --brand-red: #d9381e;
+      --brand-btn: #1b1834;
+      --brand-accent: #fcf4eb;
+      --error-bg: #fce8e6;
+      --error-text: #c5221f;
+      --success-bg: #e6f4ea;
+      --success-text: #137333;
+    }
+#view-quick,#view-quick *{ box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+#view-quick{ background-color: var(--bg); min-height: 100vh; padding: 20px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-dark); }
+#view-quick .quick-card{ background: var(--card-bg); width: 100%; max-width: 440px; border-radius: 24px; padding: 28px 24px; box-shadow: 0 10px 30px rgba(27, 24, 52, 0.04); border: 1px solid var(--input-border); }
+#view-quick .brand-link{ text-decoration: none; display: inline-flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+#view-quick .brand-logo{ width: 44px; height: auto; display: block; }
+#view-quick .brand-name{ font-size: 1.4rem; font-weight: 800; color: var(--brand-red); letter-spacing: -0.4px; }
+#view-quick .tab-bar{ display: flex; background: #f0eff6; padding: 4px; border-radius: 14px; margin-bottom: 24px; }
+#view-quick .tab-btn{ flex: 1; padding: 10px; border: none; border-radius: 10px; font-weight: 700; font-size: 0.82rem; color: var(--text-muted); cursor: pointer; background: transparent; transition: all 0.2s; }
+#view-quick .tab-btn.active{ background: #ffffff; color: var(--text-dark); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+#view-quick .form-group{ margin-bottom: 16px; }
+#view-quick .form-group label{ display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; }
+#view-quick input,#view-quick select{ width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--input-border); font-size: 0.9rem; outline: none; background: #ffffff; }
+#view-quick input:focus,#view-quick select:focus{ border-color: var(--brand-orange); }
+#view-quick .provider-grid{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: #f7f7f9; padding: 8px; border-radius: 14px; }
+#view-quick .provider-btn{ background: #ffffff; border: 2px solid transparent; border-radius: 10px; padding: 10px 2px; text-align: center; font-weight: 700; font-size: 0.75rem; color: var(--text-muted); cursor: pointer; }
+#view-quick .provider-btn.selected{ border-color: var(--brand-orange); color: var(--text-dark); box-shadow: 0 2px 8px rgba(244, 132, 31, 0.15); }
+#view-quick .btn-action{ width: 100%; padding: 14px; border: none; border-radius: 14px; background: linear-gradient(135deg, var(--brand-orange), var(--brand-red)); color: #fff; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
+#view-quick .status-alert{ margin-top: 16px; padding: 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; display: none; }
+#view-quick .status-alert.error{ display: block; background: var(--error-bg); color: var(--error-text); }
+#view-quick .status-alert.success{ display: block; background: var(--success-bg); color: var(--success-text); }
+#view-quick .receipt-box{ background: var(--brand-accent); border: 1.5px dashed var(--brand-orange); border-radius: 18px; padding: 20px; margin-top: 20px; display: none; }
+#view-quick .receipt-title{ font-weight: 800; font-size: 0.95rem; color: var(--brand-orange); margin-bottom: 12px; border-bottom: 1px dashed var(--brand-orange); padding-bottom: 6px; }
+#view-quick .receipt-row{ display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 8px; }
+#view-quick .receipt-row span:first-child{ color: var(--text-muted); font-weight: 600; }
+#view-quick .receipt-row span:last-child{ font-weight: 800; color: var(--text-dark); }
+#view-quick .footer-link{ margin-top: 20px; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
+#view-quick .footer-link a{ color: var(--brand-red); font-weight: 700; text-decoration: none; }
+#view-quick .quick-total{font-weight:800;margin:0 0 14px;font-size:.95rem;color:var(--text-dark)}
+#view-quick .qr-note{font-size:.72rem;color:var(--text-muted);margin-top:8px}
 </style>
 </head>
 <body>
@@ -481,6 +525,10 @@ body{margin:0}
           <svg class="icon" viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
           Services
         </a>
+        <a href="#quickbuy" class="nav-link-item">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+          Quick Buy
+        </a>
         <a href="#login" class="nav-link-item">
           <svg class="icon" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5v3H3v4h7v3zm9-14H5c-1.1 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
           Login
@@ -514,7 +562,11 @@ body{margin:0}
         Login
       </a>
 
-      </div>
+      <a href="#quickbuy" class="btn btn-quick">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+        Quick Buy (No Login Required)
+      </a>
+    </div>
   </section>
 
   <!-- Trust Indicators -->
@@ -637,7 +689,7 @@ body{margin:0}
 
       <div class="foot-sec-title">Services</div>
       <ul class="foot-list">
-        <li><a href="#login">Buy Data</a></li>
+        <li><a href="#quickbuy">Buy Data</a></li>
         <li><a href="#login">Buy Airtime</a></li>
         <li><a href="#login">Cable TV</a></li>
         <li><a href="#login">Electricity Bills</a></li>
@@ -1235,6 +1287,88 @@ body{margin:0}
       <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg></div>
       <span>History</span>
     </button>
+  </div>
+</div></div>
+
+
+<div class="view" id="v-quick" hidden><div id="view-quick">
+  <div class="quick-card">
+    <a href="#home" class="brand-link">
+      <svg viewBox="0 0 500 280" fill="none" xmlns="http://www.w3.org/2000/svg" class="brand-logo">
+        <defs>
+          <linearGradient id="oyoGradQuick" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#FFB000"/>
+            <stop offset="50%" stop-color="#FF5500"/>
+            <stop offset="100%" stop-color="#E03000"/>
+          </linearGradient>
+        </defs>
+        <rect x="70" y="85" width="70" height="16" rx="8" fill="url(#oyoGradQuick)"/>
+        <rect x="40" y="115" width="80" height="16" rx="8" fill="url(#oyoGradQuick)"/>
+        <rect x="58" y="145" width="70" height="16" rx="8" fill="url(#oyoGradQuick)"/>
+        <path d="M 230 40 L 320 40 C 390 40 440 85 440 155 C 440 225 390 270 320 270 L 230 270 Z" fill="#0A1922"/>
+        <path d="M 285 95 L 315 95 C 355 95 380 120 380 155 C 380 190 355 215 315 215 L 285 215 Z" fill="#FFFFFF"/>
+        <circle cx="210" cy="155" r="115" fill="url(#oyoGradQuick)"/>
+        <circle cx="210" cy="155" r="70" fill="#FFFFFF"/>
+        <rect x="180" y="105" width="60" height="100" rx="12" fill="url(#oyoGradQuick)"/>
+        <rect x="186" y="113" width="48" height="74" rx="4" fill="#FFFFFF"/>
+        <circle cx="210" cy="196" r="4" fill="#FFFFFF"/>
+        <path d="M 214 122 L 200 150 H 211 L 206 178 L 220 150 H 209 Z" fill="url(#oyoGradQuick)"/>
+      </svg>
+      <span class="brand-name">OyoData</span>
+    </a>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabBuy" onclick="switchMode('buy')">Instant Quick Buy</button>
+      <button class="tab-btn" id="tabFind" onclick="switchMode('find')">Find My Receipt</button>
+    </div>
+
+    <form id="quickBuyForm" onsubmit="processQuickBuy(event)">
+      <div class="form-group">
+        <label>Network</label>
+        <div class="provider-grid" id="quickNets">
+          <div class="provider-btn selected" onclick="selectQuickNet('MTN', this)">MTN</div>
+          <div class="provider-btn" onclick="selectQuickNet('GLO', this)">GLO</div>
+          <div class="provider-btn" onclick="selectQuickNet('AIRTEL', this)">Airtel</div>
+          <div class="provider-btn" onclick="selectQuickNet('9MOBILE', this)">9mobile</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Data Type</label>
+        <select id="quickType" onchange="loadQuickPlans()"></select>
+      </div>
+      <div class="form-group">
+        <label>Select Data Plan</label>
+        <select id="quickPlanSelect" onchange="updateQuickTotal()" required>
+          <option value="">Loading plans...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Target Phone Number</label>
+        <input type="tel" id="quickPhone" placeholder="08012345678" maxlength="11" inputmode="numeric" required />
+      </div>
+      <div class="form-group">
+        <label>Your Email (for the payment)</label>
+        <input type="email" id="quickEmail" placeholder="you@example.com" required />
+      </div>
+      <div class="quick-total" id="quickTotal"></div>
+      <button type="submit" class="btn-action" id="buyBtn">Pay &amp; Buy Now</button>
+    </form>
+
+    <form id="findReceiptForm" style="display: none;" onsubmit="findReceipt(event)">
+      <div class="form-group">
+        <label>Enter Your Phone Number</label>
+        <input type="tel" id="searchPhone" placeholder="Number used for the purchase" maxlength="11" inputmode="numeric" required />
+      </div>
+      <button type="submit" class="btn-action">Retrieve Quick Receipt</button>
+      <p class="qr-note">Receipts are saved on the device you used to buy.</p>
+    </form>
+
+    <div id="quickAlert" class="status-alert"></div>
+    <div id="receiptBox" style="margin-top:16px;"></div>
+
+    <div class="footer-link">
+      Want discount prices? <a href="#login">Log In</a> or <a href="#signup">Create Account</a>
+    </div>
   </div>
 </div></div>
 
@@ -1882,10 +2016,187 @@ const auth = getAuth(app);
       submitPurchase(e.target, '/api/buy-exam-pin', { exam_board: board, no_of_pins: qty });
     });
 
+    // ===== QUICK BUY (no login): pay with Korapay, the server confirms and delivers =====
+    const QUICK_NETS = {
+      MTN: { id: 1, prefix: 'mtn', types: ['cg', 'sme', 'awoof', 'gifting'] },
+      GLO: { id: 2, prefix: 'glo', types: ['cg', 'awoof', 'gifting'] },
+      AIRTEL: { id: 3, prefix: 'airtel', types: ['cg', 'awoof', 'gifting'] },
+      '9MOBILE': { id: 4, prefix: '9mobile', types: ['sme', 'gifting'] }
+    };
+    const QUICK_TYPE_LABELS = { cg: 'Corporate Gifting (CG)', sme: 'SME Data', awoof: 'Awoof Data', gifting: 'Direct Gifting' };
+    const QUICK_KEY = 'oyo_quick_receipts';
+    let quickNet = 'MTN', quickPlans = {}, quickBusy = false, quickReady = false;
+
+    const qEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const quickProduct = () => `${QUICK_NETS[quickNet].prefix}_${document.getElementById('quickType').value}`;
+
+    function quickAlert(kind, text) {
+      const a = document.getElementById('quickAlert');
+      a.style.display = text ? 'block' : 'none';
+      a.className = 'status-alert' + (kind ? ' ' + kind : '');
+      a.textContent = text || '';
+    }
+    function quickLoad() { try { return JSON.parse(localStorage.getItem(QUICK_KEY) || '[]'); } catch (e) { return []; } }
+    function quickSave(list) { try { localStorage.setItem(QUICK_KEY, JSON.stringify(list.slice(0, 30))); } catch (e) {} }
+    function quickUpsert(r) {
+      const list = quickLoad();
+      const old = list.find(x => x.reference === r.reference) || {};
+      const merged = { ...old, ...r };
+      quickSave([merged, ...list.filter(x => x.reference !== r.reference)]);
+      return merged;
+    }
+
+    function renderQuickReceipts(list) {
+      const box = document.getElementById('receiptBox');
+      const label = { success: ['DELIVERED', 'var(--success-text)'], failed: ['FAILED - REFUND PENDING', 'var(--error-text)'], pending: ['PROCESSING', '#b26a00'], awaiting: ['AWAITING PAYMENT', '#b26a00'] };
+      box.innerHTML = list.map(r => {
+        const l = label[r.status] || label.pending;
+        return `<div class="receipt-box" style="display:block;margin-bottom:12px;">
+          <div class="receipt-title">OyoData Quick Purchase Receipt</div>
+          <div class="receipt-row"><span>Ref Number:</span> <span style="overflow-wrap:anywhere;text-align:right;">${qEsc(r.reference)}</span></div>
+          <div class="receipt-row"><span>Phone Number:</span> <span>${qEsc(r.mobileno)}</span></div>
+          <div class="receipt-row"><span>Network Plan:</span> <span style="text-align:right;">${qEsc(r.plan)}</span></div>
+          <div class="receipt-row"><span>Amount:</span> <span>₦${Number(r.amount || 0).toLocaleString('en-NG')}</span></div>
+          <div class="receipt-row"><span>Date &amp; Time:</span> <span>${qEsc(r.date)}</span></div>
+          <div class="receipt-row"><span>Status:</span> <span style="color:${l[1]};font-weight:800;">${l[0]}</span></div>
+        </div>`;
+      }).join('');
+    }
+
+    function fillQuickTypes() {
+      const sel = document.getElementById('quickType');
+      sel.innerHTML = '';
+      QUICK_NETS[quickNet].types.forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = QUICK_TYPE_LABELS[t]; sel.appendChild(o); });
+    }
+
+    window.quickOpen = function () {
+      if (quickReady) return;
+      quickReady = true; fillQuickTypes(); window.loadQuickPlans();
+    };
+
+    window.selectQuickNet = function (name, el) {
+      quickNet = name;
+      document.querySelectorAll('#quickNets .provider-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      fillQuickTypes(); window.loadQuickPlans();
+    };
+
+    window.loadQuickPlans = async function () {
+      const sel = document.getElementById('quickPlanSelect');
+      quickPlans = {}; window.updateQuickTotal();
+      sel.innerHTML = '<option value="">Loading plans...</option>';
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/get-plans?product_type=${quickProduct()}&is_reseller=false`);
+        const data = await res.json();
+        const plans = data.plans || [];
+        sel.innerHTML = '';
+        if (!plans.length) { sel.innerHTML = '<option value="">No plans available</option>'; return; }
+        const first = document.createElement('option'); first.value = ''; first.textContent = 'Select a plan'; sel.appendChild(first);
+        plans.forEach(p => {
+          quickPlans[p.plan_id] = p;
+          const o = document.createElement('option'); o.value = p.plan_id;
+          o.textContent = `${p.name} (${p.validity}) — ₦${Number(p.price).toLocaleString('en-NG')}`;
+          sel.appendChild(o);
+        });
+      } catch (e) { sel.innerHTML = '<option value="">Could not load plans</option>'; }
+    };
+
+    window.updateQuickTotal = function () {
+      const p = quickPlans[document.getElementById('quickPlanSelect').value];
+      document.getElementById('quickTotal').textContent = p ? `You will pay ₦${Number(p.price).toLocaleString('en-NG')}` : '';
+    };
+
+    window.switchMode = function (mode) {
+      const buy = mode === 'buy';
+      document.getElementById('tabBuy').classList.toggle('active', buy);
+      document.getElementById('tabFind').classList.toggle('active', !buy);
+      document.getElementById('quickBuyForm').style.display = buy ? 'block' : 'none';
+      document.getElementById('findReceiptForm').style.display = buy ? 'none' : 'block';
+      quickAlert('', ''); document.getElementById('receiptBox').innerHTML = '';
+    };
+
+    function quickApply(d) {
+      const r = quickUpsert({ reference: d.reference, mobileno: d.mobileno, plan: d.plan, amount: d.amount, status: d.status });
+      renderQuickReceipts([r]);
+      quickAlert(d.status === 'success' ? 'success' : d.status === 'failed' ? 'error' : '', d.message);
+    }
+
+    async function pollQuick(reference, n) {
+      if (n > 15) return;
+      await new Promise(r => setTimeout(r, 4000));
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/quick-buy/status?reference=${reference}`);
+        const d = await res.json();
+        if (d.reference) { quickApply(d); if (d.status === 'pending') return pollQuick(reference, n + 1); }
+      } catch (e) { return pollQuick(reference, n + 1); }
+    }
+
+    async function quickComplete(reference) {
+      const btn = document.getElementById('buyBtn');
+      quickAlert('', 'Payment received. Confirming and delivering your data...');
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/quick-buy/complete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reference }) });
+        const d = await res.json();
+        if (d.reference) { quickApply(d); if (d.status === 'pending') pollQuick(reference, 0); }
+        else quickAlert('error', `${d.message || 'Could not confirm yet.'} Reference: ${reference}`);
+      } catch (err) {
+        quickAlert('error', `Network error. If you were charged, your data is delivered automatically. Check "Find My Receipt" in a minute. Reference: ${reference}`);
+      } finally { quickBusy = false; btn.disabled = false; }
+    }
+
+    window.processQuickBuy = async function (e) {
+      e.preventDefault();
+      if (quickBusy) return;
+      const btn = document.getElementById('buyBtn');
+      const planId = document.getElementById('quickPlanSelect').value;
+      const plan = quickPlans[planId];
+      const phone = document.getElementById('quickPhone').value.trim();
+      const email = document.getElementById('quickEmail').value.trim();
+      if (!plan) { quickAlert('error', 'Please select a data plan.'); return; }
+      if (!/^0\d{10}$/.test(phone)) { quickAlert('error', 'Enter a valid 11-digit phone number.'); return; }
+      if (!window.Korapay) { quickAlert('error', 'Payment window could not load. Please refresh and try again.'); return; }
+      quickBusy = true; btn.disabled = true; quickAlert('', 'Preparing your order...');
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/quick-buy/init`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ network: QUICK_NETS[quickNet].id, product_type: quickProduct(), dataplan: planId, mobileno: phone, email }) });
+        const init = await res.json();
+        if (!init.status) throw new Error(init.message || 'Could not start your order.');
+        quickUpsert({ reference: init.reference, mobileno: phone, plan: init.plan_name, amount: init.amount, date: new Date().toLocaleString('en-GB'), status: 'awaiting' });
+        let paid = false;
+        quickAlert('', 'Opening payment...');
+        window.Korapay.initialize({
+          key: KORAPAY_PUBLIC_KEY, reference: init.reference, amount: init.amount, currency: 'NGN',
+          customer: { name: email.split('@')[0], email }, narration: 'OyoData Quick Buy',
+          onSuccess: function () { paid = true; quickComplete(init.reference); },
+          onClose: function () {
+            if (paid) return;
+            quickBusy = false; btn.disabled = false;
+            quickAlert('error', 'Payment was not completed. If you were charged, your data will still be delivered automatically.');
+          }
+        });
+      } catch (err) { quickBusy = false; btn.disabled = false; quickAlert('error', err.message); }
+    };
+
+    window.findReceipt = async function (e) {
+      e.preventDefault();
+      const phone = document.getElementById('searchPhone').value.trim();
+      let list = quickLoad().filter(r => r.mobileno === phone);
+      if (!list.length) { document.getElementById('receiptBox').innerHTML = ''; quickAlert('error', 'No purchase found on this device for that number. Receipts are saved on the device you used to buy.'); return; }
+      quickAlert('', 'Checking your orders...');
+      list = await Promise.all(list.map(async r => {
+        if (r.status === 'success' || r.status === 'failed') return r;
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/quick-buy/status?reference=${r.reference}`);
+          const d = await res.json();
+          return d.reference ? quickUpsert({ reference: d.reference, status: d.status }) : r;
+        } catch (err) { return r; }
+      }));
+      quickAlert('', ''); renderQuickReceipts(list);
+    };
+
     // ================= ROUTER + AUTH =================
 let authReady = false, currentUser = null, authBusy = false;
-const VIEWS = { home:'v-landing', services:'v-landing', login:'v-auth', signup:'v-auth', dashboard:'v-dash' };
-const TITLES = { home:'OyoData — Best SME Data & VTU Platform in Nigeria', services:'OyoData — Best SME Data & VTU Platform in Nigeria', login:'OyoData — Login', signup:'OyoData — Create Account', dashboard:'OyoData — Dashboard' };
+const VIEWS = { home:'v-landing', services:'v-landing', login:'v-auth', signup:'v-auth', dashboard:'v-dash', quickbuy:'v-quick' };
+const TITLES = { home:'OyoData — Best SME Data & VTU Platform in Nigeria', services:'OyoData — Best SME Data & VTU Platform in Nigeria', login:'OyoData — Login', signup:'OyoData — Create Account', dashboard:'OyoData — Dashboard', quickbuy:'OyoData — Quick Buy' };
 
 function route() {
   if (!authReady) return;
@@ -1899,6 +2210,7 @@ function route() {
   document.getElementById('card-signup').style.display = r === 'signup' ? 'block' : 'none';
   document.getElementById('navDropdown').classList.remove('open');
   document.title = TITLES[r];
+  if (r === 'quickbuy') window.quickOpen();
 
   if (r === 'services') document.getElementById('services').scrollIntoView();
   else window.scrollTo(0, 0);
