@@ -8,6 +8,21 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <meta name="description" content="OyoData: buy cheap MTN, Glo, Airtel and 9mobile data, pay cable TV and electricity bills, and get WAEC, NECO and NABTEB result PINs instantly in Nigeria." />
+  <link rel="canonical" href="https://oyodata.com.ng/" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="OyoData" />
+  <meta property="og:title" content="OyoData: Cheap Data, Cable TV, Electricity and Exam PINs" />
+  <meta property="og:description" content="OyoData: buy cheap MTN, Glo, Airtel and 9mobile data, pay cable TV and electricity bills, and get WAEC, NECO and NABTEB result PINs instantly in Nigeria." />
+  <meta property="og:url" content="https://oyodata.com.ng/" />
+  <meta property="og:image" content="https://oyodata.com.ng/icon-512.png" />
+  <meta name="twitter:card" content="summary" />
+  <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "name": "OyoData", "url": "https://oyodata.com.ng/", "logo": "https://oyodata.com.ng/icon-512.png", "contactPoint": {"@type": "ContactPoint", "telephone": "+2348148965859", "contactType": "customer support", "areaServed": "NG"}}, {"@type": "WebSite", "name": "OyoData", "url": "https://oyodata.com.ng/"}]}</script>
   <meta name="theme-color" content="#14111f" />
   <style>
 #view-landing{
@@ -622,7 +637,7 @@ html,body{background:#fbf7f1}
 </head>
 <body>
 
-<div class="view" id="v-landing" hidden><div id="view-landing">
+<div class="view" id="v-landing"><div id="view-landing">
 <!-- Navigation Header with Hamburger Button -->
   <nav>
     <div class="nav-wrap">
@@ -1536,6 +1551,7 @@ html,body{background:#fbf7f1}
   </div>
 </div></div>
 
+<script>if(/^#(login|signup|dashboard|quickbuy)/.test(location.hash))document.getElementById("v-landing").hidden=true;</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -2412,7 +2428,7 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     userEmailAddress = user.email;
     document.getElementById('userEmail').textContent = user.email;
-    document.getElementById('refLinkInput').value = `https://ugbolagade-ship-it.github.io/OyoData/?ref=${user.uid.slice(0, 6)}#signup`;
+    document.getElementById('refLinkInput').value = `${location.origin}${location.pathname}?ref=${user.uid.slice(0, 6)}#signup`;
     route();
     await syncUserProfile(user.email);
   } else {
