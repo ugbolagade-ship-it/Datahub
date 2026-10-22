@@ -638,6 +638,12 @@ html,body{background:#fbf7f1}
 #view-auth .or-divider::before,#view-auth .or-divider::after{content:"";flex:1;height:1px;background:var(--input-border)}
 #view-auth .google-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;border-radius:14px;background:#fff;border:1.5px solid var(--input-border);color:var(--text-dark);font-size:.95rem;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .15s}
 #view-auth .google-btn:active{transform:scale(.98)}
+
+/* pop-ups (Top Up, Resolve, Receipt, Contact...) open at the top of the screen, not the bottom */
+#view-dash .modal-overlay{align-items:flex-start;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 64px) 14px 24px;overflow-y:auto;overscroll-behavior:contain}
+#view-dash .modal-sheet{border-radius:26px;margin:0;max-height:calc(100vh - 110px);max-height:calc(100dvh - 110px);overflow-y:auto;box-shadow:0 30px 60px -20px rgba(20,17,31,.5);animation:oyoDrop .28s cubic-bezier(.2,.8,.2,1) both}
+@keyframes oyoDrop{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#view-dash .modal-sheet{animation:none}}
 </style>
 </head>
 <body>
