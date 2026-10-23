@@ -504,9 +504,9 @@ body{margin:0}
   font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
 #view-landing *,#view-auth *,#view-dash *,#view-quick *{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
 #view-landing h1,#view-landing h2,#view-landing h3,#view-auth h2,#view-dash .wallet-amount,#view-dash .section-head,#view-dash .modal-title,#view-landing .stat-num,#view-landing .brand-name,#view-dash .brand-name,#view-auth .brand-name,#view-quick .brand-name,#view-landing .foot-brand-title{font-family:'Bricolage Grotesque','Plus Jakarta Sans',sans-serif;letter-spacing:-.02em}
-.view:not([hidden]) > div{animation:oyoIn .45s cubic-bezier(.2,.7,.2,1) both}
-@keyframes oyoIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){.view:not([hidden]) > div{animation:none}}
+.view:not([hidden]){animation:oyoIn .35s ease backwards}
+@keyframes oyoIn{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.view:not([hidden]){animation:none}}
 #view-auth,#view-quick{background:radial-gradient(520px 320px at 85% -5%,rgba(255,138,40,.28),transparent 70%),radial-gradient(420px 300px at -10% 100%,rgba(224,48,30,.14),transparent 70%),var(--paper)}
 #view-landing,#view-dash{background:var(--paper)}
 
