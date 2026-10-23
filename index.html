@@ -1125,7 +1125,7 @@ html,body{background:#fbf7f1}
         
         <div class="ref-actions-grid">
           <button class="btn-ref-act main" onclick="transferReferralBonus()">Transfer to Wallet</button>
-          <button class="btn-ref-act bank" onclick="openModal('modalWithdraw')">Withdraw to Bank</button>
+          <button class="btn-ref-act bank" onclick="openWithdraw()">Withdraw to Bank</button>
         </div>
       </div>
 
@@ -1794,6 +1794,10 @@ const auth = getAuth(app);
     };
 
     window.transferReferralBonus = async function() {
+      if (!isReseller) {
+        if (confirm('Only Reseller accounts can transfer or withdraw referral earnings.\n\nUpgrade to Reseller for ₦2,000 now?')) window.upgradeToReseller();
+        return;
+      }
       if (refBalance <= 0) { alert('No referral balance available to transfer.'); return; }
       try {
         const r = await api('/api/transfer-referral');
@@ -1802,7 +1806,16 @@ const auth = getAuth(app);
       } catch (e) { alert('Network error. Please try again.'); }
     };
 
+    window.openWithdraw = function() {
+      if (!isReseller) {
+        if (confirm('Only Reseller accounts can transfer or withdraw referral earnings.\n\nUpgrade to Reseller for ₦2,000 now?')) window.upgradeToReseller();
+        return;
+      }
+      openModal('modalWithdraw');
+    };
+
     window.submitBankWithdrawal = async function() {
+      if (!isReseller) { window.openWithdraw(); return; }
       const bank = document.getElementById('wdBank').value;
       const account = document.getElementById('wdAccount').value.trim();
       const amount = Number(document.getElementById('wdAmount').value);
