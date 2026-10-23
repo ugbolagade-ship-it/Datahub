@@ -574,6 +574,7 @@ app.post('/api/upgrade-reseller', requireAuth, wrap(async (req, res) => {
 app.post('/api/transfer-referral', requireAuth, wrap(async (req, res) => {
   const out = await fdb.runTransaction(async t => {
     const { ref, u } = await getUserTx(t, req.user.uid);
+    if (!u.is_reseller) throw new HttpError(403, 'Only Reseller accounts can transfer referral earnings. Upgrade to Reseller to unlock them.');
     if (!(u.ref_balance > 0)) throw new HttpError(400, 'No referral balance available to transfer.');
     const amt = u.ref_balance;
     u.ref_balance = 0;
@@ -594,6 +595,7 @@ app.post('/api/withdraw', requireAuth, wrap(async (req, res) => {
   }
   const u = await fdb.runTransaction(async t => {
     const { ref, u } = await getUserTx(t, req.user.uid);
+    if (!u.is_reseller) throw new HttpError(403, 'Only Reseller accounts can withdraw referral earnings. Upgrade to Reseller to withdraw.');
     if ((u.ref_balance || 0) < amt) throw new HttpError(400, 'Insufficient referral balance.');
     u.ref_balance -= amt;
     const tx = addTx(u, { type: 'Withdrawal', title: `Withdrawal to ${bank} ${account}`, amount: String(amt), status: 'PENDING' });
