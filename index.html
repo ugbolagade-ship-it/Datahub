@@ -22,7 +22,7 @@
   <meta property="og:url" content="https://oyodata.com.ng/" />
   <meta property="og:image" content="https://oyodata.com.ng/icon-512.png" />
   <meta name="twitter:card" content="summary" />
-  <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "name": "OyoData", "url": "https://oyodata.com.ng/", "logo": "https://oyodata.com.ng/icon-512.png", "contactPoint": {"@type": "ContactPoint", "telephone": "+2348148965859", "contactType": "customer support", "areaServed": "NG"}}, {"@type": "WebSite", "name": "OyoData", "url": "https://oyodata.com.ng/"}]}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "name": "OyoData", "url": "https://oyodata.com.ng/", "logo": "https://oyodata.com.ng/icon-512.png", "contactPoint": {"@type": "ContactPoint", "telephone": "+2348148965859", "contactType": "customer support", "areaServed": "NG", "email": "oyodata@gmail.com"}, "address": {"@type": "PostalAddress", "streetAddress": "No 25 Sango", "addressLocality": "Ibadan", "addressRegion": "Oyo State", "addressCountry": "NG"}}, {"@type": "WebSite", "name": "OyoData", "url": "https://oyodata.com.ng/"}]}</script>
   <meta name="theme-color" content="#14111f" />
   <style>
 #view-landing{
@@ -644,6 +644,7 @@ html,body{background:#fbf7f1}
 #view-dash .modal-sheet{border-radius:26px;margin:0;max-height:calc(100vh - 110px);max-height:calc(100dvh - 110px);overflow-y:auto;box-shadow:0 30px 60px -20px rgba(20,17,31,.5);animation:oyoDrop .28s cubic-bezier(.2,.8,.2,1) both}
 @keyframes oyoDrop{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){#view-dash .modal-sheet{animation:none}}
+#view-landing .foot-contact-item a{color:inherit;text-decoration:none}
 </style>
 </head>
 <body>
@@ -866,14 +867,22 @@ html,body{background:#fbf7f1}
       <div class="foot-sec-title">Company</div>
       <ul class="foot-list">
         <li><a href="#">Blog</a></li>
-        <li><a href="#">Terms of Service</a></li>
-        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="terms.html">Terms of Service</a></li>
+        <li><a href="privacy.html">Privacy Policy</a></li>
       </ul>
 
       <div class="foot-sec-title">Contact</div>
       <div class="foot-contact-item">
         <svg class="icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-        support@oyodata.com
+        <a href="mailto:oyodata@gmail.com">oyodata@gmail.com</a>
+      </div>
+      <div class="foot-contact-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+        <a href="tel:+2348148965859">0814 896 5859</a>
+      </div>
+      <div class="foot-contact-item" style="align-items:flex-start;">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        <span>No 25 Sango, Ibadan, Oyo State</span>
       </div>
 
       <div class="foot-divider"></div>
