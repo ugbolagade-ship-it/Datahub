@@ -645,6 +645,14 @@ html,body{background:#fbf7f1}
 @keyframes oyoDrop{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){#view-dash .modal-sheet{animation:none}}
 #view-landing .foot-contact-item a{color:inherit;text-decoration:none}
+
+/* live loading */
+.spin{display:inline-block;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;animation:oyoSpin .7s linear infinite;vertical-align:-3px;margin-right:9px}
+@keyframes oyoSpin{to{transform:rotate(360deg)}}
+#view-dash .status-alert.loading,#view-quick .status-alert.loading{position:relative;overflow:hidden;background:#fff6ec;color:#7a4a00;padding-bottom:18px}
+#view-dash .status-alert.loading .spin,#view-quick .status-alert.loading .spin{border-color:rgba(255,90,31,.25);border-top-color:#ff5a1f}
+#view-dash .status-alert.loading::after,#view-quick .status-alert.loading::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:40%;background:linear-gradient(90deg,#ffa338,#ff5a1f);border-radius:3px;animation:oyoBar 1.1s ease-in-out infinite}
+@keyframes oyoBar{0%{left:-40%}100%{left:100%}}
 </style>
 </head>
 <body>
@@ -1624,6 +1632,24 @@ const auth = getAuth(app);
     // money coming in: top-ups, referral transfers and admin credits (older admin entries have no direction saved)
     function isCredit(tx) { return tx.dir ? tx.dir === 'credit' : (tx.type === 'Transfer' || /^Admin Credit/.test(tx.title || '')); }
 
+    // Live loading: spinner on the button, spinner + moving bar in the message, reassuring text that changes over time
+    function startLoading(btn, statusEl, text = 'Processing transaction...') {
+      const label = btn.textContent;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spin"></span>Please wait...';
+      statusEl.style.display = 'block';
+      statusEl.className = 'status-alert loading';
+      statusEl.innerHTML = '<span class="spin"></span><span class="load-text"></span>';
+      const line = statusEl.querySelector('.load-text');
+      line.textContent = text;
+      const t0 = Date.now();
+      const timer = setInterval(() => {
+        const s = Math.floor((Date.now() - t0) / 1000);
+        line.textContent = s < 6 ? text : s < 15 ? 'Still working... please do not close this page.' : 'Taking longer than usual. Your money is safe, please do not pay again.';
+      }, 1000);
+      return function stopLoading() { clearInterval(timer); btn.disabled = false; btn.textContent = label; };
+    }
+
     function statusClass(s) { return s === 'SUCCESS' ? 'success' : (s === 'PENDING' ? 'pending' : 'failed'); }
 
     function applyProfile(p) {
@@ -2088,10 +2114,7 @@ const auth = getAuth(app);
         return;
       }
 
-      status.style.display = 'block';
-      status.className = 'status-alert';
-      status.textContent = 'Processing transaction...';
-      btn.disabled = true;
+      const stopLoading = startLoading(btn, status);
 
       const networkMap = { MTN: 1, GLO: 2, AIRTEL: 3, "9MOBILE": 4 };
       try {
@@ -2104,8 +2127,7 @@ const auth = getAuth(app);
         if (resData.profile) applyProfile(resData.profile);
 
         if (resData.status === 'success') {
-          status.className = 'status-alert success';
-          status.textContent = resData.message || 'Data purchase successful!';
+          status.style.display = 'none'; // the receipt already says it worked
           window.showDirectReceipt(resData.transaction);
         } else if (resData.status === 'pending') {
           status.className = 'status-alert';
@@ -2118,7 +2140,7 @@ const auth = getAuth(app);
         status.className = 'status-alert error';
         status.textContent = 'Network error during transaction.';
       } finally {
-        btn.disabled = false;
+        stopLoading();
       }
     });
 
@@ -2126,16 +2148,12 @@ const auth = getAuth(app);
     async function submitPurchase(form, path, body) {
       const status = document.getElementById('statusAlert');
       const btn = form.querySelector('button[type="submit"]');
-      status.style.display = 'block';
-      status.className = 'status-alert';
-      status.textContent = 'Processing transaction...';
-      btn.disabled = true;
+      const stopLoading = startLoading(btn, status);
       try {
         const r = await api(path, body);
         if (r.profile) applyProfile(r.profile);
         if (r.status === 'success') {
-          status.className = 'status-alert success';
-          status.textContent = r.message || 'Successful!';
+          status.style.display = 'none'; // the receipt already says it worked
           if (r.transaction) window.showDirectReceipt(r.transaction);
         } else if (r.status === 'pending') {
           status.className = 'status-alert';
@@ -2148,7 +2166,7 @@ const auth = getAuth(app);
         status.className = 'status-alert error';
         status.textContent = 'Network error during transaction.';
       } finally {
-        btn.disabled = false;
+        stopLoading();
       }
     }
 
@@ -2270,8 +2288,15 @@ const auth = getAuth(app);
     function quickAlert(kind, text) {
       const a = document.getElementById('quickAlert');
       a.style.display = text ? 'block' : 'none';
-      a.className = 'status-alert' + (kind ? ' ' + kind : '');
-      a.textContent = text || '';
+      a.className = 'status-alert' + (kind ? ' ' + kind : (text ? ' loading' : ''));
+      a.textContent = '';
+      if (text && !kind) { const sp = document.createElement('span'); sp.className = 'spin'; a.appendChild(sp); }
+      a.appendChild(document.createTextNode(text || ''));
+    }
+    function setQuickBtn(busy) {
+      const b = document.getElementById('buyBtn');
+      b.disabled = busy;
+      if (busy) b.innerHTML = '<span class="spin"></span>Please wait...'; else b.textContent = 'Pay & Buy Now';
     }
     function quickLoad() { try { return JSON.parse(localStorage.getItem(QUICK_KEY) || '[]'); } catch (e) { return []; } }
     function quickSave(list) { try { localStorage.setItem(QUICK_KEY, JSON.stringify(list.slice(0, 30))); } catch (e) {} }
@@ -2355,7 +2380,7 @@ const auth = getAuth(app);
     function quickApply(d) {
       const r = quickUpsert({ reference: d.reference, mobileno: d.mobileno, plan: d.plan, amount: d.amount, status: d.status });
       renderQuickReceipts([r]);
-      quickAlert(d.status === 'success' ? 'success' : d.status === 'failed' ? 'error' : '', d.message);
+      if (d.status === 'success') quickAlert('', ''); else quickAlert(d.status === 'failed' ? 'error' : '', d.message);
     }
 
     async function pollQuick(reference, n) {
@@ -2378,7 +2403,7 @@ const auth = getAuth(app);
         else quickAlert('error', `${d.message || 'Could not confirm yet.'} Reference: ${reference}`);
       } catch (err) {
         quickAlert('error', `Network error. If you were charged, your data is delivered automatically. Check "Find My Receipt" in a minute. Reference: ${reference}`);
-      } finally { quickBusy = false; btn.disabled = false; }
+      } finally { quickBusy = false; setQuickBtn(false); }
     }
 
     window.processQuickBuy = async function (e) {
@@ -2392,7 +2417,7 @@ const auth = getAuth(app);
       if (!plan) { quickAlert('error', 'Please select a data plan.'); return; }
       if (!/^0\d{10}$/.test(phone)) { quickAlert('error', 'Enter a valid 11-digit phone number.'); return; }
       if (!window.Korapay) { quickAlert('error', 'Payment window could not load. Please refresh and try again.'); return; }
-      quickBusy = true; btn.disabled = true; quickAlert('', 'Preparing your order...');
+      quickBusy = true; setQuickBtn(true); quickAlert('', 'Preparing your order...');
       try {
         const res = await fetch(`${BACKEND_URL}/api/quick-buy/init`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ network: QUICK_NETS[quickNet].id, product_type: quickProduct(), dataplan: planId, mobileno: phone, email }) });
         const init = await res.json();
@@ -2406,11 +2431,11 @@ const auth = getAuth(app);
           onSuccess: function () { paid = true; quickComplete(init.reference); },
           onClose: function () {
             if (paid) return;
-            quickBusy = false; btn.disabled = false;
+            quickBusy = false; setQuickBtn(false);
             quickAlert('error', 'Payment was not completed. If you were charged, your data will still be delivered automatically.');
           }
         });
-      } catch (err) { quickBusy = false; btn.disabled = false; quickAlert('error', err.message); }
+      } catch (err) { quickBusy = false; setQuickBtn(false); quickAlert('error', err.message); }
     };
 
     window.findReceipt = async function (e) {
