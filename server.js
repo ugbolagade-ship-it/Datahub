@@ -525,8 +525,11 @@ app.post('/api/virtual-account', requireAuth, wrap(async (req, res) => {
     headers: { Authorization: `Bearer ${PP_SECRET}`, 'api-key': PP_KEY, 'Content-Type': 'application/json' }, timeout: 30000, validateStatus: () => true
   });
   const d = r.data || {};
-  const accounts = (d.bankAccounts || []).map(a => ({ bank: a.bankName, bankCode: a.bankCode, accountNumber: a.accountNumber, accountName: a.accountName }));
+  // read the reply flexibly: the list may sit under a slightly different name, and fields may be snake_case
+  const list = [d.bankAccounts, d.accounts, d.virtualAccounts, d.data && d.data.bankAccounts, d.data && d.data.accounts].find(Array.isArray) || [];
+  const accounts = list.map(a => ({ bank: a.bankName || a.bank_name || a.bank, bankCode: a.bankCode || a.bank_code, accountNumber: String(a.accountNumber || a.account_number || ''), accountName: a.accountName || a.account_name })).filter(a => a.accountNumber);
   if (!accounts.length) {
+    console.error('PaymentPoint reply had no bank accounts. keys:', Object.keys(d).join(','), '| banksRequested:', body.bankCode.join(','), '| bankAccounts:', JSON.stringify(d.bankAccounts), '| errors:', JSON.stringify(d.errors));
     const errs = (Array.isArray(d.errors) ? d.errors : []).map(e => (typeof e === 'string' ? e : (e && (e.message || e.error)) || JSON.stringify(e))).filter(Boolean);
     console.error('PaymentPoint create account failed:', r.status, JSON.stringify({ status: d.status, message: d.message, errors: d.errors }).slice(0, 600));
     const text = `${errs.join('; ')} ${d.message || ''}`;
