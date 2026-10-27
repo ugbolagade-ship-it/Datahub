@@ -516,7 +516,11 @@ app.post('/api/virtual-account', requireAuth, wrap(async (req, res) => {
   const accounts = (d.bankAccounts || []).map(a => ({ bank: a.bankName, bankCode: a.bankCode, accountNumber: a.accountNumber, accountName: a.accountName }));
   if (!accounts.length) {
     console.error('PaymentPoint create account failed:', r.status, JSON.stringify(d).slice(0, 500));
-    throw new HttpError(502, 'Could not create your account number right now. Please try again later or use card or USSD.');
+    // show PaymentPoint's own reason when it is safe to (never anything about keys or tokens)
+    const e0 = Array.isArray(d.errors) && d.errors[0];
+    let why = String(d.message || (e0 && (e0.message || e0)) || '').slice(0, 140);
+    if (/key|token|auth|secret|bearer|business/i.test(why)) why = '';
+    throw new HttpError(502, `Could not create your account number${why ? ': ' + why : ' right now'}. Please try again later or use card or USSD.`);
   }
   await ref.set({ pp: { customer_id: (d.customer && d.customer.customer_id) || null, accounts, phone } }, { merge: true });
   res.json({ status: true, enabled: true, accounts });
