@@ -40,7 +40,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-key']
 }));
-app.use(express.json({ limit: '100kb' }));
+app.use(express.json({ limit: '100kb', verify: (req, res, buf) => { req.rawBody = buf; } })); // rawBody is kept so webhook signatures can be checked
 
 // ---------- Helpers ----------
 class HttpError extends Error {
@@ -483,6 +483,83 @@ app.get('/api/quick-buy/status', wrap(async (req, res) => {
   const reference = String(req.query.reference || '');
   if (!QB_REF.test(reference)) throw new HttpError(400, 'Invalid reference.');
   res.json(await quickSummary(reference));
+}));
+
+// ---------- PaymentPoint: a personal bank account number for every user ----------
+// Optional: set PAYMENTPOINT_SECRET, PAYMENTPOINT_API_KEY and PAYMENTPOINT_BUSINESS_ID on Render to switch it on.
+const PP_BASE = 'https://api.paymentpoint.co';
+const PP_SECRET = process.env.PAYMENTPOINT_SECRET || '';
+const PP_KEY = process.env.PAYMENTPOINT_API_KEY || '';
+const PP_BIZ = process.env.PAYMENTPOINT_BUSINESS_ID || '';
+const PP_ON = !!(PP_SECRET && PP_KEY && PP_BIZ);
+// 'amount_paid' credits everything the customer sent (you absorb PaymentPoint's fee); 'settlement_amount' credits after the fee
+const PP_CREDIT = process.env.PAYMENTPOINT_CREDIT === 'settlement_amount' ? 'settlement_amount' : 'amount_paid';
+
+app.post('/api/virtual-account', requireAuth, wrap(async (req, res) => {
+  if (!PP_ON) return res.json({ status: true, enabled: false, accounts: [] });
+  const ref = usersCol.doc(req.user.uid);
+  const snap = await ref.get();
+  if (!snap.exists) throw new HttpError(404, 'Account not found. Please reload the page.');
+  const u = snap.data();
+  if (u.pp && u.pp.accounts && u.pp.accounts.length) return res.json({ status: true, enabled: true, accounts: u.pp.accounts });
+  if (req.body.action !== 'create') return res.json({ status: true, enabled: true, accounts: [], needsDetails: true });
+
+  const name = String(req.body.name || '').trim().replace(/\s+/g, ' ');
+  const phone = String(req.body.phone || '').trim();
+  if (!/^[A-Za-z][A-Za-z .'-]{2,59}$/.test(name)) throw new HttpError(400, 'Enter your full name (letters only).');
+  if (!/^0\d{10}$/.test(phone)) throw new HttpError(400, 'Enter a valid 11-digit phone number.');
+
+  const r = await axios.post(`${PP_BASE}/api/v1/createVirtualAccount`, {
+    email: req.user.email, name, phoneNumber: phone, bankCode: ['20946', '20897'], businessId: PP_BIZ
+  }, { headers: { Authorization: `Bearer ${PP_SECRET}`, 'api-key': PP_KEY, 'Content-Type': 'application/json' }, timeout: 30000, validateStatus: () => true });
+  const d = r.data || {};
+  const accounts = (d.bankAccounts || []).map(a => ({ bank: a.bankName, bankCode: a.bankCode, accountNumber: a.accountNumber, accountName: a.accountName }));
+  if (!accounts.length) {
+    console.error('PaymentPoint create account failed:', r.status, JSON.stringify(d).slice(0, 500));
+    throw new HttpError(502, 'Could not create your account number right now. Please try again later or use card or USSD.');
+  }
+  await ref.set({ pp: { customer_id: (d.customer && d.customer.customer_id) || null, accounts, phone } }, { merge: true });
+  res.json({ status: true, enabled: true, accounts });
+}));
+
+// PaymentPoint calls this when money lands in a user's account number. Set it as the webhook URL in your PaymentPoint dashboard:
+// https://<your-render-url>/api/paymentpoint-webhook
+app.post('/api/paymentpoint-webhook', wrap(async (req, res) => {
+  if (!PP_ON) return res.sendStatus(503);
+  const sig = String(req.headers['paymentpoint-signature'] || '');
+  const hmac = buf => crypto.createHmac('sha256', PP_SECRET).update(buf).digest('hex');
+  const valid = sig.length === 64 && [req.rawBody, Buffer.from(JSON.stringify(req.body || {}))]
+    .some(b => b && crypto.timingSafeEqual(Buffer.from(hmac(b)), Buffer.from(sig)));
+  if (!valid) return res.sendStatus(401);
+
+  const d = req.body || {};
+  if (d.notification_status !== 'payment_successful' || d.transaction_status !== 'success') return res.sendStatus(200);
+  const txId = String(d.transaction_id || '');
+  const amount = Number(PP_CREDIT === 'settlement_amount' ? d.settlement_amount : d.amount_paid);
+  if (!/^[\w-]{4,100}$/.test(txId) || !(amount > 0)) return res.sendStatus(400);
+
+  const cust = d.customer || {};
+  let userDoc = null;
+  if (cust.customer_id) { const q = await usersCol.where('pp.customer_id', '==', String(cust.customer_id)).limit(1).get(); if (!q.empty) userDoc = q.docs[0]; }
+  if (!userDoc && cust.email) { const q = await usersCol.where('email', '==', String(cust.email).toLowerCase()).limit(1).get(); if (!q.empty) userDoc = q.docs[0]; }
+  const pref = paymentsCol.doc(`pp_${txId}`);
+  if (!userDoc) {
+    console.error('PaymentPoint payment with no matching user:', txId, JSON.stringify(cust));
+    await pref.set({ unmatched: true, amount, customer: cust, date: Date.now() }, { merge: true });
+    return res.sendStatus(200); // acknowledged; credit it by hand from the admin panel
+  }
+  await fdb.runTransaction(async t => {
+    const uref = userDoc.ref;
+    const [us, ps] = await Promise.all([t.get(uref), t.get(pref)]);
+    if (ps.exists) return; // already credited
+    const u = us.data();
+    u.balance = (u.balance || 0) + amount;
+    const tx = addTx(u, { type: 'Transfer', title: 'Bank Transfer Top Up', amount: String(amount), ref: `pp_${txId}`, status: 'SUCCESS' });
+    t.set(uref, u);
+    t.set(pref, { uid: userDoc.id, amount, date: Date.now() });
+    t.set(ordersCol.doc(tx.ref), { ref: tx.ref, uid: userDoc.id, email: u.email, type: 'Top Up', title: 'Bank Transfer Top Up', amount, status: 'SUCCESS', date: today(), ts: Date.now() });
+  });
+  res.sendStatus(200);
 }));
 
 // ---------- Top-ups (Korapay) ----------
