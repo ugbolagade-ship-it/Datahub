@@ -492,6 +492,8 @@ const PP_SECRET = process.env.PAYMENTPOINT_SECRET || '';
 const PP_KEY = process.env.PAYMENTPOINT_API_KEY || '';
 const PP_BIZ = process.env.PAYMENTPOINT_BUSINESS_ID || '';
 const PP_ON = !!(PP_SECRET && PP_KEY && PP_BIZ);
+// Banks to open accounts with: 20946 = Palmpay, 20897 = Opay. If one is not enabled for your business, set PAYMENTPOINT_BANK_CODES on Render, e.g. 20897
+const PP_BANKS = (process.env.PAYMENTPOINT_BANK_CODES || '20946,20897').split(',').map(x => x.trim()).filter(x => /^\d{5}$/.test(x));
 // 'amount_paid' credits everything the customer sent (you absorb PaymentPoint's fee); 'settlement_amount' credits after the fee
 const PP_CREDIT = process.env.PAYMENTPOINT_CREDIT === 'settlement_amount' ? 'settlement_amount' : 'amount_paid';
 
@@ -510,7 +512,7 @@ app.post('/api/virtual-account', requireAuth, wrap(async (req, res) => {
   if (!/^0\d{10}$/.test(phone)) throw new HttpError(400, 'Enter a valid 11-digit phone number.');
 
   await ref.set({ full_name: name, phone }, { merge: true }); // remembered, so a retry (for example to add an ID) needs no re-typing
-  const body = { email: req.user.email, name, phoneNumber: phone, bankCode: ['20946', '20897'], businessId: PP_BIZ };
+  const body = { email: req.user.email, name, phoneNumber: phone, bankCode: PP_BANKS.length ? PP_BANKS : ['20946', '20897'], businessId: PP_BIZ };
   const idType = String(req.body.idType || '').toLowerCase();
   const idNumber = String(req.body.idNumber || '').trim();
   if (idType || idNumber) { // only sent when the bank asks for it; passed straight through, never saved or logged
@@ -526,8 +528,9 @@ app.post('/api/virtual-account', requireAuth, wrap(async (req, res) => {
     const errs = (Array.isArray(d.errors) ? d.errors : []).map(e => (typeof e === 'string' ? e : (e && (e.message || e.error)) || JSON.stringify(e))).filter(Boolean);
     console.error('PaymentPoint create account failed:', r.status, JSON.stringify({ status: d.status, message: d.message, errors: d.errors }).slice(0, 600));
     const text = `${errs.join('; ')} ${d.message || ''}`;
-    if (/bvn|\bnin\b|kyc|identity|national id|id number|id type/i.test(text)) {
-      return res.status(400).json({ status: false, needsId: true, message: 'The bank needs your BVN or NIN to open your account number. Enter it below and try again.' });
+    // a failed bank account very often means the bank wants an ID, so offer the ID boxes once (never again after an ID was already sent)
+    if (!body.idType && /bvn|\bnin\b|kyc|identity|national id|id number|id type|reserved account/i.test(text)) {
+      return res.status(400).json({ status: false, needsId: true, message: 'The bank may need your BVN or NIN to open your account number. You can add it below and try again.' });
     }
     let why = errs.join('; ').slice(0, 160);
     if (!why && d.status === 'success') why = 'your account is still being set up. Please try again in a minute';
