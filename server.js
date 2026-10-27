@@ -502,23 +502,36 @@ app.post('/api/virtual-account', requireAuth, wrap(async (req, res) => {
   if (!snap.exists) throw new HttpError(404, 'Account not found. Please reload the page.');
   const u = snap.data();
   if (u.pp && u.pp.accounts && u.pp.accounts.length) return res.json({ status: true, enabled: true, accounts: u.pp.accounts });
-  if (req.body.action !== 'create') return res.json({ status: true, enabled: true, accounts: [], needsDetails: true });
+  if (req.body.action !== 'create') return res.json({ status: true, enabled: true, accounts: [], needsDetails: true, name: u.full_name || '', phone: u.phone || '' });
 
-  const name = String(req.body.name || '').trim().replace(/\s+/g, ' ');
-  const phone = String(req.body.phone || '').trim();
+  const name = String(req.body.name || u.full_name || '').trim().replace(/\s+/g, ' ');
+  const phone = String(req.body.phone || u.phone || '').trim();
   if (!/^[A-Za-z][A-Za-z .'-]{2,59}$/.test(name)) throw new HttpError(400, 'Enter your full name (letters only).');
   if (!/^0\d{10}$/.test(phone)) throw new HttpError(400, 'Enter a valid 11-digit phone number.');
 
-  const r = await axios.post(`${PP_BASE}/api/v1/createVirtualAccount`, {
-    email: req.user.email, name, phoneNumber: phone, bankCode: ['20946', '20897'], businessId: PP_BIZ
-  }, { headers: { Authorization: `Bearer ${PP_SECRET}`, 'api-key': PP_KEY, 'Content-Type': 'application/json' }, timeout: 30000, validateStatus: () => true });
+  await ref.set({ full_name: name, phone }, { merge: true }); // remembered, so a retry (for example to add an ID) needs no re-typing
+  const body = { email: req.user.email, name, phoneNumber: phone, bankCode: ['20946', '20897'], businessId: PP_BIZ };
+  const idType = String(req.body.idType || '').toLowerCase();
+  const idNumber = String(req.body.idNumber || '').trim();
+  if (idType || idNumber) { // only sent when the bank asks for it; passed straight through, never saved or logged
+    if (!['bvn', 'nin'].includes(idType) || !/^\d{11}$/.test(idNumber)) throw new HttpError(400, 'Enter your 11-digit BVN or NIN.');
+    body.idType = idType; body.idNumber = idNumber;
+  }
+  const r = await axios.post(`${PP_BASE}/api/v1/createVirtualAccount`, body, {
+    headers: { Authorization: `Bearer ${PP_SECRET}`, 'api-key': PP_KEY, 'Content-Type': 'application/json' }, timeout: 30000, validateStatus: () => true
+  });
   const d = r.data || {};
   const accounts = (d.bankAccounts || []).map(a => ({ bank: a.bankName, bankCode: a.bankCode, accountNumber: a.accountNumber, accountName: a.accountName }));
   if (!accounts.length) {
-    console.error('PaymentPoint create account failed:', r.status, JSON.stringify(d).slice(0, 500));
-    // show PaymentPoint's own reason when it is safe to (never anything about keys or tokens)
-    const e0 = Array.isArray(d.errors) && d.errors[0];
-    let why = String(d.message || (e0 && (e0.message || e0)) || '').slice(0, 140);
+    const errs = (Array.isArray(d.errors) ? d.errors : []).map(e => (typeof e === 'string' ? e : (e && (e.message || e.error)) || JSON.stringify(e))).filter(Boolean);
+    console.error('PaymentPoint create account failed:', r.status, JSON.stringify({ status: d.status, message: d.message, errors: d.errors }).slice(0, 600));
+    const text = `${errs.join('; ')} ${d.message || ''}`;
+    if (/bvn|\bnin\b|kyc|identity|national id|id number|id type/i.test(text)) {
+      return res.status(400).json({ status: false, needsId: true, message: 'The bank needs your BVN or NIN to open your account number. Enter it below and try again.' });
+    }
+    let why = errs.join('; ').slice(0, 160);
+    if (!why && d.status === 'success') why = 'your account is still being set up. Please try again in a minute';
+    else if (!why) why = String(d.message || '').slice(0, 160);
     if (/key|token|auth|secret|bearer|business/i.test(why)) why = '';
     throw new HttpError(502, `Could not create your account number${why ? ': ' + why : ' right now'}. Please try again later or use card or USSD.`);
   }
