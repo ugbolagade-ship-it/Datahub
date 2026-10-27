@@ -662,6 +662,21 @@ html,body{background:#fbf7f1}
 #view-dash .bank-acct{font-size:.82rem;color:rgba(255,255,255,.75);overflow-wrap:anywhere}
 #view-dash .bank-copy{margin-top:12px;border:0;border-radius:12px;padding:9px 14px;font-weight:700;font-size:.8rem;background:rgba(255,255,255,.14);color:#fff}
 #view-dash .bank-note{font-size:.82rem;color:var(--text-muted);line-height:1.5;margin:12px 0}
+
+/* Auto Funding Accounts card */
+#view-dash .bank-mini{margin-bottom:18px}
+#view-dash .bm-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;margin-bottom:10px;color:#fff;box-shadow:0 14px 26px -20px rgba(20,17,31,.6)}
+#view-dash .bm-palm{background:linear-gradient(135deg,#e8803a,#f29a4f)}
+#view-dash .bm-opay{background:linear-gradient(135deg,#2fae78,#5cc796)}
+#view-dash .bm-other{background:linear-gradient(135deg,#241f3d,#3a3360)}
+#view-dash .bm-chip{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.92);color:#14111f;display:grid;place-items:center;font-weight:800;font-family:'Bricolage Grotesque',sans-serif;flex:0 0 auto}
+#view-dash .bm-info{flex:1;min-width:0}
+#view-dash .bm-num{font-family:'Bricolage Grotesque',sans-serif;font-size:1.25rem;font-weight:800;letter-spacing:.04em}
+#view-dash .bm-bank{font-size:.78rem;opacity:.9}
+#view-dash .bm-copy{border:0;border-radius:11px;padding:8px 13px;font-weight:800;font-size:.78rem;background:rgba(255,255,255,.22);color:#fff}
+#view-dash .bm-name{background:#fff;border:1px solid rgba(20,17,31,.06);border-radius:16px;padding:11px 14px;font-size:.82rem;color:var(--text-muted)}
+#view-dash .bm-name b{color:var(--text-dark);margin-left:4px;overflow-wrap:anywhere}
+#view-dash .bm-get{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;border:1.5px dashed #ffb98a;background:#fff7ee;color:#7a4a00;border-radius:18px;padding:14px;font-weight:700;font-size:.85rem}
 </style>
 </head>
 <body>
@@ -1001,6 +1016,15 @@ html,body{background:#fbf7f1}
 
     <form id="signupForm" onsubmit="signupUser(event)">
       <div class="form-group">
+        <label for="signupName">Full name</label>
+        <input type="text" id="signupName" placeholder="Your full name" autocomplete="name" required />
+      </div>
+      <div class="form-group">
+        <label for="signupPhone">Phone number</label>
+        <input type="tel" id="signupPhone" placeholder="08012345678" maxlength="11" inputmode="numeric" autocomplete="tel" required />
+      </div>
+
+      <div class="form-group">
         <label for="signupEmail">Email</label>
         <input type="email" id="signupEmail" placeholder="yourname@gmail.com" required />
       </div>
@@ -1098,6 +1122,11 @@ html,body{background:#fbf7f1}
           <p>Pay ₦2,000 once to unlock 5% OFF all VTU plans forever!</p>
         </div>
         <button class="btn-upgrade-now" onclick="upgradeToReseller()">Upgrade ₦2k</button>
+      </div>
+
+      <div id="bankMini" class="bank-mini" style="display:none;">
+        <div class="section-head"><span>Auto Funding Accounts</span></div>
+        <div id="bankMiniBody"></div>
       </div>
 
       <div class="section-head">
@@ -2517,8 +2546,13 @@ const auth = getAuth(app);
       }
       body.innerHTML = `
         <p class="bank-note" style="margin-top:0">Get your own account number. Money sent to it goes straight into your wallet.</p>
-        <div class="form-group"><label>Full name</label><input type="text" id="bankName" placeholder="Your full name" autocomplete="name" /></div>
-        <div class="form-group"><label>Phone number</label><input type="tel" id="bankPhone" placeholder="08012345678" maxlength="11" inputmode="numeric" /></div>
+        <div class="form-group"><label>Full name</label><input type="text" id="bankName" placeholder="Your full name" autocomplete="name" value="${qEsc(r.name || '')}" /></div>
+        <div class="form-group"><label>Phone number</label><input type="tel" id="bankPhone" placeholder="08012345678" maxlength="11" inputmode="numeric" value="${qEsc(r.phone || '')}" /></div>
+        <div id="bankIdBox" style="display:none">
+          <div class="form-group"><label>ID type</label><select id="bankIdType"><option value="bvn">BVN</option><option value="nin">NIN</option></select></div>
+          <div class="form-group"><label>BVN or NIN (11 digits)</label><input type="tel" id="bankIdNum" placeholder="11 digits" maxlength="11" inputmode="numeric" autocomplete="off" /></div>
+          <p class="bank-note" style="margin-top:0">The bank needs this to open your account number. We pass it on and do not store it.</p>
+        </div>
         <button type="button" class="btn-action" id="bankCreateBtn" onclick="createBankAccount()">Get my account number</button>
         <div id="bankErr" class="status-alert"></div>`;
     }
@@ -2536,8 +2570,12 @@ const auth = getAuth(app);
       const err = document.getElementById('bankErr');
       const stop = startLoading(btn, err, 'Creating your account number...');
       try {
-        const r = await api('/api/virtual-account', { action: 'create', name: document.getElementById('bankName').value, phone: document.getElementById('bankPhone').value });
-        if (r.accounts && r.accounts.length) { stop(); renderBank(r); return; }
+        const idBox = document.getElementById('bankIdBox');
+        const body = { action: 'create', name: document.getElementById('bankName').value, phone: document.getElementById('bankPhone').value };
+        if (idBox.style.display !== 'none') { body.idType = document.getElementById('bankIdType').value; body.idNumber = document.getElementById('bankIdNum').value.trim(); }
+        const r = await api('/api/virtual-account', body);
+        if (r.needsId) { idBox.style.display = 'block'; }
+        if (r.accounts && r.accounts.length) { stop(); renderBank(r); window.loadBankCard(); return; }
         err.className = 'status-alert error'; err.textContent = r.message || 'Could not create your account number.';
       } catch (e) { err.className = 'status-alert error'; err.textContent = 'Network error. Please try again.'; }
       stop();
@@ -2555,6 +2593,38 @@ const auth = getAuth(app);
 
     // coming back from the bank app: pick up the new balance on its own
     document.addEventListener('visibilitychange', () => { if (!document.hidden && auth.currentUser) syncUserProfile(); });
+
+    // ===== AUTO FUNDING ACCOUNTS card on the dashboard =====
+    function renderBankMini(r) {
+      const box = document.getElementById('bankMini');
+      const body = document.getElementById('bankMiniBody');
+      if (!r.enabled) { box.style.display = 'none'; return; }
+      box.style.display = 'block';
+      if (!r.accounts || !r.accounts.length) {
+        body.innerHTML = '<button type="button" class="bm-get" onclick="openBank()">Get your account number to fund your wallet by bank transfer <span>→</span></button>';
+        return;
+      }
+      body.innerHTML = r.accounts.map(a => {
+        const k = /palm/i.test(a.bank) ? 'palm' : /opay/i.test(a.bank) ? 'opay' : 'other';
+        return `<div class="bm-row bm-${k}">
+          <div class="bm-chip">${qEsc(String(a.bank || '?').charAt(0))}</div>
+          <div class="bm-info"><div class="bm-num">${qEsc(a.accountNumber)}</div><div class="bm-bank">${qEsc(a.bank)}</div></div>
+          <button type="button" class="bm-copy" onclick="copyAcct('${qEsc(a.accountNumber)}')">Copy</button>
+        </div>`;
+      }).join('') + `<div class="bm-name"><span>Account Name:</span> <b>${qEsc(r.accounts[0].accountName)}</b></div>`;
+    }
+
+    // shows the user's account numbers; asks once (per device) for the details of anyone who has none yet
+    window.loadBankCard = async function () {
+      try {
+        const r = await api('/api/virtual-account', { action: 'get' });
+        renderBankMini(r);
+        if (r.enabled && (!r.accounts || !r.accounts.length) && !localStorage.getItem('oyo_bank_prompted')) {
+          localStorage.setItem('oyo_bank_prompted', '1');
+          setTimeout(() => window.openBank(), 700);
+        }
+      } catch (e) { /* the card just stays hidden */ }
+    };
 
     // ================= ROUTER + AUTH =================
 let authReady = false, currentUser = null, authBusy = false;
@@ -2594,6 +2664,7 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById('refLinkInput').value = `${location.origin}${location.pathname}?ref=${user.uid.slice(0, 6)}#signup`;
     route();
     await syncUserProfile(user.email);
+    window.loadBankCard();
   } else {
     userEmailAddress = ''; actualBalance = 0; refBalance = 0; isReseller = false; transactionHistory = [];
     route();
@@ -2656,7 +2727,19 @@ window.signupUser = async function (e) {
   const email = document.getElementById('signupEmail').value.trim();
   const password = document.getElementById('signupPassword').value;
   const confirmPassword = document.getElementById('confirmPassword').value;
+  const fullName = document.getElementById('signupName').value.trim().replace(/\s+/g, ' ');
+  const phone = document.getElementById('signupPhone').value.trim();
   status.className = 'status-alert';
+  if (!/^[A-Za-z][A-Za-z .'-]{2,59}$/.test(fullName)) {
+    status.className = 'status-alert error';
+    status.textContent = 'Please enter your full name (letters only).';
+    return;
+  }
+  if (!/^0\d{10}$/.test(phone)) {
+    status.className = 'status-alert error';
+    status.textContent = 'Please enter a valid 11-digit phone number.';
+    return;
+  }
   if (password !== confirmPassword) {
     status.className = 'status-alert error';
     status.textContent = 'Passwords do not match. Please check and try again.';
@@ -2666,7 +2749,12 @@ window.signupUser = async function (e) {
   try {
     await createUserWithEmailAndPassword(auth, email, password);
     status.className = 'status-alert success';
-    status.textContent = 'Account created successfully! Redirecting...';
+    status.textContent = 'Account created! Setting up your funding account number...';
+    try { // create the wallet record, then the personal bank account number (a failure here never blocks signup)
+      await api('/api/get-user-profile', { referredBy: localStorage.getItem('oyo_ref') || undefined });
+      await api('/api/virtual-account', { action: 'create', name: fullName, phone });
+    } catch (err) { /* the dashboard will offer it again */ }
+    status.textContent = 'All set! Redirecting...';
     setTimeout(() => {
       authBusy = false; btn.disabled = false; btn.textContent = 'Create Account'; status.className = 'status-alert';
       location.hash = '#dashboard'; route();
