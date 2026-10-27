@@ -653,6 +653,15 @@ html,body{background:#fbf7f1}
 #view-dash .status-alert.loading .spin,#view-quick .status-alert.loading .spin{border-color:rgba(255,90,31,.25);border-top-color:#ff5a1f}
 #view-dash .status-alert.loading::after,#view-quick .status-alert.loading::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:40%;background:linear-gradient(90deg,#ffa338,#ff5a1f);border-radius:3px;animation:oyoBar 1.1s ease-in-out infinite}
 @keyframes oyoBar{0%{left:-40%}100%{left:100%}}
+
+/* bank transfer funding */
+#view-dash .btn-bank-alt{margin-top:10px;background:#fff;color:var(--text-dark);border:1.5px solid var(--input-border);box-shadow:none}
+#view-dash .bank-card{background:linear-gradient(160deg,#241f3d,#14111f);color:#fff;border-radius:20px;padding:16px;margin-bottom:12px;position:relative;overflow:hidden}
+#view-dash .bank-name{font-size:.78rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#ffc56b}
+#view-dash .bank-num{font-family:'Bricolage Grotesque',sans-serif;font-size:1.9rem;font-weight:800;letter-spacing:.04em;margin:4px 0}
+#view-dash .bank-acct{font-size:.82rem;color:rgba(255,255,255,.75);overflow-wrap:anywhere}
+#view-dash .bank-copy{margin-top:12px;border:0;border-radius:12px;padding:9px 14px;font-weight:700;font-size:.8rem;background:rgba(255,255,255,.14);color:#fff}
+#view-dash .bank-note{font-size:.82rem;color:var(--text-muted);line-height:1.5;margin:12px 0}
 </style>
 </head>
 <body>
@@ -1410,9 +1419,21 @@ html,body{background:#fbf7f1}
           <input type="number" id="topupAmountInput" placeholder="Enter amount (min ₦100)" min="100" required />
         </div>
         <button class="btn-action" style="background: linear-gradient(135deg, var(--brand-orange), var(--brand-red)); padding: 14px;" onclick="payWithKorapayCheckout()">Proceed to Checkout</button>
+        <button type="button" class="btn-action btn-bank-alt" onclick="openBank()">Or fund by bank transfer</button>
       </div>
 
       <div id="topupAlert" class="status-alert"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: BANK TRANSFER (your personal account number) -->
+  <div id="modalBank" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">Fund by Bank Transfer</span>
+        <button class="btn-close" onclick="closeModal('modalBank')">✕</button>
+      </div>
+      <div id="bankBody"></div>
     </div>
   </div>
 
@@ -2475,6 +2496,65 @@ const auth = getAuth(app);
           : error.message.replace('Firebase: ', '');
       }
     };
+
+    // ===== BANK TRANSFER FUNDING (PaymentPoint account number) =====
+    function bankMsg(text) { document.getElementById('bankBody').innerHTML = `<p class="bank-note">${qEsc(text)}</p>`; }
+
+    function renderBank(r) {
+      const body = document.getElementById('bankBody');
+      if (!r.enabled) { bankMsg('Bank transfer funding is coming soon. Please use card or USSD for now.'); return; }
+      if (r.accounts && r.accounts.length) {
+        body.innerHTML = r.accounts.map(a => `
+          <div class="bank-card">
+            <div class="bank-name">${qEsc(a.bank)}</div>
+            <div class="bank-num">${qEsc(a.accountNumber)}</div>
+            <div class="bank-acct">${qEsc(a.accountName)}</div>
+            <button type="button" class="bank-copy" onclick="copyAcct('${qEsc(a.accountNumber)}')">Copy number</button>
+          </div>`).join('') + `
+          <p class="bank-note">Send any amount from any bank app to one of these accounts. Your wallet is credited automatically after the transfer, usually within a few minutes.</p>
+          <button type="button" class="btn-action" onclick="refreshBankBalance(this)">I have paid, refresh my balance</button>`;
+        return;
+      }
+      body.innerHTML = `
+        <p class="bank-note" style="margin-top:0">Get your own account number. Money sent to it goes straight into your wallet.</p>
+        <div class="form-group"><label>Full name</label><input type="text" id="bankName" placeholder="Your full name" autocomplete="name" /></div>
+        <div class="form-group"><label>Phone number</label><input type="tel" id="bankPhone" placeholder="08012345678" maxlength="11" inputmode="numeric" /></div>
+        <button type="button" class="btn-action" id="bankCreateBtn" onclick="createBankAccount()">Get my account number</button>
+        <div id="bankErr" class="status-alert"></div>`;
+    }
+
+    window.openBank = async function () {
+      window.closeModal('modalTopup');
+      openModal('modalBank');
+      bankMsg('Loading...');
+      try { renderBank(await api('/api/virtual-account', { action: 'get' })); }
+      catch (e) { bankMsg('Could not load. Please try again.'); }
+    };
+
+    window.createBankAccount = async function () {
+      const btn = document.getElementById('bankCreateBtn');
+      const err = document.getElementById('bankErr');
+      const stop = startLoading(btn, err, 'Creating your account number...');
+      try {
+        const r = await api('/api/virtual-account', { action: 'create', name: document.getElementById('bankName').value, phone: document.getElementById('bankPhone').value });
+        if (r.accounts && r.accounts.length) { stop(); renderBank(r); return; }
+        err.className = 'status-alert error'; err.textContent = r.message || 'Could not create your account number.';
+      } catch (e) { err.className = 'status-alert error'; err.textContent = 'Network error. Please try again.'; }
+      stop();
+    };
+
+    window.copyAcct = function (n) {
+      (navigator.clipboard ? navigator.clipboard.writeText(n) : Promise.reject()).then(() => alert('Account number copied.'), () => alert('Copy failed. Please copy it by hand.'));
+    };
+
+    window.refreshBankBalance = async function (btn) {
+      btn.disabled = true; btn.textContent = 'Checking...';
+      await syncUserProfile();
+      btn.disabled = false; btn.textContent = 'I have paid, refresh my balance';
+    };
+
+    // coming back from the bank app: pick up the new balance on its own
+    document.addEventListener('visibilitychange', () => { if (!document.hidden && auth.currentUser) syncUserProfile(); });
 
     // ================= ROUTER + AUTH =================
 let authReady = false, currentUser = null, authBusy = false;
