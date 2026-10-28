@@ -506,7 +506,12 @@ app.post('/api/virtual-account', requireAuth, wrap(async (req, res) => {
   if (!snap.exists) throw new HttpError(404, 'Account not found. Please reload the page.');
   const u = snap.data();
   if (u.pp && u.pp.accounts && u.pp.accounts.length) return res.json({ status: true, enabled: true, accounts: u.pp.accounts });
-  if (req.body.action !== 'create') return res.json({ status: true, enabled: true, accounts: [], needsDetails: true, name: u.full_name || '', phone: u.phone || '' });
+  // remember the name and phone typed at signup, so nothing has to be typed twice
+  const nm = String(req.body.name || '').trim().replace(/\s+/g, ' '), ph = String(req.body.phone || '').trim();
+  if (req.body.action !== 'create' && /^[A-Za-z][A-Za-z .'-]{2,59}$/.test(nm) && /^0\d{10}$/.test(ph) && (u.full_name !== nm || u.phone !== ph)) {
+    await ref.set({ full_name: nm, phone: ph }, { merge: true }); u.full_name = nm; u.phone = ph;
+  }
+  if (req.body.action !== 'create') return res.json({ status: true, enabled: true, accounts: [], needsDetails: true, askId: PP_ASK_ID, name: u.full_name || '', phone: u.phone || '' });
 
   const name = String(req.body.name || u.full_name || '').trim().replace(/\s+/g, ' ');
   const phone = String(req.body.phone || u.phone || '').trim();
@@ -526,15 +531,27 @@ app.post('/api/virtual-account', requireAuth, wrap(async (req, res) => {
   });
   const d = r.data || {};
   // read the reply flexibly: the list may sit under a slightly different name, and fields may be snake_case
-  const list = [d.bankAccounts, d.accounts, d.virtualAccounts, d.data && d.data.bankAccounts, d.data && d.data.accounts].find(Array.isArray) || [];
-  const accounts = list.map(a => ({ bank: a.bankName || a.bank_name || a.bank, bankCode: a.bankCode || a.bank_code, accountNumber: String(a.accountNumber || a.account_number || ''), accountName: a.accountName || a.account_name })).filter(a => a.accountNumber);
+  const pick = x => [x.bankAccounts, x.accounts, x.virtualAccounts, x.data && x.data.bankAccounts, x.data && x.data.accounts].find(Array.isArray) || [];
+  const mapAcc = a => ({ bank: a.bankName || a.bank_name || a.bank, bankCode: a.bankCode || a.bank_code, accountNumber: String(a.accountNumber || a.account_number || ''), accountName: a.accountName || a.account_name });
+  const accounts = pick(d).map(mapAcc).filter(a => a.accountNumber);
+  // if the combined request gave nothing, try each bank on its own, so one bank failing can never block the other
+  if (!accounts.length && body.bankCode.length > 1) {
+    for (const code of body.bankCode) {
+      try {
+        const r2 = await axios.post(`${PP_BASE}/api/v1/createVirtualAccount`, { ...body, bankCode: [code] }, {
+          headers: { Authorization: `Bearer ${PP_SECRET}`, 'api-key': PP_KEY, 'Content-Type': 'application/json' }, timeout: 30000, validateStatus: () => true
+        });
+        pick(r2.data || {}).map(mapAcc).filter(a => a.accountNumber).forEach(a => { if (!accounts.some(x => x.accountNumber === a.accountNumber)) accounts.push(a); });
+      } catch (e) { /* this bank failed; the next one may still work */ }
+    }
+  }
   if (!accounts.length) {
     console.error('PaymentPoint reply had no bank accounts. keys:', Object.keys(d).join(','), '| banksRequested:', body.bankCode.join(','), '| bankAccounts:', JSON.stringify(d.bankAccounts), '| errors:', JSON.stringify(d.errors));
     const errs = (Array.isArray(d.errors) ? d.errors : []).map(e => (typeof e === 'string' ? e : (e && (e.message || e.error)) || JSON.stringify(e))).filter(Boolean);
     console.error('PaymentPoint create account failed:', r.status, JSON.stringify({ status: d.status, message: d.message, errors: d.errors }).slice(0, 600));
     const text = `${errs.join('; ')} ${d.message || ''}`;
-    // a failed bank account very often means the bank wants an ID, so offer the ID boxes once (never again after an ID was already sent)
-    if (PP_ASK_ID && !body.idType && /bvn|\bnin\b|kyc|identity|national id|id number|id type|reserved account/i.test(text)) {
+    // no account came back: ask for an ID once (never again after one was already sent). The ID boxes are not shown up front unless PAYMENTPOINT_ASK_ID=true
+    if (!body.idType) {
       return res.status(400).json({ status: false, needsId: true, message: 'The bank may need your BVN or NIN to open your account number. You can add it below and try again.' });
     }
     let why = errs.join('; ').slice(0, 160);
