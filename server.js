@@ -387,6 +387,22 @@ app.post('/api/buy-exam-pin', requireAuth, wrap(async (req, res) => {
   });
 }));
 
+// ---------- Airtime ----------
+// Customers pay the face value (₦100 to ₦10,000). max_amount_payable makes sure EasyAccess can never charge us more than that.
+app.post('/api/buy-airtime', requireAuth, wrap(async (req, res) => {
+  const network = Number(req.body.network);
+  const amount = Number(req.body.amount);
+  const mobileno = String(req.body.mobileno || '').trim();
+  if (![1, 2, 3, 4].includes(network)) throw new HttpError(400, 'Choose a valid network.', 'failed');
+  if (!/^0\d{10}$/.test(mobileno)) throw new HttpError(400, 'Enter a valid 11-digit phone number.', 'failed');
+  if (!Number.isInteger(amount) || amount < 100 || amount > 10000) throw new HttpError(400, 'Airtime must be between ₦100 and ₦10,000.', 'failed');
+  const name = ['MTN', 'Glo', 'Airtel', '9mobile'][network - 1];
+  await purchaseFlow(res, req.user.uid, {
+    cost: amount, type: 'Airtime', title: `${name} Airtime — ${mobileno}`,
+    endpoint: 'purchase-airtime', payload: { network, amount, mobileno, max_amount_payable: amount }
+  });
+}));
+
 // ---------- Quick Buy (no account) ----------
 // 1) /init saves the order and returns a reference + price  2) customer pays with Korapay
 // 3) /complete (or the Korapay webhook) confirms the payment and delivers the data, exactly once
