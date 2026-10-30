@@ -120,6 +120,31 @@ const getEasyAccessHeaders = () => ({
   'Content-Type': 'application/json'
 });
 
+// Custom selling prices set from the admin panel (Prices tab). key = "<product_type>:<plan_id>" -> price in naira
+// priceOverrides = what normal customers pay, resellerOverrides = what resellers pay
+let priceOverrides = {};
+let resellerOverrides = {};
+fdb.doc('meta/price_overrides').get().then(d => { if (d.exists) { priceOverrides = d.data().map || {}; resellerOverrides = d.data().rmap || {}; } }).catch(e => console.error('Could not load price overrides:', e.message));
+
+// What a reseller pays when no reseller price is set: 5% off a custom customer price (never below cost), or the normal reseller formula.
+function resellerNormal(type, plan) {
+  const cost = rawPrice(plan);
+  const custom = priceOverrides[`${type}:${planIdOf(plan)}`];
+  return custom > 0 ? Math.max(Math.ceil(cost), Math.ceil(custom * 0.95)) : calculateSellingPrice(cost, true, false);
+}
+
+// The price a customer pays for a data plan. A reseller price you set wins for resellers, but is never above the customer price.
+function sellPrice(type, plan, isReseller, isCable) {
+  const cost = rawPrice(plan);
+  if (isCable) return calculateSellingPrice(cost, isReseller, true);
+  const key = `${type}:${planIdOf(plan)}`;
+  const custom = priceOverrides[key];
+  const regular = custom > 0 ? custom : calculateSellingPrice(cost, false, false);
+  if (!isReseller) return regular;
+  const rc = resellerOverrides[key];
+  return rc > 0 ? Math.min(rc, regular) : resellerNormal(type, plan);
+}
+
 const planCache = {};
 async function fetchPlans(type) {
   const c = planCache[type];
@@ -190,7 +215,7 @@ app.get('/api/get-plans', wrap(async (req, res) => {
       plan_id: planIdOf(p),
       name: p.name || p.plan_name || p.package_name || 'VTU Plan',
       validity: p.validity || p.plan_validity || p.day || '30 Days',
-      price: calculateSellingPrice(rawPrice(p), reseller, isCable)
+      price: sellPrice(type, p, reseller, isCable)
     }));
     res.json({ status: 'success', plans });
   } catch (e) {
@@ -227,7 +252,7 @@ app.post('/api/purchase-data', requireAuth, wrap(async (req, res) => {
   // Take the money first (inside a transaction) so quick double taps cannot spend it twice
   const { cost, txRef } = await fdb.runTransaction(async t => {
     const { ref, u } = await getUserTx(t, uid, 'failed');
-    const price = calculateSellingPrice(rawPrice(plan), u.is_reseller, false);
+    const price = sellPrice(String(product_type || '').toLowerCase(), plan, u.is_reseller, false);
     if (u.balance < price) throw new HttpError(400, 'Insufficient wallet balance.', 'failed');
     u.balance -= price;
     const tx = addTx(u, { type: 'Data', title: `Data Purchase — ${mobileno}`, amount: String(price), ref: `ref_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`, status: 'PENDING' });
@@ -474,7 +499,7 @@ app.post('/api/quick-buy/init', wrap(async (req, res) => {
   let plan;
   try { plan = (await fetchPlans(pt)).find(p => planIdOf(p) === dataplan); } catch (e) { /* handled below */ }
   if (!plan) throw new HttpError(400, 'Plan not found. Please reload and try again.');
-  const price = calculateSellingPrice(rawPrice(plan), false, false);
+  const price = sellPrice(pt, plan, false, false);
   const reference = `qb_${crypto.randomBytes(6).toString('hex')}_${Date.now()}`;
   const planName = String(plan.name || plan.plan_name || 'Data').slice(0, 60);
   await intentsCol.doc(reference).set({ reference, network, product_type: pt, dataplan, plan_name: planName, mobileno, email, price, state: 'AWAITING', date: today(), ts: Date.now() });
@@ -903,6 +928,56 @@ app.post('/api/admin/settings', adminOnly, wrap(async (req, res) => {
   await fdb.doc('meta/settings').set({ profit_margin_percent: m }, { merge: true });
   Object.keys(planCache).forEach(k => delete planCache[k]);
   res.json({ status: 'success', message: `Data/exam margin set to ${m}%.`, settings });
+}));
+
+// ---------- Admin: custom plan prices ----------
+const ALL_DATA_TYPES = Object.values(NETWORK_PRODUCTS).flat();
+
+app.get('/api/admin/plans', adminOnly, wrap(async (req, res) => {
+  const type = String(req.query.type || '').toLowerCase();
+  if (!ALL_DATA_TYPES.includes(type)) throw new HttpError(400, 'Unknown data type.', 'error');
+  let list = [];
+  try { list = await fetchPlans(type); } catch (e) { throw new HttpError(502, 'Could not load plans from EasyAccess.', 'error'); }
+  res.json({ status: 'success', plans: list.map(p => {
+    const key = `${type}:${planIdOf(p)}`;
+    const cost = rawPrice(p);
+    return {
+      plan_id: planIdOf(p), name: p.name || p.plan_name || p.package_name || 'Plan', validity: p.validity || p.plan_validity || '', cost,
+      default_price: calculateSellingPrice(cost, false, false), custom: priceOverrides[key] || null, price: sellPrice(type, p, false, false),
+      reseller_default: resellerNormal(type, p), reseller_custom: resellerOverrides[key] || null, reseller_price: sellPrice(type, p, true, false)
+    };
+  }) });
+}));
+
+// price: a whole number of naira (never below what the plan costs you), or null to go back to the normal formula
+// who: 'regular' (default) for normal customers, 'reseller' for reseller accounts
+app.post('/api/admin/price-override', adminOnly, wrap(async (req, res) => {
+  const type = String(req.body.type || '').toLowerCase();
+  const id = String(req.body.plan_id || '');
+  const who = req.body.who === 'reseller' ? 'reseller' : 'regular';
+  if (!ALL_DATA_TYPES.includes(type) || !/^\d+$/.test(id)) throw new HttpError(400, 'Unknown plan.', 'error');
+  let list = [];
+  try { list = await fetchPlans(type); } catch (e) { throw new HttpError(502, 'Could not load plans from EasyAccess.', 'error'); }
+  const plan = list.find(p => planIdOf(p) === id);
+  if (!plan) throw new HttpError(404, 'Plan not found.', 'error');
+  const key = `${type}:${id}`;
+  const map = who === 'reseller' ? resellerOverrides : priceOverrides;
+  if (req.body.price === null || req.body.price === '' || req.body.price === undefined) {
+    delete map[key];
+  } else {
+    const price = Number(req.body.price);
+    const cost = Math.ceil(rawPrice(plan));
+    if (!Number.isInteger(price) || price > 1000000) throw new HttpError(400, 'Enter a whole number of naira.', 'error');
+    if (price < cost) throw new HttpError(400, `That is below what this plan costs you (₦${cost.toLocaleString('en-NG')}). Choose ₦${cost.toLocaleString('en-NG')} or more.`, 'error');
+    if (who === 'reseller') {
+      const regular = sellPrice(type, plan, false, false);
+      if (price > regular) throw new HttpError(400, `A reseller price cannot be higher than the customer price (₦${regular.toLocaleString('en-NG')}).`, 'error');
+    }
+    map[key] = price;
+  }
+  await fdb.doc('meta/price_overrides').set({ map: priceOverrides, rmap: resellerOverrides });
+  const label = who === 'reseller' ? 'Reseller price' : 'Customer price';
+  res.json({ status: 'success', message: map[key] ? `${label} set to ₦${map[key].toLocaleString('en-NG')}.` : `${label} is back to normal.`, price: sellPrice(type, plan, false, false), reseller_price: sellPrice(type, plan, true, false) });
 }));
 
 process.on('unhandledRejection', e => console.error('Unhandled rejection:', e));
