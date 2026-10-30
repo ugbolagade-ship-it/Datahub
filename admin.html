@@ -143,6 +143,10 @@ input:focus,textarea:focus,select:focus{border-color:#ff5a1f;box-shadow:0 0 0 4p
   .stat .ic{background:color-mix(in srgb,var(--c) 28%,transparent)}
   .stat .ic svg{fill:#fff}
 }
+
+/* customer / reseller price blocks */
+.pr-block{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.pr-head{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.88rem;margin-bottom:2px}
 </style>
 </head>
 <body>
@@ -175,6 +179,7 @@ input:focus,textarea:focus,select:focus{border-color:#ff5a1f;box-shadow:0 0 0 4p
     <button data-tab="orders">Orders <span class="dot hidden" id="dotOrders"></span></button>
     <button data-tab="withdrawals">Withdrawals <span class="dot hidden" id="dotWd"></span></button>
     <button data-tab="announce">Announcement</button>
+    <button data-tab="prices">Prices</button>
     <button data-tab="settings">Settings</button>
   </nav>
 
@@ -224,6 +229,19 @@ input:focus,textarea:focus,select:focus{border-color:#ff5a1f;box-shadow:0 0 0 4p
           <button class="btn btn-ghost" onclick="publishAnnouncement(true)">Clear</button>
         </div>
       </div>
+    </section>
+
+    <!-- PRICES -->
+    <section id="tab-prices" class="hidden">
+      <div class="card">
+        <h2>Custom data prices</h2>
+        <p class="hint" style="margin-top:0">Pick a plan type, then type the price you want customers to pay (for example, to match OPay). Plans you leave alone keep the normal price.</p>
+        <div class="row" style="margin-top:12px">
+          <select id="prNet"></select>
+          <select id="prType"></select>
+        </div>
+      </div>
+      <div id="priceList"></div>
     </section>
 
     <!-- SETTINGS -->
@@ -302,7 +320,7 @@ function logout() {
 }
 
 /* ---------- tabs ---------- */
-const loaders = { overview: loadOverview, users: () => loadUsers(''), orders: () => loadOrders('PENDING'), withdrawals: loadWithdrawals, announce: loadAnnounce, settings: loadSettings };
+const loaders = { overview: loadOverview, users: () => loadUsers(''), orders: () => loadOrders('PENDING'), withdrawals: loadWithdrawals, announce: loadAnnounce, settings: loadSettings, prices: loadPrices };
 let currentTab = 'overview';
 function refreshTab() { const b = $('refreshBtn'); b.classList.add('spinning'); Promise.resolve(loaders[currentTab]()).catch(e => toast(e.message, true)).finally(() => setTimeout(() => b.classList.remove('spinning'), 400)); }
 function go(tab) {
@@ -462,6 +480,50 @@ async function publishAnnouncement(clear) {
   const message = clear ? '' : $('annText').value.trim();
   if (!clear && !message) return toast('Type a message first.', true);
   try { const r = await call('/api/admin/announcement', 'POST', { message }); if (clear) $('annText').value = ''; toast(clear ? 'Announcement cleared.' : r.message); }
+  catch (err) { toast(err.message, true); }
+}
+
+/* ---------- custom plan prices ---------- */
+const PR_TYPES = { MTN: ['cg', 'sme', 'awoof', 'gifting'], GLO: ['cg', 'awoof', 'gifting'], AIRTEL: ['cg', 'awoof', 'gifting'], '9MOBILE': ['sme', 'gifting'] };
+const PR_PREFIX = { MTN: 'mtn', GLO: 'glo', AIRTEL: 'airtel', '9MOBILE': '9mobile' };
+const PR_LABEL = { cg: 'Corporate Gifting (CG)', sme: 'SME', awoof: 'Awoof', gifting: 'Gifting' };
+$('prNet').innerHTML = Object.keys(PR_TYPES).map(n => `<option value="${n}">${n === '9MOBILE' ? '9mobile' : n[0] + n.slice(1).toLowerCase()}</option>`).join('');
+function fillPrTypes() { $('prType').innerHTML = PR_TYPES[$('prNet').value].map(t => `<option value="${t}">${PR_LABEL[t]}</option>`).join(''); }
+fillPrTypes();
+$('prNet').addEventListener('change', () => { fillPrTypes(); loadPrices().catch(e => toast(e.message, true)); });
+$('prType').addEventListener('change', () => loadPrices().catch(e => toast(e.message, true)));
+const prKey = () => `${PR_PREFIX[$('prNet').value]}_${$('prType').value}`;
+
+async function loadPrices() {
+  $('priceList').innerHTML = '<div class="skel"></div><div class="skel"></div><div class="skel s"></div>';
+  const type = prKey();
+  const r = await call('/api/admin/plans?type=' + encodeURIComponent(type));
+  const col = v => (v >= 0 ? 'var(--green)' : 'var(--red)');
+  const block = (title, who, idp, p, price, normal, custom) => `
+      <div class="pr-block">
+        <div class="pr-head"><b>${title}</b><span>${money(price)} ${custom ? '<span class="badge b-info">Custom</span>' : '<span class="badge b-wait">Normal</span>'}</span></div>
+        <div class="s">Normal ${money(normal)} · Profit <b style="color:${col(price - p.cost)}">${money(Math.round(price - p.cost))}</b></div>
+        <div class="row" style="margin-top:8px">
+          <input type="number" inputmode="numeric" min="0" id="${idp}${esc(p.plan_id)}" placeholder="${title} (₦)" value="${custom || ''}" />
+          <button class="btn btn-sm btn-primary" onclick="savePrice('${esc(type)}','${esc(p.plan_id)}','${who}')">Save</button>
+          ${custom ? `<button class="btn btn-sm btn-ghost" onclick="resetPrice('${esc(type)}','${esc(p.plan_id)}','${who}')">Reset</button>` : ''}
+        </div>
+      </div>`;
+  $('priceList').innerHTML = r.plans.length ? r.plans.map(p => `<div class="item">
+      <div class="t">${esc(p.name)}</div><div class="s">${esc(p.validity)} · Your cost ${money(Math.ceil(p.cost))}</div>
+      ${block('Customer price', 'regular', 'pr_', p, p.price, p.default_price, p.custom)}
+      ${block('Reseller price', 'reseller', 'prr_', p, p.reseller_price, p.reseller_default, p.reseller_custom)}
+    </div>`).join('') : '<p class="empty">No plans found.</p>';
+}
+async function savePrice(type, id, who = 'regular') {
+  const raw = $((who === 'reseller' ? 'prr_' : 'pr_') + id).value.trim();
+  if (!raw) return toast('Type a price first, or tap Reset.', true);
+  try { const r = await call('/api/admin/price-override', 'POST', { type, plan_id: id, price: Number(raw), who }); toast(r.message); loadPrices(); }
+  catch (err) { toast(err.message, true); }
+}
+async function resetPrice(type, id, who = 'regular') {
+  if (!confirm('Go back to the normal price for this plan?')) return;
+  try { const r = await call('/api/admin/price-override', 'POST', { type, plan_id: id, price: null, who }); toast(r.message); loadPrices(); }
   catch (err) { toast(err.message, true); }
 }
 
