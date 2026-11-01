@@ -224,14 +224,22 @@ app.get('/api/get-plans', wrap(async (req, res) => {
 }));
 
 // ---------- Buy data (price is decided HERE, never by the browser) ----------
-async function finishTx(uid, txRef, status, refund = 0, detail = '') {
+function providerCost(d, est) {
+  const drop = Number(d.balance_before) - Number(d.balance_after);
+  if (Number.isFinite(drop) && drop > 0) return drop;
+  const ap = Number(d.amount_paid);
+  if (Number.isFinite(ap) && ap > 0) return ap;
+  return est != null ? est : null;
+}
+
+async function finishTx(uid, txRef, status, refund = 0, detail = '', cost = null) {
   return fdb.runTransaction(async t => {
     const { ref, u } = await getUserTx(t, uid);
     const x = u.transactions.find(y => y.ref === txRef);
     if (x) { x.status = status; if (detail) x.detail = detail; }
     if (refund) u.balance += refund;
     t.set(ref, u);
-    t.set(ordersCol.doc(txRef), { status }, { merge: true });
+    t.set(ordersCol.doc(txRef), cost != null ? { status, cost } : { status }, { merge: true });
     return { u, x };
   });
 }
@@ -257,7 +265,7 @@ app.post('/api/purchase-data', requireAuth, wrap(async (req, res) => {
     u.balance -= price;
     const tx = addTx(u, { type: 'Data', title: `Data Purchase — ${mobileno}`, amount: String(price), ref: `ref_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`, status: 'PENDING' });
     t.set(ref, u);
-    t.set(ordersCol.doc(tx.ref), { ref: tx.ref, uid, email: u.email, type: 'Data', title: tx.title, amount: price, status: 'PENDING', date: today(), ts: Date.now() });
+    t.set(ordersCol.doc(tx.ref), { ref: tx.ref, uid, email: u.email, type: 'Data', title: tx.title, amount: price, est_cost: rawPrice(plan), status: 'PENDING', date: today(), ts: Date.now() });
     return { cost: price, txRef: tx.ref };
   });
 
@@ -268,7 +276,7 @@ app.post('/api/purchase-data', requireAuth, wrap(async (req, res) => {
     const d = r.data || {};
     const st = String(d.status || '').toLowerCase();
     if ([200, 201].includes(Number(d.code)) || ['success', 'successful'].includes(st)) {
-      const { u, x } = await finishTx(uid, txRef, 'SUCCESS');
+      const { u, x } = await finishTx(uid, txRef, 'SUCCESS', 0, '', providerCost(d, rawPrice(plan)));
       return res.json({ status: 'success', message: d.message || 'Data purchase successful!', profile: u, transaction: x });
     }
     const failed = [400, 401].includes(Number(d.code)) || st === 'failed';
@@ -320,13 +328,13 @@ async function purchaseFlow(res, uid, o) {
     u.balance -= o.cost;
     const tx = addTx(u, { type: o.type, title: o.title, amount: String(o.cost), ref: `${o.type.toLowerCase()}_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`, status: 'PENDING' });
     t.set(ref, u);
-    t.set(ordersCol.doc(tx.ref), { ref: tx.ref, uid, email: u.email, type: o.type, title: o.title, amount: o.cost, status: 'PENDING', date: today(), ts: Date.now() });
+    t.set(ordersCol.doc(tx.ref), { ref: tx.ref, uid, email: u.email, type: o.type, title: o.title, amount: o.cost, est_cost: o.est != null ? o.est : null, status: 'PENDING', date: today(), ts: Date.now() });
     return tx.ref;
   });
   try {
     const d = await providerPost(o.endpoint, o.payload);
     if (isOk(d)) {
-      const { u, x } = await finishTx(uid, txRef, 'SUCCESS', 0, o.detail ? o.detail(d) : '');
+      const { u, x } = await finishTx(uid, txRef, 'SUCCESS', 0, o.detail ? o.detail(d) : '', providerCost(d, o.est));
       return res.json({ status: 'success', message: d.message || 'Successful!', profile: u, transaction: x });
     }
     if (!isFailed(d)) {
@@ -362,7 +370,7 @@ app.post('/api/pay-tv', requireAuth, wrap(async (req, res) => {
   const cost = calculateSellingPrice(base, await isResellerUser(req.user.uid), true);
   await purchaseFlow(res, req.user.uid, {
     cost, type: 'Cable', title: `${plan.name || plan.plan_name || 'Cable TV'} — ${iucno}`,
-    endpoint: 'pay-tv', payload: { company, package: Number(pkg), iucno, max_amount_payable: Math.ceil(base * 1.05) }
+    endpoint: 'pay-tv', est: base, payload: { company, package: Number(pkg), iucno, max_amount_payable: Math.ceil(base * 1.05) }
   });
 }));
 
@@ -407,7 +415,7 @@ app.post('/api/buy-exam-pin', requireAuth, wrap(async (req, res) => {
   const name = ['WAEC', 'NECO', 'NABTEB'][board - 1];
   await purchaseFlow(res, req.user.uid, {
     cost, type: 'Exam', title: `${name} Result PIN x${pins}`,
-    endpoint: 'exam-pins', payload: { exam_board: board, no_of_pins: pins, max_amount_payable: Math.ceil(base * pins * 1.05) },
+    endpoint: 'exam-pins', est: base * pins, payload: { exam_board: board, no_of_pins: pins, max_amount_payable: Math.ceil(base * pins * 1.05) },
     detail: d => (Array.isArray(d.pins) ? d.pins.join('\n') : '')
   });
 }));
@@ -468,21 +476,22 @@ async function deliverQuickBuy(reference, paid) {
     if (it.state !== 'AWAITING') return { already: true };
     if (!(paid >= it.price)) return { err: `Payment of ₦${paid} is less than the price of ₦${it.price}.` };
     t.update(iref, { state: 'DELIVERING', paid });
-    t.set(ordersCol.doc(reference), { ref: reference, uid: null, guest: true, email: it.email, mobile: it.mobileno, type: 'Quick Buy', title: `Quick Buy — ${it.plan_name} — ${it.mobileno}`, amount: it.price, status: 'PENDING', date: today(), ts: Date.now() });
+    t.set(ordersCol.doc(reference), { ref: reference, uid: null, guest: true, email: it.email, mobile: it.mobileno, type: 'Quick Buy', title: `Quick Buy — ${it.plan_name} — ${it.mobileno}`, amount: it.price, est_cost: it.cost_est != null ? it.cost_est : null, status: 'PENDING', date: today(), ts: Date.now() });
     return { it };
   });
   if (claim.err) return { ok: false, message: claim.err };
   if (claim.already) return { ok: true };
   const it = claim.it;
   let state = 'PENDING';
+  let cost = null;
   try {
     const d = await providerPost('purchase-data', { network: it.network, dataplan: Number(it.dataplan), mobileno: it.mobileno, client_reference: reference });
-    if (isOk(d)) state = 'SUCCESS'; else if (isFailed(d)) state = 'FAILED';
+    if (isOk(d)) { state = 'SUCCESS'; cost = providerCost(d, it.cost_est != null ? it.cost_est : null); } else if (isFailed(d)) state = 'FAILED';
   } catch (e) { state = 'PENDING'; }
   const note = state === 'FAILED' ? 'Provider failed. Refund the customer on Korapay, then tap Refund customer here.'
     : state === 'PENDING' ? 'Provider result unknown. Check EasyAccess, then mark delivered or refund.' : '';
   await intentsCol.doc(reference).update({ state });
-  await ordersCol.doc(reference).set({ status: state === 'SUCCESS' ? 'SUCCESS' : 'PENDING', note }, { merge: true });
+  await ordersCol.doc(reference).set({ status: state === 'SUCCESS' ? 'SUCCESS' : 'PENDING', note, ...(cost != null ? { cost } : {}) }, { merge: true });
   return { ok: true };
 }
 
@@ -502,7 +511,7 @@ app.post('/api/quick-buy/init', wrap(async (req, res) => {
   const price = sellPrice(pt, plan, false, false);
   const reference = `qb_${crypto.randomBytes(6).toString('hex')}_${Date.now()}`;
   const planName = String(plan.name || plan.plan_name || 'Data').slice(0, 60);
-  await intentsCol.doc(reference).set({ reference, network, product_type: pt, dataplan, plan_name: planName, mobileno, email, price, state: 'AWAITING', date: today(), ts: Date.now() });
+  await intentsCol.doc(reference).set({ reference, network, product_type: pt, dataplan, plan_name: planName, mobileno, email, price, cost_est: rawPrice(plan), state: 'AWAITING', date: today(), ts: Date.now() });
   res.json({ status: true, reference, amount: price, plan_name: planName });
 }));
 
@@ -978,6 +987,31 @@ app.post('/api/admin/price-override', adminOnly, wrap(async (req, res) => {
   await fdb.doc('meta/price_overrides').set({ map: priceOverrides, rmap: resellerOverrides });
   const label = who === 'reseller' ? 'Reseller price' : 'Customer price';
   res.json({ status: 'success', message: map[key] ? `${label} set to ₦${map[key].toLocaleString('en-NG')}.` : `${label} is back to normal.`, price: sellPrice(type, plan, false, false), reseller_price: sellPrice(type, plan, true, false) });
+}));
+
+// Money report: what customers spent, and profit = what they paid minus what EasyAccess charged (only counted where the cost is known)
+app.get('/api/admin/finance', adminOnly, wrap(async (req, res) => {
+  const range = ['today', '7d', '30d', 'all'].includes(req.query.range) ? req.query.range : '7d';
+  const now = Date.now(), day = 86400000, WAT = 3600000; // Nigeria time is UTC+1
+  const midnight = new Date(now + WAT); midnight.setUTCHours(0, 0, 0, 0);
+  const start = range === 'today' ? midnight.getTime() - WAT : range === '7d' ? now - 7 * day : range === '30d' ? now - 30 * day : 0;
+  const LIMIT = 5000;
+  const snap = await ordersCol.where('ts', '>=', start).orderBy('ts', 'desc').limit(LIMIT).select('type', 'status', 'amount', 'cost', 'est_cost').get();
+  const by = {};
+  let sales = 0, profit = 0, orders = 0, tracked = 0, topups = 0;
+  snap.forEach(doc => {
+    const o = doc.data();
+    if (o.status !== 'SUCCESS') return;
+    const amt = Number(o.amount) || 0;
+    if (o.type === 'Top Up') { topups += amt; return; }
+    sales += amt; orders++;
+    const t = by[o.type] = by[o.type] || { sales: 0, profit: 0, orders: 0, tracked: 0 };
+    t.sales += amt; t.orders++;
+    const cost = o.cost != null ? o.cost : (o.est_cost != null ? o.est_cost : null);
+    if (cost != null) { const pr = amt - Number(cost); profit += pr; t.profit += pr; t.tracked++; tracked++; }
+  });
+  Object.values(by).forEach(t => { t.profit = Math.round(t.profit); });
+  res.json({ status: 'success', range, sales, profit: Math.round(profit), orders, orders_with_cost: tracked, topups, by_type: by, truncated: snap.size >= LIMIT });
 }));
 
 process.on('unhandledRejection', e => console.error('Unhandled rejection:', e));
