@@ -287,7 +287,7 @@ app.post('/api/purchase-data', requireAuth, wrap(async (req, res) => {
     }
     console.error('EasyAccess data purchase failed:', JSON.stringify(d).slice(0, 500));
     const { u } = await finishTx(uid, txRef, 'FAILED', cost);
-    return res.status(400).json({ status: 'failed', message: `${d.true_response || d.message || 'Provider purchase failed.'} You were not charged.`, profile: u });
+    return res.status(400).json({ status: 'failed', message: `${String(d.true_response || d.message || 'Provider purchase failed.').replace(/([^.!?])\s*$/, '$1.')} You were not charged.`, profile: u });
   } catch (e) {
     // Unknown result (timeout etc.): stays PENDING and is not refunded automatically
     const u = (await usersCol.doc(uid).get()).data();
@@ -989,29 +989,68 @@ app.post('/api/admin/price-override', adminOnly, wrap(async (req, res) => {
   res.json({ status: 'success', message: map[key] ? `${label} set to ₦${map[key].toLocaleString('en-NG')}.` : `${label} is back to normal.`, price: sellPrice(type, plan, false, false), reseller_price: sellPrice(type, plan, true, false) });
 }));
 
-// Money report: what customers spent, and profit = what they paid minus what EasyAccess charged (only counted where the cost is known)
+// ---------- Money report ----------
+// Exact profit = what customers paid minus what EasyAccess charged (recorded on each order since cost tracking began).
+// Older orders have no recorded cost, so their profit is ESTIMATED and always reported separately:
+//   1) the average cost-to-price ratio of recorded orders of the same service, else
+//   2) the pricing formula run backwards (Data, Quick Buy, Exam PINs), else
+//   3) Cable TV: prices are rounded up to the next ₦100, about ₦50 of profit on average.
+// Airtime and Electricity with no recorded cost are left out of profit.
+function estimateCost(type, amount, ratios, marginPercent) {
+  const r = ratios[type];
+  if (r > 0 && r <= 1.2) return amount * r;
+  if (type === 'Data' || type === 'Quick Buy' || type === 'Exam') return amount / (1 + marginPercent / 100) / 1.015;
+  if (type === 'Cable') return Math.max(0, amount - 50);
+  return null;
+}
+
+let ratioCache = { t: 0, byType: {} };
+async function trackedRatios() {
+  if (Date.now() - ratioCache.t < 10 * 60 * 1000) return ratioCache.byType;
+  const snap = await ordersCol.where('cost', '>', 0).limit(3000).select('type', 'amount', 'cost').get();
+  const agg = {};
+  snap.forEach(d => {
+    const o = d.data(), a = Number(o.amount) || 0, c = Number(o.cost) || 0;
+    if (a > 0 && c > 0 && c <= a * 1.5) { const t = agg[o.type] = agg[o.type] || { a: 0, c: 0 }; t.a += a; t.c += c; }
+  });
+  const byType = {};
+  Object.keys(agg).forEach(k => { byType[k] = agg[k].c / agg[k].a; });
+  ratioCache = { t: Date.now(), byType };
+  return byType;
+}
+
 app.get('/api/admin/finance', adminOnly, wrap(async (req, res) => {
   const range = ['today', '7d', '30d', 'all'].includes(req.query.range) ? req.query.range : '7d';
   const now = Date.now(), day = 86400000, WAT = 3600000; // Nigeria time is UTC+1
   const midnight = new Date(now + WAT); midnight.setUTCHours(0, 0, 0, 0);
   const start = range === 'today' ? midnight.getTime() - WAT : range === '7d' ? now - 7 * day : range === '30d' ? now - 30 * day : 0;
   const LIMIT = 5000;
-  const snap = await ordersCol.where('ts', '>=', start).orderBy('ts', 'desc').limit(LIMIT).select('type', 'status', 'amount', 'cost', 'est_cost').get();
+  const [snap, ratios] = await Promise.all([
+    ordersCol.where('ts', '>=', start).orderBy('ts', 'desc').limit(LIMIT).select('type', 'status', 'amount', 'cost', 'est_cost').get(),
+    trackedRatios()
+  ]);
   const by = {};
-  let sales = 0, profit = 0, orders = 0, tracked = 0, topups = 0;
+  let sales = 0, orders = 0, topups = 0, exact = 0, estimated = 0, exactN = 0, estN = 0, noCostN = 0;
   snap.forEach(doc => {
     const o = doc.data();
     if (o.status !== 'SUCCESS') return;
     const amt = Number(o.amount) || 0;
     if (o.type === 'Top Up') { topups += amt; return; }
     sales += amt; orders++;
-    const t = by[o.type] = by[o.type] || { sales: 0, profit: 0, orders: 0, tracked: 0 };
+    const t = by[o.type] = by[o.type] || { sales: 0, profit: 0, orders: 0, exact: 0, estimated: 0, none: 0 };
     t.sales += amt; t.orders++;
-    const cost = o.cost != null ? o.cost : (o.est_cost != null ? o.est_cost : null);
-    if (cost != null) { const pr = amt - Number(cost); profit += pr; t.profit += pr; t.tracked++; tracked++; }
+    const known = o.cost != null ? o.cost : (o.est_cost != null ? o.est_cost : null);
+    if (known != null) { const pr = amt - Number(known); exact += pr; t.profit += pr; t.exact++; exactN++; return; }
+    const est = estimateCost(o.type, amt, ratios, settings.profit_margin_percent);
+    if (est != null) { const pr = amt - est; estimated += pr; t.profit += pr; t.estimated++; estN++; }
+    else { t.none++; noCostN++; }
   });
   Object.values(by).forEach(t => { t.profit = Math.round(t.profit); });
-  res.json({ status: 'success', range, sales, profit: Math.round(profit), orders, orders_with_cost: tracked, topups, by_type: by, truncated: snap.size >= LIMIT });
+  res.json({
+    status: 'success', range, sales, orders, topups, by_type: by, truncated: snap.size >= LIMIT,
+    profit: Math.round(exact + estimated), profit_exact: Math.round(exact), profit_estimated: Math.round(estimated),
+    exact_orders: exactN, estimated_orders: estN, no_cost_orders: noCostN
+  });
 }));
 
 process.on('unhandledRejection', e => console.error('Unhandled rejection:', e));
