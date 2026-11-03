@@ -692,6 +692,14 @@ html,body{background:#fbf7f1}
 /* when the site is installed as an app, the tab bar sits closer to the bottom edge */
 .is-app #view-dash .bottom-nav{bottom:calc(env(safe-area-inset-bottom,0px) + 8px)}
 .is-app #view-dash{padding-bottom:120px}
+
+/* installed as an app: no browser bar underneath, so the floating bar sits a little lower */
+@media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui) {
+  #view-dash .bottom-nav{bottom:calc(env(safe-area-inset-bottom,0px) + 10px)}
+  #view-dash{padding-bottom:112px}
+}
+html.is-standalone #view-dash .bottom-nav{bottom:calc(env(safe-area-inset-bottom,0px) + 10px)}
+html.is-standalone #view-dash{padding-bottom:112px}
 </style>
 </head>
 <body>
@@ -1663,6 +1671,7 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+if (window.navigator.standalone === true) document.documentElement.classList.add('is-standalone');
 {
   const r = new URLSearchParams(location.search).get("ref");
   if (r) localStorage.setItem("oyo_ref", r.slice(0, 12));
